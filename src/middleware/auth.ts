@@ -46,7 +46,10 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     }
 
     // Agregar el usuario al request
-    req.user = user;
+    req.user = {
+      ...user.toObject(),
+      type: decoded.type
+    };
     next();
 
   } catch (error) {

@@ -54,6 +54,15 @@ const createRole: RequestHandler = async (req, res, next) => {
       return;
     }
 
+    // Validar que se envíen todos los permisos
+    if (!permissions || !permissions.users || !permissions.roles || !permissions.admins) {
+      res.status(400).json({
+        success: false,
+        message: 'Se requieren todos los permisos: users, roles y admins'
+      });
+      return;
+    }
+
     // Verificar si el rol ya existe
     const existingRole = await Role.findOne({ name });
     if (existingRole) {
@@ -76,10 +85,7 @@ const createRole: RequestHandler = async (req, res, next) => {
     const newRole = new Role({
       name,
       description,
-      permissions: permissions || {
-        users: { create: false, read: false, update: false, delete: false, getAll: false },
-        roles: { create: false, read: false, update: false, delete: false, getAll: false }
-      },
+      permissions,
       isSystem: false
     });
 
