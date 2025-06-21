@@ -1,28 +1,38 @@
 import { Router } from 'express';
 import Test from '../models/Test';
+import { authMiddleware } from '../middleware/auth';
+import { asyncHandler } from '../middleware/errorHandler';
 
 const router = Router();
 
-// GET /test
-router.get('/', async (req, res) => {
-  try {
-    const tests = await Test.find();
-    res.json(tests);
-  } catch (err) {
-    res.status(500).json({ error: 'Error fetching tests' });
-  }
-});
+// GET /test - Protegido con autenticación
+router.get('/', authMiddleware, asyncHandler(async (req, res) => {
+  const tests = await Test.find();
+  res.json({
+    success: true,
+    data: tests
+  });
+}));
 
-// POST /test
-router.post('/', async (req, res) => {
-  try {
-    const { name, value } = req.body;
-    const newTest = new Test({ name, value });
-    await newTest.save();
-    res.status(201).json(newTest);
-  } catch (err) {
-    res.status(400).json({ error: 'Error creating test' });
+// POST /test - Protegido con autenticación
+router.post('/', authMiddleware, asyncHandler(async (req, res) => {
+  const { name, value } = req.body;
+  
+  if (!name || !value) {
+    res.status(400).json({
+      success: false,
+      message: 'Name and value are required'
+    });
+    return;
   }
-});
+
+  const newTest = new Test({ name, value });
+  const savedTest = await newTest.save();
+  
+  res.status(201).json({
+    success: true,
+    data: savedTest
+  });
+}));
 
 export default router; 

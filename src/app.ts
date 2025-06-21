@@ -5,6 +5,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import testRoutes from './routes/test';
+import authRoutes from './routes/auth';
+import { errorHandler } from './middleware/errorHandler';
 
 // Cargar variables de entorno
 dotenv.config();
@@ -21,11 +23,15 @@ app.use(morgan('dev'));
 
 // Rutas
 app.use('/test', testRoutes);
+app.use('/auth', authRoutes);
 
 // Ruta de prueba
 app.get('/', (req, res) => {
   res.send('API funcionando');
 });
+
+// Middleware de manejo de errores (debe ir al final)
+app.use(errorHandler);
 
 // Conexión a MongoDB y arranque del servidor
 mongoose.connect(MONGODB_URI)
