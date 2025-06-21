@@ -11,6 +11,7 @@ Backend API developed with Node.js, TypeScript, Express and MongoDB.
 - **Security**: Helmet, CORS, bcrypt for passwords
 - **TypeScript**: Static typing for greater robustness
 - **Avatar upload**: User profile avatars stored in MongoDB
+- **Unified profile updates**: Update profile data and avatar in a single request
 
 ## 📋 Prerequisites
 
@@ -173,22 +174,20 @@ Authorization: Bearer <token>
 ```
 
 #### PUT `/users/me`
-Update the authenticated user's profile.
+Update the authenticated user's profile and avatar (optional).
 
 **Headers:**
 ```
 Authorization: Bearer <token>
 ```
 
-**Body:**
-```json
-{
-  "firstName": "John",
-  "lastName": "Doe",
-  "email": "john@example.com",
-  "phoneNumber": "+1234567890",
-  "avatar": "api/users/.../avatar"
-}
+**Body (multipart/form-data):**
+```
+firstName: "John" (optional)
+lastName: "Doe" (optional)
+email: "john@example.com" (optional)
+phoneNumber: "+1234567890" (optional)
+avatarFile: [file] (optional)
 ```
 
 **Response:**
@@ -204,36 +203,6 @@ Authorization: Bearer <token>
     "phoneNumber": "+1234567890",
     "avatar": "api/users/.../avatar",
     "role": "..."
-  }
-}
-```
-
-#### PUT `/users/me/avatar`
-Update the authenticated user's avatar.
-
-**Headers:**
-```
-Authorization: Bearer <token>
-```
-
-**Body (multipart/form-data):**
-```
-avatar: [file] (required)
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "message": "Avatar actualizado exitosamente",
-  "data": {
-    "_id": "...",
-    "firstName": "John",
-    "lastName": "Doe",
-    "email": "john@example.com",
-    "phoneNumber": "+1234567890",
-    "avatar": "api/users/.../avatar",
-    "avatarContentType": "image/jpeg"
   }
 }
 ```
@@ -320,22 +289,21 @@ Authorization: Bearer <token>
 ```
 
 #### PUT `/users/:id` (Admin)
-Update a specific user (requires admin permissions).
+Update a specific user's profile and avatar (optional) (requires admin permissions).
 
 **Headers:**
 ```
 Authorization: Bearer <token>
 ```
 
-**Body:**
-```json
-{
-  "firstName": "John",
-  "lastName": "Doe",
-  "email": "john@example.com",
-  "phoneNumber": "+1234567890",
-  "role": "..."
-}
+**Body (multipart/form-data):**
+```
+firstName: "John" (optional)
+lastName: "Doe" (optional)
+email: "john@example.com" (optional)
+phoneNumber: "+1234567890" (optional)
+role: "..." (optional)
+avatarFile: [file] (optional)
 ```
 
 **Response:**
@@ -349,42 +317,8 @@ Authorization: Bearer <token>
     "lastName": "Doe",
     "email": "john@example.com",
     "phoneNumber": "+1234567890",
-    "role": "..."
-  }
-}
-```
-
-#### PUT `/users/:id/avatar` (Admin)
-Update a specific user's avatar (requires admin permissions).
-
-**Headers:**
-```
-Authorization: Bearer <token>
-```
-
-**Body (multipart/form-data):**
-```
-avatar: [file] (required)
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "message": "Avatar del usuario actualizado exitosamente",
-  "data": {
-    "_id": "...",
-    "firstName": "John",
-    "lastName": "Doe",
-    "email": "john@example.com",
-    "phoneNumber": "+1234567890",
     "avatar": "api/users/.../avatar",
-    "avatarContentType": "image/jpeg",
-    "role": {
-      "_id": "...",
-      "name": "user",
-      "permissions": { ... }
-    }
+    "role": "..."
   }
 }
 ```
@@ -399,12 +333,10 @@ Get a user's profile avatar (public endpoint).
 | Endpoint | Method | Authentication | Permissions | Description |
 |----------|--------|----------------|-------------|-------------|
 | `/users/me` | GET | ✅ Bearer Token | ❌ None | Get authenticated user's profile |
-| `/users/me` | PUT | ✅ Bearer Token | ❌ None | Update authenticated user's profile |
-| `/users/me/avatar` | PUT | ✅ Bearer Token | ❌ None | Update authenticated user's avatar |
+| `/users/me` | PUT | ✅ Bearer Token | ❌ None | Update authenticated user's profile + avatar (optional) |
 | `/users` | GET | ✅ Bearer Token | ✅ `users.getAll` | List all users (admin only) |
 | `/users/:id` | GET | ✅ Bearer Token | ✅ `users.read` | Get specific user (admin only) |
-| `/users/:id` | PUT | ✅ Bearer Token | ✅ `users.update` | Update specific user (admin only) |
-| `/users/:id/avatar` | PUT | ✅ Bearer Token | ✅ `users.update` | Update specific user's avatar (admin only) |
+| `/users/:id` | PUT | ✅ Bearer Token | ✅ `users.update` | Update specific user + avatar (optional) (admin only) |
 | `/users/:id/avatar` | GET | ❌ None | ❌ None | Get user's avatar (public) |
 
 ## 🔐 Authentication
@@ -425,7 +357,7 @@ src/
 │   └── Admin.ts         # Admin model
 ├── routes/              # Route controllers
 │   ├── auth.ts          # Authentication routes
-│   ├── users.ts         # User routes (including image upload)
+│   ├── users.ts         # User routes (including unified profile updates)
 │   ├── roles.ts         # Role routes
 │   ├── admins.ts        # Admin routes
 │   └── logs.ts          # Audit logs routes

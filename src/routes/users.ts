@@ -49,6 +49,18 @@ const updateMyProfile: RequestHandler = async (req, res, next) => {
     delete updateData.avatarBuffer;
     delete updateData.avatarContentType;
 
+    // Si hay una imagen en el request, guardar buffer y generar URL
+    if (req.file) {
+      updateData.avatar = `/api/users/${userId}/avatar`;
+      updateData.avatarBuffer = req.file.buffer;
+      updateData.avatarContentType = req.file.mimetype;
+    }
+
+    // Si el usuario envía una URL de avatar en el body, sobrescribir la generada
+    if (req.body.avatar && !req.file) {
+      updateData.avatar = req.body.avatar;
+    }
+
     const user = await User.findById(userId);
     if (!user) {
       ResponseHelper.notFound(res, 'Usuario no encontrado');
@@ -88,98 +100,6 @@ const updateMyProfile: RequestHandler = async (req, res, next) => {
       res,
       'Perfil actualizado exitosamente',
       safeUserResponse
-    );
-  } catch (error) {
-    next(error);
-  }
-};
-
-// PUT /users/me/avatar - Actualizar avatar del usuario autenticado
-const updateMyAvatar: RequestHandler = async (req, res, next) => {
-  try {
-    const userId = req.user?._id;
-    if (!userId) {
-      ResponseHelper.unauthorized(res);
-      return;
-    }
-
-    const updateData: any = {};
-
-    // Si hay una imagen en el request, guardar buffer y generar URL
-    if (req.file) {
-      updateData.avatar = `/api/users/${userId}/avatar`;
-      updateData.avatarBuffer = req.file.buffer;
-      updateData.avatarContentType = req.file.mimetype;
-    } else {
-      ResponseHelper.validationError(res, 'No se proporcionó ninguna imagen');
-      return;
-    }
-
-    const user = await User.findById(userId);
-    if (!user) {
-      ResponseHelper.notFound(res, 'Usuario no encontrado');
-      return;
-    }
-
-    // Detectar cambios antes de actualizar
-    const changes = getChanges(user, updateData);
-
-    // Actualizar el documento
-    const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
-      new: true,
-    }).populate('role');
-
-    // Si hubo cambios, registrarlos
-    if (changes.length > 0) {
-      const userName = `${req.user.firstName} ${req.user.lastName}`;
-      logChanges(
-        'User',
-        userId.toString(),
-        userId.toString(),
-        userName,
-        changes
-      );
-    }
-
-    ResponseHelper.success(res, 'Avatar actualizado exitosamente', updatedUser);
-  } catch (error) {
-    next(error);
-  }
-};
-
-// PUT /users/:id - Actualizar un usuario específico (solo admins)
-const updateUser: RequestHandler = async (req, res, next) => {
-  try {
-    const userId = req.params.id;
-    const updateData = req.body;
-
-    const user = await User.findById(userId);
-    if (!user) {
-      ResponseHelper.notFound(res, 'Usuario no encontrado');
-      return;
-    }
-
-    // Detectar cambios antes de actualizar
-    const changes = getChanges(user, updateData);
-
-    // Actualizar el documento directamente en la BD sin correr todos los validadores
-    const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
-      new: true,
-    });
-
-    // Si hubo cambios, registrarlos
-    if (changes.length > 0) {
-      const userName = req.user
-        ? `${req.user.firstName} ${req.user.lastName}`
-        : 'Sistema';
-      const userIdPerformingAction = req.user?._id?.toString() || 'system';
-      logChanges('User', userId, userIdPerformingAction, userName, changes);
-    }
-
-    ResponseHelper.success(
-      res,
-      'Usuario actualizado exitosamente',
-      updatedUser
     );
   } catch (error) {
     next(error);
@@ -293,26 +213,22 @@ const getAllUsers: RequestHandler = async (req, res, next) => {
   }
 };
 
-// PUT /users/:id/avatar - Actualizar avatar de un usuario específico (solo admins)
-const updateUserAvatar: RequestHandler = async (req, res, next) => {
+// PUT /users/:id - Actualizar un usuario específico (solo admins)
+const updateUser: RequestHandler = async (req, res, next) => {
   try {
     const userId = req.params.id;
-
-    if (!userId) {
-      ResponseHelper.validationError(res, 'ID de usuario requerido');
-      return;
-    }
-
-    const updateData: any = {};
+    const updateData = req.body;
 
     // Si hay una imagen en el request, guardar buffer y generar URL
     if (req.file) {
       updateData.avatar = `/api/users/${userId}/avatar`;
       updateData.avatarBuffer = req.file.buffer;
       updateData.avatarContentType = req.file.mimetype;
-    } else {
-      ResponseHelper.validationError(res, 'No se proporcionó ninguna imagen');
-      return;
+    }
+
+    // Si el usuario envía una URL de avatar en el body, sobrescribir la generada
+    if (req.body.avatar && !req.file) {
+      updateData.avatar = req.body.avatar;
     }
 
     const user = await User.findById(userId);
@@ -324,10 +240,10 @@ const updateUserAvatar: RequestHandler = async (req, res, next) => {
     // Detectar cambios antes de actualizar
     const changes = getChanges(user, updateData);
 
-    // Actualizar el documento
+    // Actualizar el documento directamente en la BD sin correr todos los validadores
     const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
       new: true,
-    }).populate('role');
+    });
 
     // Si hubo cambios, registrarlos
     if (changes.length > 0) {
@@ -340,7 +256,7 @@ const updateUserAvatar: RequestHandler = async (req, res, next) => {
 
     ResponseHelper.success(
       res,
-      'Avatar del usuario actualizado exitosamente',
+      'Usuario actualizado exitosamente',
       updatedUser
     );
   } catch (error) {
@@ -350,13 +266,12 @@ const updateUserAvatar: RequestHandler = async (req, res, next) => {
 
 // Rutas para el usuario autenticado (sin permisos especiales) - DEBEN IR PRIMERO
 router.get('/me', authMiddleware, getMyProfile);
-router.put('/me', authMiddleware, updateMyProfile);
 router.put(
-  '/me/avatar',
+  '/me',
   authMiddleware,
-  uploadImage.single('avatar'),
+  uploadImage.single('avatarFile'),
   handleUploadError,
-  updateMyAvatar
+  updateMyProfile
 );
 
 // Rutas para admins (con permisos) - DEBEN IR DESPUÉS
@@ -381,16 +296,9 @@ router.put(
   '/:id',
   authMiddleware,
   permissionMiddleware('users', 'update'),
-  updateUser
-);
-// @ts-ignore
-router.put(
-  '/:id/avatar',
-  authMiddleware,
-  permissionMiddleware('users', 'update'),
-  uploadImage.single('avatar'),
+  uploadImage.single('avatarFile'),
   handleUploadError,
-  updateUserAvatar
+  updateUser
 );
 
 export default router;
