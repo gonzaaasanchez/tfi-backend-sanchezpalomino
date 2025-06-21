@@ -54,8 +54,7 @@ const updateAvatar: RequestHandler = async (req, res, next) => {
     
     // Si hay una imagen en el request, guardar buffer y generar URL
     if (req.file) {
-      const baseUrl = `${req.protocol}://${req.get('host')}`;
-      updateData.avatar = `${baseUrl}/users/${userId}/avatar`;
+      updateData.avatar = `/api/users/${userId}/avatar`;
       updateData.avatarBuffer = req.file.buffer;
       updateData.avatarContentType = req.file.mimetype;
     } else {
@@ -88,9 +87,36 @@ const updateAvatar: RequestHandler = async (req, res, next) => {
   }
 };
 
+// GET /users/:id/avatar - Obtener avatar de un usuario
+const getAvatar: RequestHandler = async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      ResponseHelper.notFound(res, 'Usuario no encontrado');
+      return;
+    }
+    
+    if (!user.avatarBuffer || !user.avatarContentType) {
+      ResponseHelper.notFound(res, 'Avatar no encontrado');
+      return;
+    }
+    
+    // Establecer el tipo de contenido y enviar el buffer
+    res.set('Content-Type', user.avatarContentType);
+    res.send(user.avatarBuffer);
+    
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Rutas
 // @ts-ignore
 router.put('/profile/avatar', authMiddleware, uploadImage.single('avatar'), handleUploadError, updateAvatar);
+// @ts-ignore
+router.get('/:id/avatar', getAvatar);
 // @ts-ignore
 router.put('/:id', authMiddleware, permissionMiddleware('users', 'update'), updateUser);
 
