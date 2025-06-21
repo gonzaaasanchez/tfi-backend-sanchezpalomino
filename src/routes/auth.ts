@@ -14,14 +14,14 @@ router.post('/register', asyncHandler(async (req: Request, res: Response) => {
   if (!firstName || !lastName || !email || !password) {
     return res.status(400).json({
       success: false,
-      message: 'All fields are required'
+      message: 'Todos los campos son requeridos'
     });
   }
 
   if (password.length < 6) {
     return res.status(400).json({
       success: false,
-      message: 'Password must be at least 6 characters long'
+      message: 'La contraseña debe tener al menos 6 caracteres'
     });
   }
 
@@ -30,7 +30,7 @@ router.post('/register', asyncHandler(async (req: Request, res: Response) => {
   if (existingUser) {
     return res.status(400).json({
       success: false,
-      message: 'Email already registered'
+      message: 'El email ya está registrado'
     });
   }
 
@@ -50,7 +50,7 @@ router.post('/register', asyncHandler(async (req: Request, res: Response) => {
   // Retornar respuesta exitosa (sin incluir password)
   res.status(201).json({
     success: true,
-    message: 'User registered successfully',
+    message: 'Usuario registrado exitosamente',
     data: {
       user: user.toJSON()
     }
@@ -65,7 +65,7 @@ router.post('/login', asyncHandler(async (req: Request, res: Response) => {
   if (!email || !password) {
     return res.status(400).json({
       success: false,
-      message: 'Email and password are required'
+      message: 'Email y contraseña son requeridos'
     });
   }
 
@@ -74,7 +74,7 @@ router.post('/login', asyncHandler(async (req: Request, res: Response) => {
   if (!user) {
     return res.status(401).json({
       success: false,
-      message: 'Invalid credentials'
+      message: 'Credenciales inválidas'
     });
   }
 
@@ -83,7 +83,7 @@ router.post('/login', asyncHandler(async (req: Request, res: Response) => {
   if (!isPasswordValid) {
     return res.status(401).json({
       success: false,
-      message: 'Invalid credentials'
+      message: 'Credenciales inválidas'
     });
   }
 
@@ -96,7 +96,7 @@ router.post('/login', asyncHandler(async (req: Request, res: Response) => {
   // Retornar usuario y token
   res.json({
     success: true,
-    message: 'Login successful',
+    message: 'Login exitoso',
     data: {
       user: user.toJSON(),
       token
@@ -104,11 +104,11 @@ router.post('/login', asyncHandler(async (req: Request, res: Response) => {
   });
 }));
 
-// GET /auth/profile - Obtener perfil del usuario autenticado
-router.get('/profile', authMiddleware, asyncHandler(async (req, res) => {
+// GET /auth/me - Obtener perfil del usuario autenticado
+router.get('/me', authMiddleware, asyncHandler(async (req, res) => {
   res.json({
     success: true,
-    message: 'Profile retrieved successfully',
+    message: 'Perfil obtenido exitosamente',
     data: {
       user: req.user
     }

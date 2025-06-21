@@ -21,7 +21,7 @@ router.post('/', authMiddleware, asyncHandler(async (req, res) => {
   if (!name || !value) {
     res.status(400).json({
       success: false,
-      message: 'Name and value are required'
+      message: 'Nombre y valor son requeridos'
     });
     return;
   }
