@@ -38,12 +38,12 @@ export interface IRole extends Document {
 const RoleSchema = new Schema<IRole>({
   name: {
     type: String,
-    required: true,
+    required: [true, 'El nombre del rol es requerido'],
     unique: true
   },
   description: {
     type: String,
-    required: true
+    required: [true, 'La descripción del rol es requerida']
   },
   permissions: {
     users: {

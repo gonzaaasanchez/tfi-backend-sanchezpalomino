@@ -224,7 +224,8 @@ const getAllUsers: RequestHandler = async (req, res, next) => {
       filters.$or = [
         { firstName: searchRegex },
         { lastName: searchRegex },
-        { email: searchRegex }
+        { email: searchRegex },
+        { phoneNumber: searchRegex }
       ];
     }
 

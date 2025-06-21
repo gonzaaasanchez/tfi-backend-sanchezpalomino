@@ -20,7 +20,7 @@ export const verifyToken = (token: string): JWTPayload => {
   try {
     return jwt.verify(token, JWT_SECRET) as JWTPayload;
   } catch (error) {
-    throw new Error('Invalid token');
+    throw new Error('Token inválido');
   }
 };
 

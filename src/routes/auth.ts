@@ -11,7 +11,7 @@ const router = Router();
 // POST /auth/register
 const register: RequestHandler = async (req, res, next) => {
   try {
-    const { firstName, lastName, email, password } = req.body;
+    const { firstName, lastName, email, password, phoneNumber } = req.body;
 
     if (!firstName || !lastName || !email || !password) {
       ResponseHelper.validationError(res, 'Todos los campos son requeridos');
@@ -43,6 +43,7 @@ const register: RequestHandler = async (req, res, next) => {
       lastName,
       email,
       password: hashedPassword,
+      phoneNumber,
       role: userRole._id
     });
 
@@ -55,7 +56,8 @@ const register: RequestHandler = async (req, res, next) => {
     logChanges('User', user._id?.toString() || '', 'system', 'Sistema', [
       { field: 'firstName', oldValue: null, newValue: firstName },
       { field: 'lastName', oldValue: null, newValue: lastName },
-      { field: 'email', oldValue: null, newValue: email }
+      { field: 'email', oldValue: null, newValue: email },
+      { field: 'phoneNumber', oldValue: null, newValue: phoneNumber }
     ]);
 
     ResponseHelper.success(res, 'Usuario registrado exitosamente', {

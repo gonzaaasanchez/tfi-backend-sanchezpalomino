@@ -63,7 +63,8 @@ Register a new user.
   "firstName": "John",
   "lastName": "Doe",
   "email": "john@example.com",
-  "password": "123456"
+  "password": "123456",
+  "phoneNumber": "+1234567890"
 }
 ```
 
@@ -78,6 +79,7 @@ Register a new user.
       "firstName": "John",
       "lastName": "Doe",
       "email": "john@example.com",
+      "phoneNumber": "+1234567890",
       "createdAt": "2024-01-01T00:00:00.000Z",
       "updatedAt": "2024-01-01T00:00:00.000Z"
     }
@@ -229,6 +231,7 @@ avatar: [file] (required)
     "firstName": "John",
     "lastName": "Doe",
     "email": "john@example.com",
+    "phoneNumber": "+1234567890",
     "avatar": "api/users/.../avatar",
     "avatarContentType": "image/jpeg"
   }
@@ -246,7 +249,7 @@ Authorization: Bearer <token>
 **Query Parameters:**
 - `page`: Page number (default: 1)
 - `limit`: Users per page (default: 10)
-- `search`: Search by firstName, lastName, or email
+- `search`: Search by firstName, lastName, email, or phoneNumber
 - `role`: Filter by role ID
 
 **Example:**
@@ -374,6 +377,7 @@ avatar: [file] (required)
     "firstName": "John",
     "lastName": "Doe",
     "email": "john@example.com",
+    "phoneNumber": "+1234567890",
     "avatar": "api/users/.../avatar",
     "avatarContentType": "image/jpeg",
     "role": {

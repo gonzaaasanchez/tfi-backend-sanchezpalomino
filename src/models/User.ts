@@ -5,6 +5,7 @@ export interface IUser extends Document {
   lastName: string;
   email: string;
   password: string;
+  phoneNumber?: string;
   role: mongoose.Types.ObjectId;
   avatar?: string;
   avatarBuffer?: Buffer;
@@ -16,35 +17,41 @@ export interface IUser extends Document {
 const UserSchema: Schema = new Schema({
   firstName: { 
     type: String, 
-    required: true,
+    required: [true, 'El nombre es requerido'],
     trim: true,
-    minlength: 2,
-    maxlength: 50
+    minlength: [2, 'El nombre debe tener al menos 2 caracteres'],
+    maxlength: [50, 'El nombre no puede exceder 50 caracteres']
   },
   lastName: { 
     type: String, 
-    required: true,
+    required: [true, 'El apellido es requerido'],
     trim: true,
-    minlength: 2,
-    maxlength: 50
+    minlength: [2, 'El apellido debe tener al menos 2 caracteres'],
+    maxlength: [50, 'El apellido no puede exceder 50 caracteres']
   },
   email: { 
     type: String, 
-    required: true,
+    required: [true, 'El email es requerido'],
     unique: true,
     trim: true,
     lowercase: true,
-    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
+    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Por favor ingresa un email válido']
   },
   password: { 
     type: String, 
-    required: true,
-    minlength: 6
+    required: [true, 'La contraseña es requerida'],
+    minlength: [6, 'La contraseña debe tener al menos 6 caracteres']
+  },
+  phoneNumber: {
+    type: String,
+    required: false,
+    trim: true,
+    match: [/^\+?[\d\s\-\(\)]+$/, 'Por favor ingresa un número de teléfono válido']
   },
   role: {
     type: Schema.Types.ObjectId,
     ref: 'Role',
-    required: true
+    required: [true, 'El rol es requerido']
   },
   avatar: {
     type: String,
