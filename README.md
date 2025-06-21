@@ -10,6 +10,7 @@ Backend API developed with Node.js, TypeScript, Express and MongoDB.
 - **Data validation**: Automatic validations with Mongoose
 - **Security**: Helmet, CORS, bcrypt for passwords
 - **TypeScript**: Static typing for greater robustness
+- **Avatar upload**: User profile avatars stored in MongoDB
 
 ## 📋 Prerequisites
 
@@ -138,6 +139,64 @@ Authorization: Bearer <token>
 }
 ```
 
+### Users
+
+#### PUT `/users/:id`
+Update a specific user (requires admin permissions).
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Body (multipart/form-data):**
+```
+firstName: "John"
+lastName: "Doe"
+email: "john@example.com"
+avatar: [file] (optional)
+```
+
+#### PUT `/users/profile/avatar`
+Update the authenticated user's profile avatar.
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Body (multipart/form-data):**
+```
+avatar: [file] (required)
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Avatar actualizado exitosamente",
+  "data": {
+    "_id": "...",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john@example.com",
+    "avatarContentType": "image/jpeg",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  }
+}
+```
+
+#### GET `/users/:id/avatar`
+Get a user's profile avatar.
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:** Binary image data with appropriate Content-Type header.
+
 ## 🔐 Authentication
 
 For protected endpoints, include the header:
@@ -152,16 +211,24 @@ src/
 ├── app.ts                 # Entry point
 ├── models/               # MongoDB models
 │   ├── User.ts          # User model
-│   └── Test.ts          # Example model
+│   ├── Role.ts          # Role model
+│   └── Admin.ts         # Admin model
 ├── routes/              # Route controllers
 │   ├── auth.ts          # Authentication routes
-│   └── test.ts          # Example routes
+│   ├── users.ts         # User routes (including image upload)
+│   ├── roles.ts         # Role routes
+│   ├── admins.ts        # Admin routes
+│   └── logs.ts          # Audit logs routes
 ├── middleware/          # Middlewares
 │   ├── auth.ts          # JWT authentication
 │   ├── permissions.ts   # Permission control
-│   └── errorHandler.ts  # Error handling
+│   ├── errorHandler.ts  # Error handling
+│   └── upload.ts        # Image upload middleware
 └── utils/               # Utilities
-    └── auth.ts          # JWT and bcrypt functions
+    ├── auth.ts          # JWT and bcrypt functions
+    ├── audit.ts         # Audit logging
+    ├── auditLogger.ts   # Audit logger
+    └── changeDetector.ts # Change detection
 ```
 
 ## 🔧 Available Scripts
@@ -176,6 +243,7 @@ src/
 - **Headers**: Helmet for security headers
 - **CORS**: Configured to allow cross-origin requests
 - **Validation**: Automatic validations with Mongoose
+- **File upload**: Multer with file type and size validation
 
 ## 📝 Next Steps
 
@@ -185,6 +253,8 @@ src/
 - [ ] Add validation with Joi
 - [ ] Implement rate limiting
 - [ ] Add Swagger documentation
+- [ ] Add image compression/resizing
+- [ ] Implement image deletion
 
 ## 🤝 Contributing
 
