@@ -12,7 +12,9 @@ export interface JWTPayload {
 
 // Generar JWT token
 export const generateToken = (payload: JWTPayload): string => {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions);
+  return jwt.sign(payload, JWT_SECRET, {
+    expiresIn: JWT_EXPIRES_IN,
+  } as jwt.SignOptions);
 };
 
 // Verificar JWT token
@@ -31,6 +33,9 @@ export const hashPassword = async (password: string): Promise<string> => {
 };
 
 // Verificar contraseña
-export const verifyPassword = async (password: string, hashedPassword: string): Promise<boolean> => {
+export const verifyPassword = async (
+  password: string,
+  hashedPassword: string
+): Promise<boolean> => {
   return await bcrypt.compare(password, hashedPassword);
-}; 
+};

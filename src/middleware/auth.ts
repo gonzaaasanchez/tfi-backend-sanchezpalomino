@@ -13,11 +13,15 @@ declare global {
   }
 }
 
-export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+export const authMiddleware = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     // Obtener el token del header Authorization
     const authHeader = req.headers.authorization;
-    
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return ResponseHelper.unauthorized(res, 'Token de acceso requerido');
     }
@@ -35,7 +39,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     } else {
       user = await User.findById(decoded.userId).select('-password');
     }
-    
+
     if (!user) {
       return ResponseHelper.unauthorized(res, 'Usuario no encontrado');
     }
@@ -43,11 +47,10 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     // Agregar el usuario al request
     req.user = {
       ...user.toObject(),
-      type: decoded.type
+      type: decoded.type,
     };
     next();
-
   } catch (error) {
     return ResponseHelper.unauthorized(res, 'Token inválido o expirado');
   }
-}; 
+};

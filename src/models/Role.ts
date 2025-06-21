@@ -35,49 +35,52 @@ export interface IRole extends Document {
   updatedAt: Date;
 }
 
-const RoleSchema = new Schema<IRole>({
-  name: {
-    type: String,
-    required: [true, 'El nombre del rol es requerido'],
-    unique: true
-  },
-  description: {
-    type: String,
-    required: [true, 'La descripción del rol es requerida']
-  },
-  permissions: {
-    users: {
-      create: { type: Boolean, default: false },
-      read: { type: Boolean, default: false },
-      update: { type: Boolean, default: false },
-      delete: { type: Boolean, default: false },
-      getAll: { type: Boolean, default: false }
+const RoleSchema = new Schema<IRole>(
+  {
+    name: {
+      type: String,
+      required: [true, 'El nombre del rol es requerido'],
+      unique: true,
     },
-    roles: {
-      create: { type: Boolean, default: false },
-      read: { type: Boolean, default: false },
-      update: { type: Boolean, default: false },
-      delete: { type: Boolean, default: false },
-      getAll: { type: Boolean, default: false }
+    description: {
+      type: String,
+      required: [true, 'La descripción del rol es requerida'],
     },
-    admins: {
-      create: { type: Boolean, default: false },
-      read: { type: Boolean, default: false },
-      update: { type: Boolean, default: false },
-      delete: { type: Boolean, default: false },
-      getAll: { type: Boolean, default: false }
+    permissions: {
+      users: {
+        create: { type: Boolean, default: false },
+        read: { type: Boolean, default: false },
+        update: { type: Boolean, default: false },
+        delete: { type: Boolean, default: false },
+        getAll: { type: Boolean, default: false },
+      },
+      roles: {
+        create: { type: Boolean, default: false },
+        read: { type: Boolean, default: false },
+        update: { type: Boolean, default: false },
+        delete: { type: Boolean, default: false },
+        getAll: { type: Boolean, default: false },
+      },
+      admins: {
+        create: { type: Boolean, default: false },
+        read: { type: Boolean, default: false },
+        update: { type: Boolean, default: false },
+        delete: { type: Boolean, default: false },
+        getAll: { type: Boolean, default: false },
+      },
+      logs: {
+        read: { type: Boolean, default: false },
+        getAll: { type: Boolean, default: false },
+      },
     },
-    logs: {
-      read: { type: Boolean, default: false },
-      getAll: { type: Boolean, default: false }
-    }
+    isSystem: {
+      type: Boolean,
+      default: false,
+    },
   },
-  isSystem: {
-    type: Boolean,
-    default: false
+  {
+    timestamps: true,
   }
-}, {
-  timestamps: true
-});
+);
 
-export default mongoose.model<IRole>('Role', RoleSchema); 
+export default mongoose.model<IRole>('Role', RoleSchema);

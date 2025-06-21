@@ -5,7 +5,11 @@ import { ResponseHelper } from '../utils/response';
 const storage = multer.memoryStorage();
 
 // Filtro para validar tipos de archivo
-const fileFilter = (req: Express.Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+const fileFilter = (
+  req: Express.Request,
+  file: Express.Multer.File,
+  cb: multer.FileFilterCallback
+) => {
   // Permitir solo imágenes
   if (file.mimetype.startsWith('image/')) {
     cb(null, true);
@@ -20,20 +24,23 @@ export const uploadImage = multer({
   fileFilter: fileFilter,
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB máximo
-  }
+  },
 });
 
 // Middleware para manejar errores de multer
 export const handleUploadError = (err: any, req: any, res: any, next: any) => {
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
-      return ResponseHelper.validationError(res, 'El archivo es demasiado grande. Máximo 5MB');
+      return ResponseHelper.validationError(
+        res,
+        'El archivo es demasiado grande. Máximo 5MB'
+      );
     }
   }
-  
+
   if (err.message === 'Solo se permiten archivos de imagen') {
     return ResponseHelper.validationError(res, err.message);
   }
-  
+
   next(err);
-}; 
+};

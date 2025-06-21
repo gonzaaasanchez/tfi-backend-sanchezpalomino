@@ -38,12 +38,12 @@ const loginAdmin: RequestHandler = async (req, res, next) => {
     const token = generateToken({
       userId: admin._id?.toString() || '',
       email: admin.email,
-      type: 'admin'
+      type: 'admin',
     });
 
     ResponseHelper.success(res, 'Login exitoso', {
       admin: admin.toJSON(),
-      token
+      token,
     });
   } catch (error) {
     next(error);
@@ -61,7 +61,10 @@ const createAdmin: RequestHandler = async (req, res, next) => {
     }
 
     if (password.length < 6) {
-      ResponseHelper.validationError(res, 'La contraseña debe tener al menos 6 caracteres');
+      ResponseHelper.validationError(
+        res,
+        'La contraseña debe tener al menos 6 caracteres'
+      );
       return;
     }
 
@@ -81,7 +84,10 @@ const createAdmin: RequestHandler = async (req, res, next) => {
 
     // Solo permitir asignar roles que no sean del sistema (user y superadmin)
     if (role.isSystem) {
-      ResponseHelper.validationError(res, 'No se puede asignar roles del sistema a un admin');
+      ResponseHelper.validationError(
+        res,
+        'No se puede asignar roles del sistema a un admin'
+      );
       return;
     }
 
@@ -94,7 +100,7 @@ const createAdmin: RequestHandler = async (req, res, next) => {
       lastName,
       email,
       password: hashedPassword,
-      role: roleId
+      role: roleId,
     });
 
     await admin.save();
@@ -103,17 +109,24 @@ const createAdmin: RequestHandler = async (req, res, next) => {
     await admin.populate('role');
 
     // Log de creación
-    const userName = req.user ? `${req.user.firstName} ${req.user.lastName}` : 'Sistema';
+    const userName = req.user
+      ? `${req.user.firstName} ${req.user.lastName}`
+      : 'Sistema';
     const userId = req.user?._id?.toString() || 'system';
     logChanges('Admin', admin._id?.toString() ?? '', userId, userName, [
       { field: 'firstName', oldValue: null, newValue: firstName },
       { field: 'lastName', oldValue: null, newValue: lastName },
-      { field: 'email', oldValue: null, newValue: email }
+      { field: 'email', oldValue: null, newValue: email },
     ]);
 
-    ResponseHelper.success(res, 'Admin creado exitosamente', {
-      admin: admin.toJSON()
-    }, 201);
+    ResponseHelper.success(
+      res,
+      'Admin creado exitosamente',
+      {
+        admin: admin.toJSON(),
+      },
+      201
+    );
   } catch (error) {
     next(error);
   }
@@ -124,9 +137,9 @@ const getProfile: RequestHandler = async (req, res, next) => {
   try {
     // Populate role para incluir información del rol
     await req.user.populate('role');
-    
+
     ResponseHelper.success(res, 'Perfil obtenido exitosamente', {
-      admin: req.user.toJSON()
+      admin: req.user.toJSON(),
     });
   } catch (error) {
     next(error);
@@ -146,12 +159,14 @@ const getAllAdmins: RequestHandler = async (req, res, next) => {
 // GET /admins/:id - Obtener admin específico
 const getAdmin: RequestHandler = async (req, res, next) => {
   try {
-    const admin = await Admin.findById(req.params.id).populate('role').select('-password');
+    const admin = await Admin.findById(req.params.id)
+      .populate('role')
+      .select('-password');
     if (!admin) {
       ResponseHelper.notFound(res, 'Admin no encontrado');
       return;
     }
-    
+
     ResponseHelper.success(res, 'Admin obtenido exitosamente', admin);
   } catch (error) {
     next(error);
@@ -178,32 +193,40 @@ const updateAdmin: RequestHandler = async (req, res, next) => {
         return;
       }
       if (role.isSystem) {
-        ResponseHelper.validationError(res, 'No se puede asignar roles del sistema a un admin');
+        ResponseHelper.validationError(
+          res,
+          'No se puede asignar roles del sistema a un admin'
+        );
         return;
       }
       // Renombrar roleId a role para que coincida con el schema
       updateData.role = updateData.roleId;
       delete updateData.roleId;
     }
-    
+
     // Detectar cambios antes de actualizar
     const changes = getChanges(admin, updateData);
 
     // Actualizar el documento
     Object.assign(admin, updateData);
     await admin.save();
-    
+
     // Si hubo cambios, registrarlos
     if (changes.length > 0) {
-      const userName = req.user ? `${req.user.firstName} ${req.user.lastName}` : 'Sistema';
+      const userName = req.user
+        ? `${req.user.firstName} ${req.user.lastName}`
+        : 'Sistema';
       const userId = req.user?._id?.toString() || 'system';
       logChanges('Admin', adminId, userId, userName, changes);
     }
-    
+
     await admin.populate('role');
 
-    ResponseHelper.success(res, 'Admin actualizado exitosamente', admin.toJSON());
-
+    ResponseHelper.success(
+      res,
+      'Admin actualizado exitosamente',
+      admin.toJSON()
+    );
   } catch (error) {
     next(error);
   }
@@ -219,14 +242,16 @@ const deleteAdmin: RequestHandler = async (req, res, next) => {
     }
 
     // Log de eliminación
-    const userName = req.user ? `${req.user.firstName} ${req.user.lastName}` : 'Sistema';
+    const userName = req.user
+      ? `${req.user.firstName} ${req.user.lastName}`
+      : 'Sistema';
     const userId = req.user?._id?.toString() || 'system';
     logChanges('Admin', req.params.id, userId, userName, [
-      { field: 'deleted', oldValue: false, newValue: true }
+      { field: 'deleted', oldValue: false, newValue: true },
     ]);
 
     await Admin.findByIdAndDelete(req.params.id);
-    
+
     ResponseHelper.success(res, 'Admin eliminado exitosamente');
   } catch (error) {
     next(error);
@@ -239,14 +264,39 @@ router.post('/login', loginAdmin);
 // @ts-ignore - Express 5.1.0 type compatibility issue
 router.get('/me', authMiddleware, getProfile);
 // @ts-ignore - Express 5.1.0 type compatibility issue
-router.get('/', authMiddleware, permissionMiddleware('admins', 'getAll'), getAllAdmins);
+router.get(
+  '/',
+  authMiddleware,
+  permissionMiddleware('admins', 'getAll'),
+  getAllAdmins
+);
 // @ts-ignore - Express 5.1.0 type compatibility issue
-router.get('/:id', authMiddleware, permissionMiddleware('admins', 'read'), getAdmin);
+router.get(
+  '/:id',
+  authMiddleware,
+  permissionMiddleware('admins', 'read'),
+  getAdmin
+);
 // @ts-ignore - Express 5.1.0 type compatibility issue
-router.post('/', authMiddleware, permissionMiddleware('admins', 'create'), createAdmin);
+router.post(
+  '/',
+  authMiddleware,
+  permissionMiddleware('admins', 'create'),
+  createAdmin
+);
 // @ts-ignore - Express 5.1.0 type compatibility issue
-router.put('/:id', authMiddleware, permissionMiddleware('admins', 'update'), updateAdmin);
+router.put(
+  '/:id',
+  authMiddleware,
+  permissionMiddleware('admins', 'update'),
+  updateAdmin
+);
 // @ts-ignore - Express 5.1.0 type compatibility issue
-router.delete('/:id', authMiddleware, permissionMiddleware('admins', 'delete'), deleteAdmin);
+router.delete(
+  '/:id',
+  authMiddleware,
+  permissionMiddleware('admins', 'delete'),
+  deleteAdmin
+);
 
-export default router; 
+export default router;

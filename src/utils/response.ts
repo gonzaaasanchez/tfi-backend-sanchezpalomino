@@ -7,27 +7,40 @@ export interface ApiResponse<T = any> {
 }
 
 export class ResponseHelper {
-  static success<T>(res: Response, message: string, data?: T, statusCode: number = 200): void {
+  static success<T>(
+    res: Response,
+    message: string,
+    data?: T,
+    statusCode: number = 200
+  ): void {
     const response: ApiResponse<T> = {
       success: true,
       message,
-      ...(data !== undefined && { data })
+      ...(data !== undefined && { data }),
     };
-    
+
     res.status(statusCode).json(response);
   }
 
-  static error(res: Response, message: string, statusCode: number = 400, data: any = null): void {
+  static error(
+    res: Response,
+    message: string,
+    statusCode: number = 400,
+    data: any = null
+  ): void {
     const response: ApiResponse = {
       success: false,
       message,
-      data
+      data,
     };
-    
+
     res.status(statusCode).json(response);
   }
 
-  static notFound(res: Response, message: string = 'Recurso no encontrado'): void {
+  static notFound(
+    res: Response,
+    message: string = 'Recurso no encontrado'
+  ): void {
     this.error(res, message, 404);
   }
 
@@ -43,7 +56,10 @@ export class ResponseHelper {
     this.error(res, message, 400);
   }
 
-  static serverError(res: Response, message: string = 'Error interno del servidor'): void {
+  static serverError(
+    res: Response,
+    message: string = 'Error interno del servidor'
+  ): void {
     this.error(res, message, 500);
   }
-} 
+}

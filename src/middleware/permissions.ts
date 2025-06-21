@@ -17,7 +17,10 @@ declare global {
 export type Action = 'create' | 'read' | 'update' | 'delete' | 'getAll';
 
 // Middleware de permisos
-export const permissionMiddleware = (resource: string, action: 'create' | 'read' | 'update' | 'delete' | 'getAll') => {
+export const permissionMiddleware = (
+  resource: string,
+  action: 'create' | 'read' | 'update' | 'delete' | 'getAll'
+) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       if (!req.user) {
@@ -25,28 +28,35 @@ export const permissionMiddleware = (resource: string, action: 'create' | 'read'
       }
 
       let userWithRole;
-      
+
       // Verificar si es un admin o un usuario regular
       if (req.user.type === 'admin') {
         userWithRole = await Admin.findById(req.user._id).populate('role');
       } else {
         userWithRole = await User.findById(req.user._id).populate('role');
       }
-      
+
       if (!userWithRole || !userWithRole.role) {
         return ResponseHelper.forbidden(res, 'Usuario sin rol asignado');
       }
 
       const role = userWithRole.role as any;
-      
+
       // Superadmin tiene acceso completo
       if (role.name === 'superadmin') {
         return next();
       }
 
       // Verificar si el usuario tiene el permiso requerido
-      if (!role.permissions || !role.permissions[resource] || !role.permissions[resource][action]) {
-        return ResponseHelper.forbidden(res, `No tienes permisos para ${action} en ${resource}`);
+      if (
+        !role.permissions ||
+        !role.permissions[resource] ||
+        !role.permissions[resource][action]
+      ) {
+        return ResponseHelper.forbidden(
+          res,
+          `No tienes permisos para ${action} en ${resource}`
+        );
       }
 
       next();
@@ -55,4 +65,4 @@ export const permissionMiddleware = (resource: string, action: 'create' | 'read'
       ResponseHelper.serverError(res, 'Error al verificar permisos');
     }
   };
-}; 
+};

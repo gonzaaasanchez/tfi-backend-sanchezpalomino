@@ -39,7 +39,7 @@ export const errorHandler = (
     url: req.url,
     method: req.method,
     body: req.body,
-    user: req.user?.email || 'No autenticado'
+    user: req.user?.email || 'No autenticado',
   });
 
   // Error de Mongoose - ID inválido
@@ -50,7 +50,9 @@ export const errorHandler = (
 
   // Error de Mongoose - Validación
   if (err.name === 'ValidationError') {
-    const message = Object.values((err as any).errors).map((val: any) => val.message).join(', ');
+    const message = Object.values((err as any).errors)
+      .map((val: any) => val.message)
+      .join(', ');
     error = new CustomError(message, 400);
   }
 
@@ -76,8 +78,11 @@ export const errorHandler = (
   // Respuesta de error usando el nuevo formato
   const statusCode = error.statusCode || 500;
   const message = error.message || 'Error interno del servidor';
-  
-  ResponseHelper.error(res, message, statusCode, 
+
+  ResponseHelper.error(
+    res,
+    message,
+    statusCode,
     process.env.NODE_ENV === 'development' ? { stack: err.stack } : null
   );
 };
@@ -89,4 +94,4 @@ export const asyncHandler = <T extends Request = Request>(
   return (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req as T, res, next)).catch(next);
   };
-}; 
+};

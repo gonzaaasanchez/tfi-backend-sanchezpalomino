@@ -26,17 +26,20 @@ function getLogModel(entityName: string): mongoose.Model<IAuditLog> {
   }
 
   // Crear el esquema de log
-  const logSchema = new Schema({
-    userId: { type: String, required: true },
-    userName: { type: String, required: true },
-    entityId: { type: String, required: true },
-    field: { type: String, required: true },
-    oldValue: Schema.Types.Mixed,
-    newValue: Schema.Types.Mixed,
-    timestamp: { type: Date, default: Date.now }
-  }, {
-    collection: `${entityName.toLowerCase()}logs`
-  });
+  const logSchema = new Schema(
+    {
+      userId: { type: String, required: true },
+      userName: { type: String, required: true },
+      entityId: { type: String, required: true },
+      field: { type: String, required: true },
+      oldValue: Schema.Types.Mixed,
+      newValue: Schema.Types.Mixed,
+      timestamp: { type: Date, default: Date.now },
+    },
+    {
+      collection: `${entityName.toLowerCase()}logs`,
+    }
+  );
 
   // Crear índices para optimizar consultas
   logSchema.index({ entityId: 1 });
@@ -45,10 +48,10 @@ function getLogModel(entityName: string): mongoose.Model<IAuditLog> {
 
   // Crear el modelo
   const LogModel = mongoose.model<IAuditLog>(`${entityName}Log`, logSchema);
-  
+
   // Guardar en cache
   logModelsCache.set(entityName, LogModel);
-  
+
   return LogModel;
 }
 
@@ -73,7 +76,7 @@ export async function logChange(
 ): Promise<void> {
   try {
     const LogModel = getLogModel(entityName);
-    
+
     await LogModel.create({
       userId,
       userName,
@@ -81,7 +84,7 @@ export async function logChange(
       field,
       oldValue,
       newValue,
-      timestamp: new Date()
+      timestamp: new Date(),
     });
   } catch (error) {
     console.error('Error al registrar cambio:', error);
@@ -102,21 +105,21 @@ export async function logChanges(
   userId: string,
   userName: string,
   entityId: string,
-  changes: Array<{field: string, oldValue: any, newValue: any}>
+  changes: Array<{ field: string; oldValue: any; newValue: any }>
 ): Promise<void> {
   try {
     const LogModel = getLogModel(entityName);
-    
-    const logs = changes.map(change => ({
+
+    const logs = changes.map((change) => ({
       userId,
       userName,
       entityId,
       field: change.field,
       oldValue: change.oldValue,
       newValue: change.newValue,
-      timestamp: new Date()
+      timestamp: new Date(),
     }));
-    
+
     await LogModel.insertMany(logs);
   } catch (error) {
     console.error('Error al registrar cambios:', error);
@@ -136,10 +139,8 @@ export async function getEntityHistory(
 ): Promise<IAuditLog[]> {
   try {
     const LogModel = getLogModel(entityName);
-    
-    return await LogModel.find({ entityId })
-      .sort({ timestamp: -1 })
-      .lean();
+
+    return await LogModel.find({ entityId }).sort({ timestamp: -1 }).lean();
   } catch (error) {
     console.error('Error al obtener historial:', error);
     return [];
@@ -163,36 +164,36 @@ export async function getEntityLogs(
     limit?: number;
     skip?: number;
   } = {}
-): Promise<{logs: IAuditLog[], total: number}> {
+): Promise<{ logs: IAuditLog[]; total: number }> {
   try {
     const LogModel = getLogModel(entityName);
-    
+
     const query: any = {};
-    
+
     if (filters.userId) query.userId = filters.userId;
     if (filters.entityId) query.entityId = filters.entityId;
     if (filters.field) query.field = filters.field;
-    
+
     if (filters.startDate || filters.endDate) {
       query.timestamp = {};
       if (filters.startDate) query.timestamp.$gte = filters.startDate;
       if (filters.endDate) query.timestamp.$lte = filters.endDate;
     }
-    
+
     const limit = filters.limit || 50;
     const skip = filters.skip || 0;
-    
+
     const logs = await LogModel.find(query)
       .sort({ timestamp: -1 })
       .limit(limit)
       .skip(skip)
       .lean();
-    
+
     const total = await LogModel.countDocuments(query);
-    
+
     return { logs, total };
   } catch (error) {
     console.error('Error al obtener logs:', error);
     return { logs: [], total: 0 };
   }
-} 
+}

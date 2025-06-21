@@ -19,7 +19,10 @@ const register: RequestHandler = async (req, res, next) => {
     }
 
     if (password.length < 6) {
-      ResponseHelper.validationError(res, 'La contraseña debe tener al menos 6 caracteres');
+      ResponseHelper.validationError(
+        res,
+        'La contraseña debe tener al menos 6 caracteres'
+      );
       return;
     }
 
@@ -32,7 +35,10 @@ const register: RequestHandler = async (req, res, next) => {
     // Obtener el rol 'user' por defecto
     const userRole = await Role.findOne({ name: 'user' });
     if (!userRole) {
-      ResponseHelper.serverError(res, 'Error interno: Rol de usuario no encontrado');
+      ResponseHelper.serverError(
+        res,
+        'Error interno: Rol de usuario no encontrado'
+      );
       return;
     }
 
@@ -44,7 +50,7 @@ const register: RequestHandler = async (req, res, next) => {
       email,
       password: hashedPassword,
       phoneNumber,
-      role: userRole._id
+      role: userRole._id,
     });
 
     await user.save();
@@ -57,12 +63,17 @@ const register: RequestHandler = async (req, res, next) => {
       { field: 'firstName', oldValue: null, newValue: firstName },
       { field: 'lastName', oldValue: null, newValue: lastName },
       { field: 'email', oldValue: null, newValue: email },
-      { field: 'phoneNumber', oldValue: null, newValue: phoneNumber }
+      { field: 'phoneNumber', oldValue: null, newValue: phoneNumber },
     ]);
 
-    ResponseHelper.success(res, 'Usuario registrado exitosamente', {
-      user: user.toJSON(),
-    }, 201);
+    ResponseHelper.success(
+      res,
+      'Usuario registrado exitosamente',
+      {
+        user: user.toJSON(),
+      },
+      201
+    );
   } catch (error) {
     next(error);
   }
@@ -109,7 +120,7 @@ const getProfile: RequestHandler = async (req, res, next) => {
   try {
     // Populate role para incluir información del rol
     await req.user.populate('role');
-    
+
     ResponseHelper.success(res, 'Perfil obtenido exitosamente', {
       user: req.user.toJSON(),
     });

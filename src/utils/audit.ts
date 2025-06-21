@@ -25,20 +25,23 @@ export async function logChange(
   try {
     // Obtener o crear el modelo de log para esta entidad
     let LogModel = logModelsCache.get(entityName);
-    
+
     if (!LogModel) {
       // Crear el esquema de log
-      const logSchema = new Schema({
-        userId: { type: String, required: true },
-        userName: { type: String, required: true },
-        entityId: { type: String, required: true },
-        field: { type: String, required: true },
-        oldValue: Schema.Types.Mixed,
-        newValue: Schema.Types.Mixed,
-        timestamp: { type: Date, default: Date.now }
-      }, {
-        collection: `${entityName.toLowerCase()}logs`
-      });
+      const logSchema = new Schema(
+        {
+          userId: { type: String, required: true },
+          userName: { type: String, required: true },
+          entityId: { type: String, required: true },
+          field: { type: String, required: true },
+          oldValue: Schema.Types.Mixed,
+          newValue: Schema.Types.Mixed,
+          timestamp: { type: Date, default: Date.now },
+        },
+        {
+          collection: `${entityName.toLowerCase()}logs`,
+        }
+      );
 
       // Crear índices
       logSchema.index({ entityId: 1 });
@@ -57,7 +60,7 @@ export async function logChange(
       field,
       oldValue,
       newValue,
-      timestamp: new Date()
+      timestamp: new Date(),
     });
   } catch (error) {
     console.error('Error al registrar cambio:', error);
@@ -78,9 +81,17 @@ export async function logChanges(
   entityId: string,
   userId: string,
   userName: string,
-  changes: Array<{field: string, oldValue: any, newValue: any}>
+  changes: Array<{ field: string; oldValue: any; newValue: any }>
 ): Promise<void> {
   for (const change of changes) {
-    await logChange(entityName, entityId, userId, userName, change.field, change.oldValue, change.newValue);
+    await logChange(
+      entityName,
+      entityId,
+      userId,
+      userName,
+      change.field,
+      change.oldValue,
+      change.newValue
+    );
   }
-} 
+}

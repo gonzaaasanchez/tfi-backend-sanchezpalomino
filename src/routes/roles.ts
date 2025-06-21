@@ -26,7 +26,7 @@ const getRole: RequestHandler = async (req, res, next) => {
       ResponseHelper.notFound(res, 'Rol no encontrado');
       return;
     }
-    
+
     ResponseHelper.success(res, 'Rol obtenido exitosamente', role);
   } catch (error) {
     next(error);
@@ -39,13 +39,24 @@ const createRole: RequestHandler = async (req, res, next) => {
     const { name, description, permissions } = req.body;
 
     if (!name || !description) {
-      ResponseHelper.validationError(res, 'Nombre y descripción son requeridos');
+      ResponseHelper.validationError(
+        res,
+        'Nombre y descripción son requeridos'
+      );
       return;
     }
 
     // Validar que se envíen todos los permisos
-    if (!permissions || !permissions.users || !permissions.roles || !permissions.admins) {
-      ResponseHelper.validationError(res, 'Se requieren todos los permisos: users, roles y admins');
+    if (
+      !permissions ||
+      !permissions.users ||
+      !permissions.roles ||
+      !permissions.admins
+    ) {
+      ResponseHelper.validationError(
+        res,
+        'Se requieren todos los permisos: users, roles y admins'
+      );
       return;
     }
 
@@ -58,7 +69,10 @@ const createRole: RequestHandler = async (req, res, next) => {
 
     // No permitir crear roles del sistema
     if (['superadmin', 'user'].includes(name)) {
-      ResponseHelper.validationError(res, 'No se pueden crear roles del sistema');
+      ResponseHelper.validationError(
+        res,
+        'No se pueden crear roles del sistema'
+      );
       return;
     }
 
@@ -66,19 +80,21 @@ const createRole: RequestHandler = async (req, res, next) => {
       name,
       description,
       permissions,
-      isSystem: false
+      isSystem: false,
     });
 
     const savedRole = await newRole.save();
-    
+
     // Log de creación
-    const userName = req.user ? `${req.user.firstName} ${req.user.lastName}` : 'Sistema';
+    const userName = req.user
+      ? `${req.user.firstName} ${req.user.lastName}`
+      : 'Sistema';
     const userId = req.user?._id?.toString() || 'system';
     logChanges('Role', savedRole._id?.toString() || '', userId, userName, [
       { field: 'name', oldValue: null, newValue: name },
-      { field: 'description', oldValue: null, newValue: description }
+      { field: 'description', oldValue: null, newValue: description },
     ]);
-    
+
     ResponseHelper.success(res, 'Rol creado exitosamente', savedRole, 201);
   } catch (error) {
     next(error);
@@ -99,20 +115,25 @@ const updateRole: RequestHandler = async (req, res, next) => {
 
     // No permitir modificar roles del sistema
     if (role.isSystem) {
-      ResponseHelper.validationError(res, 'No se puede modificar roles del sistema');
+      ResponseHelper.validationError(
+        res,
+        'No se puede modificar roles del sistema'
+      );
       return;
     }
-    
+
     // Detectar cambios antes de actualizar
     const changes = getChanges(role, updateData);
 
     // Actualizar el documento
     Object.assign(role, updateData);
     await role.save();
-    
+
     // Si hubo cambios, registrarlos
     if (changes.length > 0) {
-      const userName = req.user ? `${req.user.firstName} ${req.user.lastName}` : 'Sistema';
+      const userName = req.user
+        ? `${req.user.firstName} ${req.user.lastName}`
+        : 'Sistema';
       const userId = req.user?._id?.toString() || 'system';
       logChanges('Role', roleId, userId, userName, changes);
     }
@@ -134,19 +155,24 @@ const deleteRole: RequestHandler = async (req, res, next) => {
 
     // No permitir eliminar roles del sistema
     if (role.isSystem) {
-      ResponseHelper.validationError(res, 'No se puede eliminar roles del sistema');
+      ResponseHelper.validationError(
+        res,
+        'No se puede eliminar roles del sistema'
+      );
       return;
     }
 
     // Log de eliminación
-    const userName = req.user ? `${req.user.firstName} ${req.user.lastName}` : 'Sistema';
+    const userName = req.user
+      ? `${req.user.firstName} ${req.user.lastName}`
+      : 'Sistema';
     const userId = req.user?._id?.toString() || 'system';
     logChanges('Role', req.params.id, userId, userName, [
-      { field: 'deleted', oldValue: false, newValue: true }
+      { field: 'deleted', oldValue: false, newValue: true },
     ]);
 
     await Role.findByIdAndDelete(req.params.id);
-    
+
     ResponseHelper.success(res, 'Rol eliminado exitosamente');
   } catch (error) {
     next(error);
@@ -155,14 +181,39 @@ const deleteRole: RequestHandler = async (req, res, next) => {
 
 // Rutas con middleware de autenticación y permisos
 // @ts-ignore - Express 5.1.0 type compatibility issue
-router.get('/', authMiddleware, permissionMiddleware('roles', 'getAll'), getRoles);
+router.get(
+  '/',
+  authMiddleware,
+  permissionMiddleware('roles', 'getAll'),
+  getRoles
+);
 // @ts-ignore - Express 5.1.0 type compatibility issue
-router.get('/:id', authMiddleware, permissionMiddleware('roles', 'read'), getRole);
+router.get(
+  '/:id',
+  authMiddleware,
+  permissionMiddleware('roles', 'read'),
+  getRole
+);
 // @ts-ignore - Express 5.1.0 type compatibility issue
-router.post('/', authMiddleware, permissionMiddleware('roles', 'create'), createRole);
+router.post(
+  '/',
+  authMiddleware,
+  permissionMiddleware('roles', 'create'),
+  createRole
+);
 // @ts-ignore - Express 5.1.0 type compatibility issue
-router.put('/:id', authMiddleware, permissionMiddleware('roles', 'update'), updateRole);
+router.put(
+  '/:id',
+  authMiddleware,
+  permissionMiddleware('roles', 'update'),
+  updateRole
+);
 // @ts-ignore - Express 5.1.0 type compatibility issue
-router.delete('/:id', authMiddleware, permissionMiddleware('roles', 'delete'), deleteRole);
+router.delete(
+  '/:id',
+  authMiddleware,
+  permissionMiddleware('roles', 'delete'),
+  deleteRole
+);
 
-export default router; 
+export default router;

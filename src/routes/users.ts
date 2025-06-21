@@ -25,7 +25,6 @@ const getMyProfile: RequestHandler = async (req, res, next) => {
     }
 
     ResponseHelper.success(res, 'Perfil obtenido exitosamente', user);
-
   } catch (error) {
     next(error);
   }
@@ -41,7 +40,7 @@ const updateMyProfile: RequestHandler = async (req, res, next) => {
     }
 
     const updateData = req.body;
-    
+
     // Prevenir que el usuario modifique campos sensibles
     delete updateData.role;
     delete updateData._id;
@@ -55,30 +54,41 @@ const updateMyProfile: RequestHandler = async (req, res, next) => {
       ResponseHelper.notFound(res, 'Usuario no encontrado');
       return;
     }
-    
+
     // Detectar cambios antes de actualizar
     const changes = getChanges(user, updateData);
 
     // Actualizar el documento sin populate para evitar problemas con roles
-    const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true });
-    
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
+      new: true,
+    });
+
     if (!updatedUser) {
       ResponseHelper.notFound(res, 'Usuario no encontrado');
       return;
     }
-    
+
     // Si hubo cambios, registrarlos
     if (changes.length > 0) {
       const userName = `${req.user.firstName} ${req.user.lastName}`;
-      logChanges('User', userId.toString(), userId.toString(), userName, changes);
+      logChanges(
+        'User',
+        userId.toString(),
+        userId.toString(),
+        userName,
+        changes
+      );
     }
 
     // Convertir a objeto y eliminar campos sensibles
     const userResponse = updatedUser.toObject();
     const { password, avatarBuffer, ...safeUserResponse } = userResponse;
 
-    ResponseHelper.success(res, 'Perfil actualizado exitosamente', safeUserResponse);
-
+    ResponseHelper.success(
+      res,
+      'Perfil actualizado exitosamente',
+      safeUserResponse
+    );
   } catch (error) {
     next(error);
   }
@@ -92,9 +102,9 @@ const updateMyAvatar: RequestHandler = async (req, res, next) => {
       ResponseHelper.unauthorized(res);
       return;
     }
-    
+
     const updateData: any = {};
-    
+
     // Si hay una imagen en el request, guardar buffer y generar URL
     if (req.file) {
       updateData.avatar = `/api/users/${userId}/avatar`;
@@ -110,21 +120,28 @@ const updateMyAvatar: RequestHandler = async (req, res, next) => {
       ResponseHelper.notFound(res, 'Usuario no encontrado');
       return;
     }
-    
+
     // Detectar cambios antes de actualizar
     const changes = getChanges(user, updateData);
 
     // Actualizar el documento
-    const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true }).populate('role');
-    
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
+      new: true,
+    }).populate('role');
+
     // Si hubo cambios, registrarlos
     if (changes.length > 0) {
       const userName = `${req.user.firstName} ${req.user.lastName}`;
-      logChanges('User', userId.toString(), userId.toString(), userName, changes);
+      logChanges(
+        'User',
+        userId.toString(),
+        userId.toString(),
+        userName,
+        changes
+      );
     }
 
     ResponseHelper.success(res, 'Avatar actualizado exitosamente', updatedUser);
-
   } catch (error) {
     next(error);
   }
@@ -141,22 +158,29 @@ const updateUser: RequestHandler = async (req, res, next) => {
       ResponseHelper.notFound(res, 'Usuario no encontrado');
       return;
     }
-    
+
     // Detectar cambios antes de actualizar
     const changes = getChanges(user, updateData);
 
     // Actualizar el documento directamente en la BD sin correr todos los validadores
-    const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true });
-    
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
+      new: true,
+    });
+
     // Si hubo cambios, registrarlos
     if (changes.length > 0) {
-      const userName = req.user ? `${req.user.firstName} ${req.user.lastName}` : 'Sistema';
+      const userName = req.user
+        ? `${req.user.firstName} ${req.user.lastName}`
+        : 'Sistema';
       const userIdPerformingAction = req.user?._id?.toString() || 'system';
       logChanges('User', userId, userIdPerformingAction, userName, changes);
     }
 
-    ResponseHelper.success(res, 'Usuario actualizado exitosamente', updatedUser);
-
+    ResponseHelper.success(
+      res,
+      'Usuario actualizado exitosamente',
+      updatedUser
+    );
   } catch (error) {
     next(error);
   }
@@ -166,22 +190,21 @@ const updateUser: RequestHandler = async (req, res, next) => {
 const getAvatar: RequestHandler = async (req, res, next) => {
   try {
     const userId = req.params.id;
-    
+
     const user = await User.findById(userId);
     if (!user) {
       ResponseHelper.notFound(res, 'Usuario no encontrado');
       return;
     }
-    
+
     if (!user.avatarBuffer || !user.avatarContentType) {
       ResponseHelper.notFound(res, 'Avatar no encontrado');
       return;
     }
-    
+
     // Establecer el tipo de contenido y enviar el buffer
     res.set('Content-Type', user.avatarContentType);
     res.send(user.avatarBuffer);
-    
   } catch (error) {
     next(error);
   }
@@ -202,8 +225,11 @@ const getOneUser: RequestHandler = async (req, res, next) => {
     const userResponse = user.toObject();
     const { password, avatarBuffer, ...safeUserResponse } = userResponse;
 
-    ResponseHelper.success(res, 'Usuario obtenido exitosamente', safeUserResponse);
-
+    ResponseHelper.success(
+      res,
+      'Usuario obtenido exitosamente',
+      safeUserResponse
+    );
   } catch (error) {
     next(error);
   }
@@ -218,14 +244,14 @@ const getAllUsers: RequestHandler = async (req, res, next) => {
 
     // Construir filtros opcionales
     const filters: any = {};
-    
+
     if (req.query.search) {
       const searchRegex = new RegExp(req.query.search as string, 'i');
       filters.$or = [
         { firstName: searchRegex },
         { lastName: searchRegex },
         { email: searchRegex },
-        { phoneNumber: searchRegex }
+        { phoneNumber: searchRegex },
       ];
     }
 
@@ -245,7 +271,7 @@ const getAllUsers: RequestHandler = async (req, res, next) => {
     const totalPages = Math.ceil(totalUsers / limit);
 
     // Eliminar campos sensibles de cada usuario
-    const safeUsers = users.map(user => {
+    const safeUsers = users.map((user) => {
       const userObj = user.toObject();
       const { password, avatarBuffer, ...safeUser } = userObj;
       return safeUser;
@@ -259,10 +285,9 @@ const getAllUsers: RequestHandler = async (req, res, next) => {
         totalUsers,
         totalPages,
         hasNextPage: page < totalPages,
-        hasPrevPage: page > 1
-      }
+        hasPrevPage: page > 1,
+      },
     });
-
   } catch (error) {
     next(error);
   }
@@ -272,14 +297,14 @@ const getAllUsers: RequestHandler = async (req, res, next) => {
 const updateUserAvatar: RequestHandler = async (req, res, next) => {
   try {
     const userId = req.params.id;
-    
+
     if (!userId) {
       ResponseHelper.validationError(res, 'ID de usuario requerido');
       return;
     }
-    
+
     const updateData: any = {};
-    
+
     // Si hay una imagen en el request, guardar buffer y generar URL
     if (req.file) {
       updateData.avatar = `/api/users/${userId}/avatar`;
@@ -295,22 +320,29 @@ const updateUserAvatar: RequestHandler = async (req, res, next) => {
       ResponseHelper.notFound(res, 'Usuario no encontrado');
       return;
     }
-    
+
     // Detectar cambios antes de actualizar
     const changes = getChanges(user, updateData);
 
     // Actualizar el documento
-    const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true }).populate('role');
-    
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
+      new: true,
+    }).populate('role');
+
     // Si hubo cambios, registrarlos
     if (changes.length > 0) {
-      const userName = req.user ? `${req.user.firstName} ${req.user.lastName}` : 'Sistema';
+      const userName = req.user
+        ? `${req.user.firstName} ${req.user.lastName}`
+        : 'Sistema';
       const userIdPerformingAction = req.user?._id?.toString() || 'system';
       logChanges('User', userId, userIdPerformingAction, userName, changes);
     }
 
-    ResponseHelper.success(res, 'Avatar del usuario actualizado exitosamente', updatedUser);
-
+    ResponseHelper.success(
+      res,
+      'Avatar del usuario actualizado exitosamente',
+      updatedUser
+    );
   } catch (error) {
     next(error);
   }
@@ -319,18 +351,46 @@ const updateUserAvatar: RequestHandler = async (req, res, next) => {
 // Rutas para el usuario autenticado (sin permisos especiales) - DEBEN IR PRIMERO
 router.get('/me', authMiddleware, getMyProfile);
 router.put('/me', authMiddleware, updateMyProfile);
-router.put('/me/avatar', authMiddleware, uploadImage.single('avatar'), handleUploadError, updateMyAvatar);
+router.put(
+  '/me/avatar',
+  authMiddleware,
+  uploadImage.single('avatar'),
+  handleUploadError,
+  updateMyAvatar
+);
 
 // Rutas para admins (con permisos) - DEBEN IR DESPUÉS
 // @ts-ignore
-router.get('/', authMiddleware, permissionMiddleware('users', 'getAll'), getAllUsers);
+router.get(
+  '/',
+  authMiddleware,
+  permissionMiddleware('users', 'getAll'),
+  getAllUsers
+);
 // @ts-ignore
 router.get('/:id/avatar', getAvatar);
 // @ts-ignore
-router.get('/:id', authMiddleware, permissionMiddleware('users', 'read'), getOneUser);
+router.get(
+  '/:id',
+  authMiddleware,
+  permissionMiddleware('users', 'read'),
+  getOneUser
+);
 // @ts-ignore
-router.put('/:id', authMiddleware, permissionMiddleware('users', 'update'), updateUser);
+router.put(
+  '/:id',
+  authMiddleware,
+  permissionMiddleware('users', 'update'),
+  updateUser
+);
 // @ts-ignore
-router.put('/:id/avatar', authMiddleware, permissionMiddleware('users', 'update'), uploadImage.single('avatar'), handleUploadError, updateUserAvatar);
+router.put(
+  '/:id/avatar',
+  authMiddleware,
+  permissionMiddleware('users', 'update'),
+  uploadImage.single('avatar'),
+  handleUploadError,
+  updateUserAvatar
+);
 
-export default router; 
+export default router;
