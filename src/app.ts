@@ -7,6 +7,8 @@ import morgan from 'morgan';
 import authRoutes from './routes/auth';
 import rolesRoutes from './routes/roles';
 import adminsRoutes from './routes/admins';
+import logsRoutes from './routes/logs';
+import usersRoutes from './routes/users';
 import { errorHandler } from './middleware/errorHandler';
 
 // Cargar variables de entorno
@@ -26,6 +28,8 @@ app.use(morgan('dev'));
 app.use('/auth', authRoutes);
 app.use('/roles', rolesRoutes);
 app.use('/admins', adminsRoutes);
+app.use('/logs', logsRoutes);
+app.use('/users', usersRoutes);
 
 // Ruta de prueba
 app.get('/', (req, res) => {

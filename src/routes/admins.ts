@@ -4,6 +4,8 @@ import Role from '../models/Role';
 import { hashPassword, verifyPassword, generateToken } from '../utils/auth';
 import { authMiddleware } from '../middleware/auth';
 import { permissionMiddleware } from '../middleware/permissions';
+import { logChanges } from '../utils/audit';
+import { getChanges } from '../utils/changeDetector';
 
 const router = Router();
 
@@ -127,6 +129,15 @@ const createAdmin: RequestHandler = async (req, res, next) => {
     // Populate role para la respuesta
     await admin.populate('role');
 
+    // Log de creación
+    const userName = req.user ? `${req.user.firstName} ${req.user.lastName}` : 'Sistema';
+    const userId = req.user?._id?.toString() || 'system';
+    logChanges('Admin', admin._id?.toString() ?? '', userId, userName, [
+      { field: 'firstName', oldValue: null, newValue: firstName },
+      { field: 'lastName', oldValue: null, newValue: lastName },
+      { field: 'email', oldValue: null, newValue: email }
+    ]);
+
     res.status(201).json({
       success: true,
       message: 'Admin creado exitosamente',
@@ -196,49 +207,53 @@ const getAdmin: RequestHandler = async (req, res, next) => {
 // PUT /admins/:id - Actualizar admin
 const updateAdmin: RequestHandler = async (req, res, next) => {
   try {
-    const { firstName, lastName, email, roleId } = req.body;
+    const adminId = req.params.id;
+    const updateData = req.body;
 
-    const admin = await Admin.findById(req.params.id);
+    const admin = await Admin.findById(adminId);
     if (!admin) {
-      res.status(404).json({
-        success: false,
-        message: 'Admin no encontrado'
-      });
+      res.status(404).json({ success: false, message: 'Admin no encontrado' });
       return;
     }
 
-    // Verificar que el rol existe si se está actualizando
-    if (roleId) {
-      const role = await Role.findById(roleId);
+    // Si se actualiza el rol, verificar que existe y no es de sistema
+    if (updateData.roleId) {
+      const role = await Role.findById(updateData.roleId);
       if (!role) {
-        res.status(400).json({
-          success: false,
-          message: 'Rol no encontrado'
-        });
+        res.status(400).json({ success: false, message: 'Rol no encontrado' });
         return;
       }
-
-      // Solo permitir asignar roles que no sean del sistema (user y superadmin)
       if (role.isSystem) {
-        res.status(400).json({
-          success: false,
-          message: 'No se puede asignar roles del sistema a un admin'
-        });
+        res.status(400).json({ success: false, message: 'No se puede asignar roles del sistema a un admin' });
         return;
       }
+      // Renombrar roleId a role para que coincida con el schema
+      updateData.role = updateData.roleId;
+      delete updateData.roleId;
     }
+    
+    // Detectar cambios antes de actualizar
+    const changes = getChanges(admin, updateData);
 
-    const updatedAdmin = await Admin.findByIdAndUpdate(
-      req.params.id,
-      { firstName, lastName, email, role: roleId },
-      { new: true, runValidators: true }
-    ).populate('role').select('-password');
+    // Actualizar el documento
+    Object.assign(admin, updateData);
+    await admin.save();
+    
+    // Si hubo cambios, registrarlos
+    if (changes.length > 0) {
+      const userName = req.user ? `${req.user.firstName} ${req.user.lastName}` : 'Sistema';
+      const userId = req.user?._id?.toString() || 'system';
+      logChanges('Admin', adminId, userId, userName, changes);
+    }
+    
+    await admin.populate('role');
 
     res.json({
       success: true,
       message: 'Admin actualizado exitosamente',
-      data: updatedAdmin
+      data: admin.toJSON(),
     });
+
   } catch (error) {
     next(error);
   }
@@ -255,6 +270,13 @@ const deleteAdmin: RequestHandler = async (req, res, next) => {
       });
       return;
     }
+
+    // Log de eliminación
+    const userName = req.user ? `${req.user.firstName} ${req.user.lastName}` : 'Sistema';
+    const userId = req.user?._id?.toString() || 'system';
+    logChanges('Admin', req.params.id, userId, userName, [
+      { field: 'deleted', oldValue: false, newValue: true }
+    ]);
 
     await Admin.findByIdAndDelete(req.params.id);
     

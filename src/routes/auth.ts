@@ -3,6 +3,7 @@ import User from '../models/User';
 import Role from '../models/Role';
 import { hashPassword, verifyPassword, generateToken } from '../utils/auth';
 import { authMiddleware } from '../middleware/auth';
+import { logChanges } from '../utils/audit';
 
 const router = Router();
 
@@ -60,6 +61,13 @@ const register: RequestHandler = async (req, res, next) => {
 
     // Populate role para la respuesta
     await user.populate('role');
+
+    // Log de creación
+    logChanges('User', user._id?.toString() || '', 'system', 'Sistema', [
+      { field: 'firstName', oldValue: null, newValue: firstName },
+      { field: 'lastName', oldValue: null, newValue: lastName },
+      { field: 'email', oldValue: null, newValue: email }
+    ]);
 
     res.status(201).json({
       success: true,

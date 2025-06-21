@@ -25,6 +25,10 @@ export interface IRole extends Document {
       delete: boolean;
       getAll: boolean;
     };
+    logs: {
+      read: boolean;
+      getAll: boolean;
+    };
   };
   isSystem: boolean;
   createdAt: Date;
@@ -61,6 +65,10 @@ const RoleSchema = new Schema<IRole>({
       read: { type: Boolean, default: false },
       update: { type: Boolean, default: false },
       delete: { type: Boolean, default: false },
+      getAll: { type: Boolean, default: false }
+    },
+    logs: {
+      read: { type: Boolean, default: false },
       getAll: { type: Boolean, default: false }
     }
   },

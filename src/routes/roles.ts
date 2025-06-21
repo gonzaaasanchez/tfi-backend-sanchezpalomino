@@ -2,6 +2,8 @@ import { Router, RequestHandler } from 'express';
 import Role from '../models/Role';
 import { authMiddleware } from '../middleware/auth';
 import { permissionMiddleware } from '../middleware/permissions';
+import { logChanges } from '../utils/audit';
+import { getChanges } from '../utils/changeDetector';
 
 const router = Router();
 
@@ -91,6 +93,14 @@ const createRole: RequestHandler = async (req, res, next) => {
 
     const savedRole = await newRole.save();
     
+    // Log de creación
+    const userName = req.user ? `${req.user.firstName} ${req.user.lastName}` : 'Sistema';
+    const userId = req.user?._id?.toString() || 'system';
+    logChanges('Role', savedRole._id?.toString() || '', userId, userName, [
+      { field: 'name', oldValue: null, newValue: name },
+      { field: 'description', oldValue: null, newValue: description }
+    ]);
+    
     res.status(201).json({
       success: true,
       message: 'Rol creado exitosamente',
@@ -104,36 +114,39 @@ const createRole: RequestHandler = async (req, res, next) => {
 // PUT /roles/:id - Actualizar rol
 const updateRole: RequestHandler = async (req, res, next) => {
   try {
-    const { name, description, permissions } = req.body;
+    const roleId = req.params.id;
+    const updateData = req.body;
 
-    const role = await Role.findById(req.params.id);
+    const role = await Role.findById(roleId);
     if (!role) {
-      res.status(404).json({
-        success: false,
-        message: 'Rol no encontrado'
-      });
+      res.status(404).json({ success: false, message: 'Rol no encontrado' });
       return;
     }
 
     // No permitir modificar roles del sistema
     if (role.isSystem) {
-      res.status(400).json({
-        success: false,
-        message: 'No se puede modificar roles del sistema'
-      });
+      res.status(400).json({ success: false, message: 'No se puede modificar roles del sistema' });
       return;
     }
+    
+    // Detectar cambios antes de actualizar
+    const changes = getChanges(role, updateData);
 
-    const updatedRole = await Role.findByIdAndUpdate(
-      req.params.id,
-      { name, description, permissions },
-      { new: true, runValidators: true }
-    ).select('-__v');
+    // Actualizar el documento
+    Object.assign(role, updateData);
+    await role.save();
+    
+    // Si hubo cambios, registrarlos
+    if (changes.length > 0) {
+      const userName = req.user ? `${req.user.firstName} ${req.user.lastName}` : 'Sistema';
+      const userId = req.user?._id?.toString() || 'system';
+      logChanges('Role', roleId, userId, userName, changes);
+    }
 
     res.json({
       success: true,
       message: 'Rol actualizado exitosamente',
-      data: updatedRole
+      data: role.toJSON(),
     });
   } catch (error) {
     next(error);
@@ -160,6 +173,13 @@ const deleteRole: RequestHandler = async (req, res, next) => {
       });
       return;
     }
+
+    // Log de eliminación
+    const userName = req.user ? `${req.user.firstName} ${req.user.lastName}` : 'Sistema';
+    const userId = req.user?._id?.toString() || 'system';
+    logChanges('Role', req.params.id, userId, userName, [
+      { field: 'deleted', oldValue: false, newValue: true }
+    ]);
 
     await Role.findByIdAndDelete(req.params.id);
     
