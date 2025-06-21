@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { verifyToken, JWTPayload } from '../utils/auth';
 import User from '../models/User';
 import Admin from '../models/Admin';
+import { ResponseHelper } from '../utils/response';
 
 // Extender la interfaz Request para incluir el usuario
 declare global {
@@ -18,10 +19,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     const authHeader = req.headers.authorization;
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Token de acceso requerido' 
-      });
+      return ResponseHelper.unauthorized(res, 'Token de acceso requerido');
     }
 
     // Extraer el token (remover "Bearer ")
@@ -39,10 +37,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     }
     
     if (!user) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Usuario no encontrado' 
-      });
+      return ResponseHelper.unauthorized(res, 'Usuario no encontrado');
     }
 
     // Agregar el usuario al request
@@ -53,9 +48,6 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     next();
 
   } catch (error) {
-    return res.status(401).json({ 
-      success: false, 
-      message: 'Token inválido o expirado' 
-    });
+    return ResponseHelper.unauthorized(res, 'Token inválido o expirado');
   }
 }; 

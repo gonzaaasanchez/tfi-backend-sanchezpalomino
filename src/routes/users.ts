@@ -5,6 +5,7 @@ import { permissionMiddleware } from '../middleware/permissions';
 import { logChanges } from '../utils/audit';
 import { getChanges } from '../utils/changeDetector';
 import { uploadImage, handleUploadError } from '../middleware/upload';
+import { ResponseHelper } from '../utils/response';
 
 const router = Router();
 
@@ -16,7 +17,7 @@ const updateUser: RequestHandler = async (req, res, next) => {
 
     const user = await User.findById(userId);
     if (!user) {
-      res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+      ResponseHelper.notFound(res, 'Usuario no encontrado');
       return;
     }
     
@@ -33,11 +34,7 @@ const updateUser: RequestHandler = async (req, res, next) => {
       logChanges('User', userId, userIdPerformingAction, userName, changes);
     }
 
-    res.json({
-      success: true,
-      message: 'Usuario actualizado exitosamente',
-      data: updatedUser,
-    });
+    ResponseHelper.success(res, 'Usuario actualizado exitosamente', updatedUser);
 
   } catch (error) {
     next(error);
@@ -49,7 +46,7 @@ const updateAvatar: RequestHandler = async (req, res, next) => {
   try {
     const userId = req.user?._id;
     if (!userId) {
-      res.status(401).json({ success: false, message: 'No autorizado' });
+      ResponseHelper.unauthorized(res);
       return;
     }
     
@@ -62,13 +59,13 @@ const updateAvatar: RequestHandler = async (req, res, next) => {
       updateData.avatarBuffer = req.file.buffer;
       updateData.avatarContentType = req.file.mimetype;
     } else {
-      res.status(400).json({ success: false, message: 'No se proporcionó ninguna imagen' });
+      ResponseHelper.validationError(res, 'No se proporcionó ninguna imagen');
       return;
     }
 
     const user = await User.findById(userId);
     if (!user) {
-      res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+      ResponseHelper.notFound(res, 'Usuario no encontrado');
       return;
     }
     
@@ -84,11 +81,7 @@ const updateAvatar: RequestHandler = async (req, res, next) => {
       logChanges('User', userId.toString(), userId.toString(), userName, changes);
     }
 
-    res.json({
-      success: true,
-      message: 'Avatar actualizado exitosamente',
-      data: updatedUser,
-    });
+    ResponseHelper.success(res, 'Avatar actualizado exitosamente', updatedUser);
 
   } catch (error) {
     next(error);

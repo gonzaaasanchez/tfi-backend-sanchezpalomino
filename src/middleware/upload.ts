@@ -1,4 +1,5 @@
 import multer from 'multer';
+import { ResponseHelper } from '../utils/response';
 
 // Configurar multer para almacenar en memoria (para luego guardar en MongoDB)
 const storage = multer.memoryStorage();
@@ -26,18 +27,12 @@ export const uploadImage = multer({
 export const handleUploadError = (err: any, req: any, res: any, next: any) => {
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'El archivo es demasiado grande. Máximo 5MB' 
-      });
+      return ResponseHelper.validationError(res, 'El archivo es demasiado grande. Máximo 5MB');
     }
   }
   
   if (err.message === 'Solo se permiten archivos de imagen') {
-    return res.status(400).json({ 
-      success: false, 
-      message: err.message 
-    });
+    return ResponseHelper.validationError(res, err.message);
   }
   
   next(err);

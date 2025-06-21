@@ -2,6 +2,7 @@ import { Router, RequestHandler } from 'express';
 import mongoose from 'mongoose';
 import { authMiddleware } from '../middleware/auth';
 import { permissionMiddleware } from '../middleware/permissions';
+import { ResponseHelper } from '../utils/response';
 
 const router = Router();
 
@@ -17,11 +18,7 @@ const getEntityLogs: RequestHandler = async (req, res, next) => {
       .sort({ timestamp: -1 })
       .lean();
     
-    res.json({
-      success: true,
-      message: 'Logs obtenidos exitosamente',
-      data: logs
-    });
+    ResponseHelper.success(res, 'Logs obtenidos exitosamente', logs);
   } catch (error) {
     next(error);
   }
@@ -41,11 +38,7 @@ const getAllEntityLogs: RequestHandler = async (req, res, next) => {
       .limit(limit)
       .lean();
     
-    res.json({
-      success: true,
-      message: 'Logs obtenidos exitosamente',
-      data: logs
-    });
+    ResponseHelper.success(res, 'Logs obtenidos exitosamente', logs);
   } catch (error) {
     next(error);
   }

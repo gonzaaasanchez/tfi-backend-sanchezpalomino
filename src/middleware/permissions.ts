@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import User from '../models/User';
 import Admin from '../models/Admin';
 import Role from '../models/Role';
+import { ResponseHelper } from '../utils/response';
 
 // Extender la interfaz Request para incluir user con role
 declare global {
@@ -20,10 +21,7 @@ export const permissionMiddleware = (resource: string, action: 'create' | 'read'
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       if (!req.user) {
-        return res.status(401).json({
-          success: false,
-          message: 'Usuario no autenticado'
-        });
+        return ResponseHelper.unauthorized(res, 'Usuario no autenticado');
       }
 
       let userWithRole;
@@ -36,10 +34,7 @@ export const permissionMiddleware = (resource: string, action: 'create' | 'read'
       }
       
       if (!userWithRole || !userWithRole.role) {
-        return res.status(403).json({
-          success: false,
-          message: 'Usuario sin rol asignado'
-        });
+        return ResponseHelper.forbidden(res, 'Usuario sin rol asignado');
       }
 
       const role = userWithRole.role as any;
@@ -51,19 +46,13 @@ export const permissionMiddleware = (resource: string, action: 'create' | 'read'
 
       // Verificar si el usuario tiene el permiso requerido
       if (!role.permissions || !role.permissions[resource] || !role.permissions[resource][action]) {
-        return res.status(403).json({
-          success: false,
-          message: `No tienes permisos para ${action} en ${resource}`
-        });
+        return ResponseHelper.forbidden(res, `No tienes permisos para ${action} en ${resource}`);
       }
 
       next();
     } catch (error) {
       console.error('Error en middleware de permisos:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Error al verificar permisos'
-      });
+      ResponseHelper.serverError(res, 'Error al verificar permisos');
     }
   };
 }; 

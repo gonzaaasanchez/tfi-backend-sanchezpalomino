@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction, RequestHandler } from 'express';
+import { ResponseHelper } from '../utils/response';
 
 // Interfaz para errores personalizados
 export interface AppError extends Error {
@@ -15,6 +16,7 @@ export class CustomError extends Error implements AppError {
     super(message);
     this.statusCode = statusCode;
     this.isOperational = true;
+    this.name = this.constructor.name;
 
     Error.captureStackTrace(this, this.constructor);
   }
@@ -71,12 +73,13 @@ export const errorHandler = (
     error = new CustomError(message, 401);
   }
 
-  // Respuesta de error
-  res.status(error.statusCode || 500).json({
-    success: false,
-    message: error.message || 'Error interno del servidor',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-  });
+  // Respuesta de error usando el nuevo formato
+  const statusCode = error.statusCode || 500;
+  const message = error.message || 'Error interno del servidor';
+  
+  ResponseHelper.error(res, message, statusCode, 
+    process.env.NODE_ENV === 'development' ? { stack: err.stack } : null
+  );
 };
 
 // Middleware para capturar errores asíncronos con tipos correctos

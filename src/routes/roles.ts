@@ -4,6 +4,7 @@ import { authMiddleware } from '../middleware/auth';
 import { permissionMiddleware } from '../middleware/permissions';
 import { logChanges } from '../utils/audit';
 import { getChanges } from '../utils/changeDetector';
+import { ResponseHelper } from '../utils/response';
 
 const router = Router();
 
@@ -11,11 +12,7 @@ const router = Router();
 const getRoles: RequestHandler = async (req, res, next) => {
   try {
     const roles = await Role.find().select('-__v');
-    res.json({
-      success: true,
-      message: 'Roles obtenidos exitosamente',
-      data: roles
-    });
+    ResponseHelper.success(res, 'Roles obtenidos exitosamente', roles);
   } catch (error) {
     next(error);
   }
@@ -26,18 +23,11 @@ const getRole: RequestHandler = async (req, res, next) => {
   try {
     const role = await Role.findById(req.params.id).select('-__v');
     if (!role) {
-      res.status(404).json({
-        success: false,
-        message: 'Rol no encontrado'
-      });
+      ResponseHelper.notFound(res, 'Rol no encontrado');
       return;
     }
     
-    res.json({
-      success: true,
-      message: 'Rol obtenido exitosamente',
-      data: role
-    });
+    ResponseHelper.success(res, 'Rol obtenido exitosamente', role);
   } catch (error) {
     next(error);
   }
@@ -49,38 +39,26 @@ const createRole: RequestHandler = async (req, res, next) => {
     const { name, description, permissions } = req.body;
 
     if (!name || !description) {
-      res.status(400).json({
-        success: false,
-        message: 'Nombre y descripción son requeridos'
-      });
+      ResponseHelper.validationError(res, 'Nombre y descripción son requeridos');
       return;
     }
 
     // Validar que se envíen todos los permisos
     if (!permissions || !permissions.users || !permissions.roles || !permissions.admins) {
-      res.status(400).json({
-        success: false,
-        message: 'Se requieren todos los permisos: users, roles y admins'
-      });
+      ResponseHelper.validationError(res, 'Se requieren todos los permisos: users, roles y admins');
       return;
     }
 
     // Verificar si el rol ya existe
     const existingRole = await Role.findOne({ name });
     if (existingRole) {
-      res.status(400).json({
-        success: false,
-        message: 'El rol ya existe'
-      });
+      ResponseHelper.validationError(res, 'El rol ya existe');
       return;
     }
 
     // No permitir crear roles del sistema
     if (['superadmin', 'user'].includes(name)) {
-      res.status(400).json({
-        success: false,
-        message: 'No se pueden crear roles del sistema'
-      });
+      ResponseHelper.validationError(res, 'No se pueden crear roles del sistema');
       return;
     }
 
@@ -101,11 +79,7 @@ const createRole: RequestHandler = async (req, res, next) => {
       { field: 'description', oldValue: null, newValue: description }
     ]);
     
-    res.status(201).json({
-      success: true,
-      message: 'Rol creado exitosamente',
-      data: savedRole
-    });
+    ResponseHelper.success(res, 'Rol creado exitosamente', savedRole, 201);
   } catch (error) {
     next(error);
   }
@@ -119,13 +93,13 @@ const updateRole: RequestHandler = async (req, res, next) => {
 
     const role = await Role.findById(roleId);
     if (!role) {
-      res.status(404).json({ success: false, message: 'Rol no encontrado' });
+      ResponseHelper.notFound(res, 'Rol no encontrado');
       return;
     }
 
     // No permitir modificar roles del sistema
     if (role.isSystem) {
-      res.status(400).json({ success: false, message: 'No se puede modificar roles del sistema' });
+      ResponseHelper.validationError(res, 'No se puede modificar roles del sistema');
       return;
     }
     
@@ -143,11 +117,7 @@ const updateRole: RequestHandler = async (req, res, next) => {
       logChanges('Role', roleId, userId, userName, changes);
     }
 
-    res.json({
-      success: true,
-      message: 'Rol actualizado exitosamente',
-      data: role.toJSON(),
-    });
+    ResponseHelper.success(res, 'Rol actualizado exitosamente', role.toJSON());
   } catch (error) {
     next(error);
   }
@@ -158,19 +128,13 @@ const deleteRole: RequestHandler = async (req, res, next) => {
   try {
     const role = await Role.findById(req.params.id);
     if (!role) {
-      res.status(404).json({
-        success: false,
-        message: 'Rol no encontrado'
-      });
+      ResponseHelper.notFound(res, 'Rol no encontrado');
       return;
     }
 
     // No permitir eliminar roles del sistema
     if (role.isSystem) {
-      res.status(400).json({
-        success: false,
-        message: 'No se puede eliminar roles del sistema'
-      });
+      ResponseHelper.validationError(res, 'No se puede eliminar roles del sistema');
       return;
     }
 
@@ -183,10 +147,7 @@ const deleteRole: RequestHandler = async (req, res, next) => {
 
     await Role.findByIdAndDelete(req.params.id);
     
-    res.json({
-      success: true,
-      message: 'Rol eliminado exitosamente'
-    });
+    ResponseHelper.success(res, 'Rol eliminado exitosamente');
   } catch (error) {
     next(error);
   }

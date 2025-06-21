@@ -4,6 +4,7 @@ import Role from '../models/Role';
 import { hashPassword, verifyPassword, generateToken } from '../utils/auth';
 import { authMiddleware } from '../middleware/auth';
 import { logChanges } from '../utils/audit';
+import { ResponseHelper } from '../utils/response';
 
 const router = Router();
 
@@ -13,37 +14,25 @@ const register: RequestHandler = async (req, res, next) => {
     const { firstName, lastName, email, password } = req.body;
 
     if (!firstName || !lastName || !email || !password) {
-      res.status(400).json({
-        success: false,
-        message: 'Todos los campos son requeridos',
-      });
+      ResponseHelper.validationError(res, 'Todos los campos son requeridos');
       return;
     }
 
     if (password.length < 6) {
-      res.status(400).json({
-        success: false,
-        message: 'La contraseña debe tener al menos 6 caracteres',
-      });
+      ResponseHelper.validationError(res, 'La contraseña debe tener al menos 6 caracteres');
       return;
     }
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      res.status(400).json({
-        success: false,
-        message: 'El email ya está registrado',
-      });
+      ResponseHelper.validationError(res, 'El email ya está registrado');
       return;
     }
 
     // Obtener el rol 'user' por defecto
     const userRole = await Role.findOne({ name: 'user' });
     if (!userRole) {
-      res.status(500).json({
-        success: false,
-        message: 'Error interno: Rol de usuario no encontrado',
-      });
+      ResponseHelper.serverError(res, 'Error interno: Rol de usuario no encontrado');
       return;
     }
 
@@ -69,13 +58,9 @@ const register: RequestHandler = async (req, res, next) => {
       { field: 'email', oldValue: null, newValue: email }
     ]);
 
-    res.status(201).json({
-      success: true,
-      message: 'Usuario registrado exitosamente',
-      data: {
-        user: user.toJSON(),
-      },
-    });
+    ResponseHelper.success(res, 'Usuario registrado exitosamente', {
+      user: user.toJSON(),
+    }, 201);
   } catch (error) {
     next(error);
   }
@@ -87,28 +72,19 @@ const login: RequestHandler = async (req, res, next) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      res.status(400).json({
-        success: false,
-        message: 'Email y contraseña son requeridos',
-      });
+      ResponseHelper.validationError(res, 'Email y contraseña son requeridos');
       return;
     }
 
     const user = await User.findOne({ email }).populate('role');
     if (!user) {
-      res.status(401).json({
-        success: false,
-        message: 'Credenciales inválidas',
-      });
+      ResponseHelper.unauthorized(res, 'Credenciales inválidas');
       return;
     }
 
     const isPasswordValid = await verifyPassword(password, user.password);
     if (!isPasswordValid) {
-      res.status(401).json({
-        success: false,
-        message: 'Credenciales inválidas',
-      });
+      ResponseHelper.unauthorized(res, 'Credenciales inválidas');
       return;
     }
 
@@ -117,13 +93,9 @@ const login: RequestHandler = async (req, res, next) => {
       email: user.email,
     });
 
-    res.json({
-      success: true,
-      message: 'Login exitoso',
-      data: {
-        user: user.toJSON(),
-        token,
-      },
+    ResponseHelper.success(res, 'Login exitoso', {
+      user: user.toJSON(),
+      token,
     });
   } catch (error) {
     next(error);
@@ -136,12 +108,8 @@ const getProfile: RequestHandler = async (req, res, next) => {
     // Populate role para incluir información del rol
     await req.user.populate('role');
     
-    res.json({
-      success: true,
-      message: 'Perfil obtenido exitosamente',
-      data: {
-        user: req.user.toJSON(),
-      },
+    ResponseHelper.success(res, 'Perfil obtenido exitosamente', {
+      user: req.user.toJSON(),
     });
   } catch (error) {
     next(error);

@@ -6,6 +6,7 @@ import { authMiddleware } from '../middleware/auth';
 import { permissionMiddleware } from '../middleware/permissions';
 import { logChanges } from '../utils/audit';
 import { getChanges } from '../utils/changeDetector';
+import { ResponseHelper } from '../utils/response';
 
 const router = Router();
 
@@ -15,30 +16,21 @@ const loginAdmin: RequestHandler = async (req, res, next) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      res.status(400).json({
-        success: false,
-        message: 'Email y contraseña son requeridos'
-      });
+      ResponseHelper.validationError(res, 'Email y contraseña son requeridos');
       return;
     }
 
     // Buscar el admin con su rol
     const admin = await Admin.findOne({ email }).populate('role');
     if (!admin) {
-      res.status(401).json({
-        success: false,
-        message: 'Credenciales inválidas'
-      });
+      ResponseHelper.unauthorized(res, 'Credenciales inválidas');
       return;
     }
 
     // Verificar la contraseña
     const isPasswordValid = await verifyPassword(password, admin.password);
     if (!isPasswordValid) {
-      res.status(401).json({
-        success: false,
-        message: 'Credenciales inválidas'
-      });
+      ResponseHelper.unauthorized(res, 'Credenciales inválidas');
       return;
     }
 
@@ -49,13 +41,9 @@ const loginAdmin: RequestHandler = async (req, res, next) => {
       type: 'admin'
     });
 
-    res.json({
-      success: true,
-      message: 'Login exitoso',
-      data: {
-        admin: admin.toJSON(),
-        token
-      }
+    ResponseHelper.success(res, 'Login exitoso', {
+      admin: admin.toJSON(),
+      token
     });
   } catch (error) {
     next(error);
@@ -68,47 +56,32 @@ const createAdmin: RequestHandler = async (req, res, next) => {
     const { firstName, lastName, email, password, roleId } = req.body;
 
     if (!firstName || !lastName || !email || !password || !roleId) {
-      res.status(400).json({
-        success: false,
-        message: 'Todos los campos son requeridos'
-      });
+      ResponseHelper.validationError(res, 'Todos los campos son requeridos');
       return;
     }
 
     if (password.length < 6) {
-      res.status(400).json({
-        success: false,
-        message: 'La contraseña debe tener al menos 6 caracteres'
-      });
+      ResponseHelper.validationError(res, 'La contraseña debe tener al menos 6 caracteres');
       return;
     }
 
     // Verificar si el admin ya existe
     const existingAdmin = await Admin.findOne({ email });
     if (existingAdmin) {
-      res.status(400).json({
-        success: false,
-        message: 'El email ya está registrado'
-      });
+      ResponseHelper.validationError(res, 'El email ya está registrado');
       return;
     }
 
     // Verificar que el rol existe y no es del sistema
     const role = await Role.findById(roleId);
     if (!role) {
-      res.status(400).json({
-        success: false,
-        message: 'Rol no encontrado'
-      });
+      ResponseHelper.validationError(res, 'Rol no encontrado');
       return;
     }
 
     // Solo permitir asignar roles que no sean del sistema (user y superadmin)
     if (role.isSystem) {
-      res.status(400).json({
-        success: false,
-        message: 'No se puede asignar roles del sistema a un admin'
-      });
+      ResponseHelper.validationError(res, 'No se puede asignar roles del sistema a un admin');
       return;
     }
 
@@ -138,13 +111,9 @@ const createAdmin: RequestHandler = async (req, res, next) => {
       { field: 'email', oldValue: null, newValue: email }
     ]);
 
-    res.status(201).json({
-      success: true,
-      message: 'Admin creado exitosamente',
-      data: {
-        admin: admin.toJSON()
-      }
-    });
+    ResponseHelper.success(res, 'Admin creado exitosamente', {
+      admin: admin.toJSON()
+    }, 201);
   } catch (error) {
     next(error);
   }
@@ -156,12 +125,8 @@ const getProfile: RequestHandler = async (req, res, next) => {
     // Populate role para incluir información del rol
     await req.user.populate('role');
     
-    res.json({
-      success: true,
-      message: 'Perfil obtenido exitosamente',
-      data: {
-        admin: req.user.toJSON()
-      }
+    ResponseHelper.success(res, 'Perfil obtenido exitosamente', {
+      admin: req.user.toJSON()
     });
   } catch (error) {
     next(error);
@@ -172,11 +137,7 @@ const getProfile: RequestHandler = async (req, res, next) => {
 const getAllAdmins: RequestHandler = async (req, res, next) => {
   try {
     const admins = await Admin.find().populate('role').select('-password');
-    res.json({
-      success: true,
-      message: 'Admins obtenidos exitosamente',
-      data: admins
-    });
+    ResponseHelper.success(res, 'Admins obtenidos exitosamente', admins);
   } catch (error) {
     next(error);
   }
@@ -187,18 +148,11 @@ const getAdmin: RequestHandler = async (req, res, next) => {
   try {
     const admin = await Admin.findById(req.params.id).populate('role').select('-password');
     if (!admin) {
-      res.status(404).json({
-        success: false,
-        message: 'Admin no encontrado'
-      });
+      ResponseHelper.notFound(res, 'Admin no encontrado');
       return;
     }
     
-    res.json({
-      success: true,
-      message: 'Admin obtenido exitosamente',
-      data: admin
-    });
+    ResponseHelper.success(res, 'Admin obtenido exitosamente', admin);
   } catch (error) {
     next(error);
   }
@@ -212,7 +166,7 @@ const updateAdmin: RequestHandler = async (req, res, next) => {
 
     const admin = await Admin.findById(adminId);
     if (!admin) {
-      res.status(404).json({ success: false, message: 'Admin no encontrado' });
+      ResponseHelper.notFound(res, 'Admin no encontrado');
       return;
     }
 
@@ -220,11 +174,11 @@ const updateAdmin: RequestHandler = async (req, res, next) => {
     if (updateData.roleId) {
       const role = await Role.findById(updateData.roleId);
       if (!role) {
-        res.status(400).json({ success: false, message: 'Rol no encontrado' });
+        ResponseHelper.validationError(res, 'Rol no encontrado');
         return;
       }
       if (role.isSystem) {
-        res.status(400).json({ success: false, message: 'No se puede asignar roles del sistema a un admin' });
+        ResponseHelper.validationError(res, 'No se puede asignar roles del sistema a un admin');
         return;
       }
       // Renombrar roleId a role para que coincida con el schema
@@ -248,11 +202,7 @@ const updateAdmin: RequestHandler = async (req, res, next) => {
     
     await admin.populate('role');
 
-    res.json({
-      success: true,
-      message: 'Admin actualizado exitosamente',
-      data: admin.toJSON(),
-    });
+    ResponseHelper.success(res, 'Admin actualizado exitosamente', admin.toJSON());
 
   } catch (error) {
     next(error);
@@ -264,10 +214,7 @@ const deleteAdmin: RequestHandler = async (req, res, next) => {
   try {
     const admin = await Admin.findById(req.params.id);
     if (!admin) {
-      res.status(404).json({
-        success: false,
-        message: 'Admin no encontrado'
-      });
+      ResponseHelper.notFound(res, 'Admin no encontrado');
       return;
     }
 
@@ -280,10 +227,7 @@ const deleteAdmin: RequestHandler = async (req, res, next) => {
 
     await Admin.findByIdAndDelete(req.params.id);
     
-    res.json({
-      success: true,
-      message: 'Admin eliminado exitosamente'
-    });
+    ResponseHelper.success(res, 'Admin eliminado exitosamente');
   } catch (error) {
     next(error);
   }
