@@ -267,3 +267,72 @@ src/
 ## 📄 License
 
 This project is under the ISC License.
+
+## 🚀 Deployment en Render
+
+### Despliegue Automático
+
+1. **Conecta tu repositorio de GitHub a Render:**
+   - Ve a [render.com](https://render.com) y crea una cuenta
+   - Haz clic en "New +" y selecciona "Web Service"
+   - Conecta tu repositorio de GitHub
+   - Selecciona el repositorio `tfi-backend-sanchezpalomino`
+
+2. **Configura el servicio:**
+   - **Name:** `tfi-backend-sanchezpalomino`
+   - **Environment:** `Node`
+   - **Build Command:** `npm install && npm run build`
+   - **Start Command:** `npm start`
+   - **Plan:** `Free`
+
+3. **Configura las variables de entorno:**
+   - `NODE_ENV` = `production`
+   - `PORT` = `10000` (Render asigna automáticamente)
+   - `MONGODB_URI` = Tu URI de MongoDB Atlas
+   - `JWT_SECRET` = Tu clave secreta segura (mínimo 32 caracteres)
+   - `JWT_EXPIRES_IN` = `30d`
+
+4. **Haz clic en "Create Web Service"**
+
+### Configuración de MongoDB Atlas
+
+1. Crea una cuenta en [MongoDB Atlas](https://mongodb.com/atlas)
+2. Crea un nuevo cluster (gratuito)
+3. Configura el acceso a la red (0.0.0.0/0 para permitir acceso desde cualquier lugar)
+4. Crea un usuario de base de datos
+5. Obtén la URI de conexión
+6. Agrega la URI como variable de entorno `MONGODB_URI` en Render
+
+### Verificación del Despliegue
+
+Una vez desplegado, tu API estará disponible en:
+```
+https://tu-app-name.onrender.com
+```
+
+Puedes probar el endpoint de salud:
+```
+GET https://tu-app-name.onrender.com/
+```
+
+## 📝 Notas Importantes
+
+- **Variables de entorno:** Nunca subas archivos `.env` al repositorio
+- **JWT_SECRET:** Usa una clave segura de al menos 32 caracteres en producción
+- **MongoDB Atlas:** Recomendado para producción en lugar de MongoDB local
+- **Logs:** Puedes ver los logs de tu aplicación en el dashboard de Render
+- **Auto-deploy:** Render se actualiza automáticamente cuando haces push a la rama principal
+
+## 🛠️ Troubleshooting
+
+### Error de Build
+- Verifica que todas las dependencias estén `package.json`
+- Asegúrate de que el script `build` funcione localmente
+
+### Error de Conexión a MongoDB
+- Verifica que la URI de MongoDB Atlas sea correcta
+- Asegúrate de que la IP de Render esté permitida en MongoDB Atlas
+
+### Error de Variables de Entorno
+- Verifica que todas las variables requeridas estén configuradas en Render
+- Asegúrate de que `JWT_SECRET` tenga al menos 32 caracteres

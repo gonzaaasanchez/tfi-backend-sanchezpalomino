@@ -25,11 +25,11 @@ app.use(helmet());
 app.use(morgan('dev'));
 
 // Rutas
-app.use('/auth', authRoutes);
-app.use('/roles', rolesRoutes);
-app.use('/admins', adminsRoutes);
-app.use('/logs', logsRoutes);
-app.use('/users', usersRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/roles', rolesRoutes);
+app.use('/api/admins', adminsRoutes);
+app.use('/api/logs', logsRoutes);
+app.use('/api/users', usersRoutes);
 
 // Ruta de prueba
 app.get('/', (req, res) => {
