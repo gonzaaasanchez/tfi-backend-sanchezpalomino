@@ -162,52 +162,6 @@ const updateUser: RequestHandler = async (req, res, next) => {
   }
 };
 
-// PUT /users/profile/avatar - Actualizar avatar del usuario autenticado (mantener compatibilidad)
-const updateAvatar: RequestHandler = async (req, res, next) => {
-  try {
-    const userId = req.user?._id;
-    if (!userId) {
-      ResponseHelper.unauthorized(res);
-      return;
-    }
-    
-    const updateData: any = {};
-    
-    // Si hay una imagen en el request, guardar buffer y generar URL
-    if (req.file) {
-      updateData.avatar = `/api/users/${userId}/avatar`;
-      updateData.avatarBuffer = req.file.buffer;
-      updateData.avatarContentType = req.file.mimetype;
-    } else {
-      ResponseHelper.validationError(res, 'No se proporcionó ninguna imagen');
-      return;
-    }
-
-    const user = await User.findById(userId);
-    if (!user) {
-      ResponseHelper.notFound(res, 'Usuario no encontrado');
-      return;
-    }
-    
-    // Detectar cambios antes de actualizar
-    const changes = getChanges(user, updateData);
-
-    // Actualizar el documento
-    const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true });
-    
-    // Si hubo cambios, registrarlos
-    if (changes.length > 0) {
-      const userName = `${req.user.firstName} ${req.user.lastName}`;
-      logChanges('User', userId.toString(), userId.toString(), userName, changes);
-    }
-
-    ResponseHelper.success(res, 'Avatar actualizado exitosamente', updatedUser);
-
-  } catch (error) {
-    next(error);
-  }
-};
-
 // GET /users/:id/avatar - Obtener avatar de un usuario
 const getAvatar: RequestHandler = async (req, res, next) => {
   try {
@@ -313,6 +267,54 @@ const getAllUsers: RequestHandler = async (req, res, next) => {
   }
 };
 
+// PUT /users/:id/avatar - Actualizar avatar de un usuario específico (solo admins)
+const updateUserAvatar: RequestHandler = async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+    
+    if (!userId) {
+      ResponseHelper.validationError(res, 'ID de usuario requerido');
+      return;
+    }
+    
+    const updateData: any = {};
+    
+    // Si hay una imagen en el request, guardar buffer y generar URL
+    if (req.file) {
+      updateData.avatar = `/api/users/${userId}/avatar`;
+      updateData.avatarBuffer = req.file.buffer;
+      updateData.avatarContentType = req.file.mimetype;
+    } else {
+      ResponseHelper.validationError(res, 'No se proporcionó ninguna imagen');
+      return;
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      ResponseHelper.notFound(res, 'Usuario no encontrado');
+      return;
+    }
+    
+    // Detectar cambios antes de actualizar
+    const changes = getChanges(user, updateData);
+
+    // Actualizar el documento
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true }).populate('role');
+    
+    // Si hubo cambios, registrarlos
+    if (changes.length > 0) {
+      const userName = req.user ? `${req.user.firstName} ${req.user.lastName}` : 'Sistema';
+      const userIdPerformingAction = req.user?._id?.toString() || 'system';
+      logChanges('User', userId, userIdPerformingAction, userName, changes);
+    }
+
+    ResponseHelper.success(res, 'Avatar del usuario actualizado exitosamente', updatedUser);
+
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Rutas para el usuario autenticado (sin permisos especiales) - DEBEN IR PRIMERO
 router.get('/me', authMiddleware, getMyProfile);
 router.put('/me', authMiddleware, updateMyProfile);
@@ -322,12 +324,12 @@ router.put('/me/avatar', authMiddleware, uploadImage.single('avatar'), handleUpl
 // @ts-ignore
 router.get('/', authMiddleware, permissionMiddleware('users', 'getAll'), getAllUsers);
 // @ts-ignore
-router.put('/profile/avatar', authMiddleware, uploadImage.single('avatar'), handleUploadError, updateAvatar);
-// @ts-ignore
 router.get('/:id/avatar', getAvatar);
 // @ts-ignore
 router.get('/:id', authMiddleware, permissionMiddleware('users', 'read'), getOneUser);
 // @ts-ignore
 router.put('/:id', authMiddleware, permissionMiddleware('users', 'update'), updateUser);
+// @ts-ignore
+router.put('/:id/avatar', authMiddleware, permissionMiddleware('users', 'update'), uploadImage.single('avatar'), handleUploadError, updateUserAvatar);
 
 export default router; 

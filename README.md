@@ -141,24 +141,73 @@ Authorization: Bearer <token>
 
 ### Users
 
-#### PUT `/users/:id`
-Update a specific user (requires admin permissions).
+#### GET `/users/me`
+Get the authenticated user's profile.
 
 **Headers:**
 ```
 Authorization: Bearer <token>
 ```
 
-**Body (multipart/form-data):**
-```
-firstName: "John"
-lastName: "Doe"
-email: "john@example.com"
-avatar: [file] (optional)
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Perfil obtenido exitosamente",
+  "data": {
+    "_id": "...",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john@example.com",
+    "phoneNumber": "+1234567890",
+    "avatar": "api/users/.../avatar",
+    "role": {
+      "_id": "...",
+      "name": "user",
+      "permissions": { ... }
+    }
+  }
+}
 ```
 
-#### PUT `/users/profile/avatar`
-Update the authenticated user's profile avatar.
+#### PUT `/users/me`
+Update the authenticated user's profile.
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Body:**
+```json
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john@example.com",
+  "phoneNumber": "+1234567890",
+  "avatar": "api/users/.../avatar"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Perfil actualizado exitosamente",
+  "data": {
+    "_id": "...",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john@example.com",
+    "phoneNumber": "+1234567890",
+    "avatar": "api/users/.../avatar",
+    "role": "..."
+  }
+}
+```
+
+#### PUT `/users/me/avatar`
+Update the authenticated user's avatar.
 
 **Headers:**
 ```
@@ -180,22 +229,179 @@ avatar: [file] (required)
     "firstName": "John",
     "lastName": "Doe",
     "email": "john@example.com",
-    "avatarContentType": "image/jpeg",
-    "createdAt": "2024-01-01T00:00:00.000Z",
-    "updatedAt": "2024-01-01T00:00:00.000Z"
+    "avatar": "api/users/.../avatar",
+    "avatarContentType": "image/jpeg"
   }
 }
 ```
 
-#### GET `/users/:id/avatar`
-Get a user's profile avatar.
+#### GET `/users` (Admin)
+Get all users with pagination and filters (requires admin permissions).
 
 **Headers:**
 ```
 Authorization: Bearer <token>
 ```
 
+**Query Parameters:**
+- `page`: Page number (default: 1)
+- `limit`: Users per page (default: 10)
+- `search`: Search by firstName, lastName, or email
+- `role`: Filter by role ID
+
+**Example:**
+```
+GET /users?page=1&limit=20&search=john&role=68560fca89402fc12be977e1
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Usuarios obtenidos exitosamente",
+  "data": {
+    "users": [
+      {
+        "_id": "...",
+        "firstName": "John",
+        "lastName": "Doe",
+        "email": "john@example.com",
+        "phoneNumber": "+1234567890",
+        "avatar": "api/users/.../avatar",
+        "role": {
+          "_id": "...",
+          "name": "user",
+          "permissions": { ... }
+        }
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "totalUsers": 50,
+      "totalPages": 3,
+      "hasNextPage": true,
+      "hasPrevPage": false
+    }
+  }
+}
+```
+
+#### GET `/users/:id` (Admin)
+Get a specific user by ID (requires admin permissions).
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Usuario obtenido exitosamente",
+  "data": {
+    "_id": "...",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john@example.com",
+    "phoneNumber": "+1234567890",
+    "avatar": "api/users/.../avatar",
+    "role": {
+      "_id": "...",
+      "name": "user",
+      "permissions": { ... }
+    }
+  }
+}
+```
+
+#### PUT `/users/:id` (Admin)
+Update a specific user (requires admin permissions).
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Body:**
+```json
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john@example.com",
+  "phoneNumber": "+1234567890",
+  "role": "..."
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Usuario actualizado exitosamente",
+  "data": {
+    "_id": "...",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john@example.com",
+    "phoneNumber": "+1234567890",
+    "role": "..."
+  }
+}
+```
+
+#### PUT `/users/:id/avatar` (Admin)
+Update a specific user's avatar (requires admin permissions).
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Body (multipart/form-data):**
+```
+avatar: [file] (required)
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Avatar del usuario actualizado exitosamente",
+  "data": {
+    "_id": "...",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john@example.com",
+    "avatar": "api/users/.../avatar",
+    "avatarContentType": "image/jpeg",
+    "role": {
+      "_id": "...",
+      "name": "user",
+      "permissions": { ... }
+    }
+  }
+}
+```
+
+#### GET `/users/:id/avatar`
+Get a user's profile avatar (public endpoint).
+
 **Response:** Binary image data with appropriate Content-Type header.
+
+### 📋 Users Endpoints Summary
+
+| Endpoint | Method | Authentication | Permissions | Description |
+|----------|--------|----------------|-------------|-------------|
+| `/users/me` | GET | ✅ Bearer Token | ❌ None | Get authenticated user's profile |
+| `/users/me` | PUT | ✅ Bearer Token | ❌ None | Update authenticated user's profile |
+| `/users/me/avatar` | PUT | ✅ Bearer Token | ❌ None | Update authenticated user's avatar |
+| `/users` | GET | ✅ Bearer Token | ✅ `users.getAll` | List all users (admin only) |
+| `/users/:id` | GET | ✅ Bearer Token | ✅ `users.read` | Get specific user (admin only) |
+| `/users/:id` | PUT | ✅ Bearer Token | ✅ `users.update` | Update specific user (admin only) |
+| `/users/:id/avatar` | PUT | ✅ Bearer Token | ✅ `users.update` | Update specific user's avatar (admin only) |
+| `/users/:id/avatar` | GET | ❌ None | ❌ None | Get user's avatar (public) |
 
 ## 🔐 Authentication
 
@@ -283,56 +489,3 @@ This project is under the ISC License.
    - **Environment:** `Node`
    - **Build Command:** `npm install && npm run build`
    - **Start Command:** `npm start`
-   - **Plan:** `Free`
-
-3. **Configura las variables de entorno:**
-   - `NODE_ENV` = `production`
-   - `PORT` = `10000` (Render asigna automáticamente)
-   - `MONGODB_URI` = Tu URI de MongoDB Atlas
-   - `JWT_SECRET` = Tu clave secreta segura (mínimo 32 caracteres)
-   - `JWT_EXPIRES_IN` = `30d`
-
-4. **Haz clic en "Create Web Service"**
-
-### Configuración de MongoDB Atlas
-
-1. Crea una cuenta en [MongoDB Atlas](https://mongodb.com/atlas)
-2. Crea un nuevo cluster (gratuito)
-3. Configura el acceso a la red (0.0.0.0/0 para permitir acceso desde cualquier lugar)
-4. Crea un usuario de base de datos
-5. Obtén la URI de conexión
-6. Agrega la URI como variable de entorno `MONGODB_URI` en Render
-
-### Verificación del Despliegue
-
-Una vez desplegado, tu API estará disponible en:
-```
-https://tu-app-name.onrender.com
-```
-
-Puedes probar el endpoint de salud:
-```
-GET https://tu-app-name.onrender.com/
-```
-
-## 📝 Notas Importantes
-
-- **Variables de entorno:** Nunca subas archivos `.env` al repositorio
-- **JWT_SECRET:** Usa una clave segura de al menos 32 caracteres en producción
-- **MongoDB Atlas:** Recomendado para producción en lugar de MongoDB local
-- **Logs:** Puedes ver los logs de tu aplicación en el dashboard de Render
-- **Auto-deploy:** Render se actualiza automáticamente cuando haces push a la rama principal
-
-## 🛠️ Troubleshooting
-
-### Error de Build
-- Verifica que todas las dependencias estén `package.json`
-- Asegúrate de que el script `build` funcione localmente
-
-### Error de Conexión a MongoDB
-- Verifica que la URI de MongoDB Atlas sea correcta
-- Asegúrate de que la IP de Render esté permitida en MongoDB Atlas
-
-### Error de Variables de Entorno
-- Verifica que todas las variables requeridas estén configuradas en Render
-- Asegúrate de que `JWT_SECRET` tenga al menos 32 caracteres
