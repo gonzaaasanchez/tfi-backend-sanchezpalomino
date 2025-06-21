@@ -4,8 +4,9 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import testRoutes from './routes/test';
 import authRoutes from './routes/auth';
+import rolesRoutes from './routes/roles';
+import adminsRoutes from './routes/admins';
 import { errorHandler } from './middleware/errorHandler';
 
 // Cargar variables de entorno
@@ -22,8 +23,9 @@ app.use(helmet());
 app.use(morgan('dev'));
 
 // Rutas
-app.use('/test', testRoutes);
 app.use('/auth', authRoutes);
+app.use('/roles', rolesRoutes);
+app.use('/admins', adminsRoutes);
 
 // Ruta de prueba
 app.get('/', (req, res) => {

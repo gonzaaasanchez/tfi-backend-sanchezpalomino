@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-export interface IUser extends Document {
+export interface IAdmin extends Document {
   firstName: string;
   lastName: string;
   email: string;
@@ -10,7 +10,7 @@ export interface IUser extends Document {
   updatedAt: Date;
 }
 
-const UserSchema: Schema = new Schema({
+const AdminSchema: Schema = new Schema({
   firstName: { 
     type: String, 
     required: true,
@@ -48,10 +48,10 @@ const UserSchema: Schema = new Schema({
 });
 
 // Método para excluir password en las respuestas
-UserSchema.methods.toJSON = function() {
-  const user = this.toObject();
-  delete user.password;
-  return user;
+AdminSchema.methods.toJSON = function() {
+  const admin = this.toObject();
+  delete admin.password;
+  return admin;
 };
 
-export default mongoose.model<IUser>('User', UserSchema); 
+export default mongoose.model<IAdmin>('Admin', AdminSchema); 

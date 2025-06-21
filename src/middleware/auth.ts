@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyToken, JWTPayload } from '../utils/auth';
 import User from '../models/User';
+import Admin from '../models/Admin';
 
 // Extender la interfaz Request para incluir el usuario
 declare global {
@@ -29,8 +30,13 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     // Verificar el token
     const decoded = verifyToken(token) as JWTPayload;
 
-    // Buscar el usuario en la base de datos
-    const user = await User.findById(decoded.userId).select('-password');
+    // Buscar el usuario o admin según el tipo de token
+    let user;
+    if (decoded.type === 'admin') {
+      user = await Admin.findById(decoded.userId).select('-password');
+    } else {
+      user = await User.findById(decoded.userId).select('-password');
+    }
     
     if (!user) {
       return res.status(401).json({ 

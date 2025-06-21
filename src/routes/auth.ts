@@ -1,5 +1,6 @@
 import { Router, RequestHandler } from 'express';
 import User from '../models/User';
+import Role from '../models/Role';
 import { hashPassword, verifyPassword, generateToken } from '../utils/auth';
 import { authMiddleware } from '../middleware/auth';
 
@@ -35,6 +36,16 @@ const register: RequestHandler = async (req, res, next) => {
       return;
     }
 
+    // Obtener el rol 'user' por defecto
+    const userRole = await Role.findOne({ name: 'user' });
+    if (!userRole) {
+      res.status(500).json({
+        success: false,
+        message: 'Error interno: Rol de usuario no encontrado',
+      });
+      return;
+    }
+
     const hashedPassword = await hashPassword(password);
 
     const user = new User({
@@ -42,9 +53,13 @@ const register: RequestHandler = async (req, res, next) => {
       lastName,
       email,
       password: hashedPassword,
+      role: userRole._id
     });
 
     await user.save();
+
+    // Populate role para la respuesta
+    await user.populate('role');
 
     res.status(201).json({
       success: true,
@@ -71,7 +86,7 @@ const login: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).populate('role');
     if (!user) {
       res.status(401).json({
         success: false,
@@ -110,11 +125,14 @@ const login: RequestHandler = async (req, res, next) => {
 // GET /auth/me - Obtener perfil del usuario autenticado
 const getProfile: RequestHandler = async (req, res, next) => {
   try {
+    // Populate role para incluir información del rol
+    await req.user.populate('role');
+    
     res.json({
       success: true,
       message: 'Perfil obtenido exitosamente',
       data: {
-        user: req.user,
+        user: req.user.toJSON(),
       },
     });
   } catch (error) {
