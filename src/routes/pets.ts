@@ -34,6 +34,20 @@ const createPet: RequestHandler = async (req, res, next) => {
       return;
     }
 
+    // Parsear characteristics si viene como string JSON (común en multipart/form-data)
+    let parsedCharacteristics = characteristics;
+    if (typeof characteristics === 'string') {
+      try {
+        parsedCharacteristics = JSON.parse(characteristics);
+      } catch (error) {
+        ResponseHelper.validationError(
+          res,
+          'Formato de características inválido'
+        );
+        return;
+      }
+    }
+
     // Verificar que el tipo de mascota existe
     const petType = await PetType.findById(petTypeId);
     if (!petType) {
@@ -42,8 +56,8 @@ const createPet: RequestHandler = async (req, res, next) => {
     }
 
     // Verificar que las características existen (si se proporcionan)
-    if (characteristics && characteristics.length > 0) {
-      const characteristicIds = characteristics.map(
+    if (parsedCharacteristics && parsedCharacteristics.length > 0) {
+      const characteristicIds = parsedCharacteristics.map(
         (c: any) => c.characteristicId
       );
       const existingCharacteristics = await PetCharacteristic.find({
@@ -63,8 +77,8 @@ const createPet: RequestHandler = async (req, res, next) => {
       name,
       comment,
       petType: petTypeId,
-      characteristics: characteristics
-        ? characteristics.map((c: any) => ({
+      characteristics: parsedCharacteristics
+        ? parsedCharacteristics.map((c: any) => ({
             characteristic: c.characteristicId,
             value: c.value,
           }))
@@ -261,6 +275,20 @@ const updatePet: RequestHandler = async (req, res, next) => {
       return;
     }
 
+    // Parsear characteristics si viene como string JSON (común en multipart/form-data)
+    let parsedCharacteristics = characteristics;
+    if (typeof characteristics === 'string') {
+      try {
+        parsedCharacteristics = JSON.parse(characteristics);
+      } catch (error) {
+        ResponseHelper.validationError(
+          res,
+          'Formato de características inválido'
+        );
+        return;
+      }
+    }
+
     // Verificar que el tipo de mascota existe (si se actualiza)
     if (petTypeId) {
       const petType = await PetType.findById(petTypeId);
@@ -271,8 +299,8 @@ const updatePet: RequestHandler = async (req, res, next) => {
     }
 
     // Verificar que las características existen (si se actualizan)
-    if (characteristics && characteristics.length > 0) {
-      const characteristicIds = characteristics.map(
+    if (parsedCharacteristics && parsedCharacteristics.length > 0) {
+      const characteristicIds = parsedCharacteristics.map(
         (c: any) => c.characteristicId
       );
       const existingCharacteristics = await PetCharacteristic.find({
@@ -292,8 +320,8 @@ const updatePet: RequestHandler = async (req, res, next) => {
     if (name) updateData.name = name;
     if (comment !== undefined) updateData.comment = comment;
     if (petTypeId) updateData.petType = petTypeId;
-    if (characteristics !== undefined)
-      updateData.characteristics = characteristics.map((c: any) => ({
+    if (parsedCharacteristics !== undefined)
+      updateData.characteristics = parsedCharacteristics.map((c: any) => ({
         characteristic: c.characteristicId,
         value: c.value,
       }));
