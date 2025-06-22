@@ -29,6 +29,27 @@ export interface IRole extends Document {
       read: boolean;
       getAll: boolean;
     };
+    petTypes: {
+      create: boolean;
+      read: boolean;
+      update: boolean;
+      delete: boolean;
+      getAll: boolean;
+    };
+    petCharacteristics: {
+      create: boolean;
+      read: boolean;
+      update: boolean;
+      delete: boolean;
+      getAll: boolean;
+    };
+    pets: {
+      create: boolean;
+      read: boolean;
+      update: boolean;
+      delete: boolean;
+      getAll: boolean;
+    };
   };
   isSystem: boolean;
   createdAt: Date;
@@ -70,6 +91,27 @@ const RoleSchema = new Schema<IRole>(
       },
       logs: {
         read: { type: Boolean, default: false },
+        getAll: { type: Boolean, default: false },
+      },
+      petTypes: {
+        create: { type: Boolean, default: false },
+        read: { type: Boolean, default: false },
+        update: { type: Boolean, default: false },
+        delete: { type: Boolean, default: false },
+        getAll: { type: Boolean, default: false },
+      },
+      petCharacteristics: {
+        create: { type: Boolean, default: false },
+        read: { type: Boolean, default: false },
+        update: { type: Boolean, default: false },
+        delete: { type: Boolean, default: false },
+        getAll: { type: Boolean, default: false },
+      },
+      pets: {
+        create: { type: Boolean, default: false },
+        read: { type: Boolean, default: false },
+        update: { type: Boolean, default: false },
+        delete: { type: Boolean, default: false },
         getAll: { type: Boolean, default: false },
       },
     },

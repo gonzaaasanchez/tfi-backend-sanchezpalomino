@@ -9,6 +9,9 @@ import rolesRoutes from './routes/roles';
 import adminsRoutes from './routes/admins';
 import logsRoutes from './routes/logs';
 import usersRoutes from './routes/users';
+import petTypesRoutes from './routes/petTypes';
+import petCharacteristicsRoutes from './routes/petCharacteristics';
+import petsRoutes from './routes/pets';
 import { errorHandler } from './middleware/errorHandler';
 
 // Cargar variables de entorno
@@ -30,6 +33,9 @@ app.use('/api/roles', rolesRoutes);
 app.use('/api/admins', adminsRoutes);
 app.use('/api/logs', logsRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/api/pet-types', petTypesRoutes);
+app.use('/api/pet-characteristics', petCharacteristicsRoutes);
+app.use('/api/pets', petsRoutes);
 
 // Ruta de prueba
 app.get('/', (req, res) => {

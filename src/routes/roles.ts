@@ -51,11 +51,14 @@ const createRole: RequestHandler = async (req, res, next) => {
       !permissions ||
       !permissions.users ||
       !permissions.roles ||
-      !permissions.admins
+      !permissions.admins ||
+      !permissions.petTypes ||
+      !permissions.petCharacteristics ||
+      !permissions.pets
     ) {
       ResponseHelper.validationError(
         res,
-        'Se requieren todos los permisos: users, roles y admins'
+        'Se requieren todos los permisos: users, roles, admins, petTypes, petCharacteristics y pets'
       );
       return;
     }
