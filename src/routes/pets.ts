@@ -55,7 +55,10 @@ const createPet: RequestHandler = async (req, res, next) => {
       name,
       comment,
       petType: petTypeId,
-      characteristics: characteristics || [],
+      characteristics: characteristics ? characteristics.map((c: any) => ({
+        characteristic: c.characteristicId,
+        value: c.value
+      })) : [],
       owner: userId,
     };
 
@@ -221,7 +224,10 @@ const updatePet: RequestHandler = async (req, res, next) => {
     if (name) updateData.name = name;
     if (comment !== undefined) updateData.comment = comment;
     if (petTypeId) updateData.petType = petTypeId;
-    if (characteristics !== undefined) updateData.characteristics = characteristics;
+    if (characteristics !== undefined) updateData.characteristics = characteristics.map((c: any) => ({
+      characteristic: c.characteristicId,
+      value: c.value
+    }));
 
     // Si hay una imagen en el request, guardar buffer y generar URL
     if (req.file) {
