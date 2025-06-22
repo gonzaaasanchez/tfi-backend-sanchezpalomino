@@ -95,6 +95,7 @@ src/
 The complete API documentation is organized by service modules in the [`docs/`](./docs/) directory:
 
 - **[📖 Documentation Index](./docs/README.md)** - Overview and general information
+- **[📊 Data Models](./docs/models.md)** - Database schemas and relationships
 - **[🔐 Authentication](./docs/authentication.md)** - User registration and login
 - **[👥 Users](./docs/users.md)** - User profile and management
 - **[🐕 Pet Types](./docs/pet-types.md)** - Pet type management
