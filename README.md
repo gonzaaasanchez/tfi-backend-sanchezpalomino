@@ -56,6 +56,40 @@ NODE_ENV=development
 npm run dev
 ```
 
+## 🏗️ Project Structure
+
+```
+src/
+├── app.ts                 # Entry point
+├── models/               # MongoDB models
+│   ├── User.ts          # User model
+│   ├── Role.ts          # Role model
+│   ├── Admin.ts         # Admin model
+│   ├── PetType.ts       # Pet type model
+│   ├── PetCharacteristic.ts # Pet characteristic model
+│   └── Pet.ts           # Pet model
+├── routes/              # Route controllers
+│   ├── auth.ts          # Authentication routes
+│   ├── users.ts         # User routes (including unified profile updates)
+│   ├── roles.ts         # Role routes
+│   ├── admins.ts        # Admin routes
+│   ├── logs.ts          # Audit logs routes
+│   ├── petTypes.ts      # Pet types routes
+│   ├── petCharacteristics.ts # Pet characteristics routes
+│   └── pets.ts          # Pet routes (user and admin services)
+├── middleware/          # Middlewares
+│   ├── auth.ts          # JWT authentication
+│   ├── permissions.ts   # Permission control
+│   ├── errorHandler.ts  # Error handling
+│   └── upload.ts        # Image upload middleware
+└── utils/               # Utilities
+    ├── auth.ts          # JWT and bcrypt functions
+    ├── audit.ts         # Audit logging
+    ├── auditLogger.ts   # Audit logger
+    ├── changeDetector.ts # Change detection
+    └── response.ts      # Response helper
+```
+
 ## 📚 API Endpoints
 
 ### Authentication
@@ -212,58 +246,6 @@ avatarFile: [file] (optional)
 }
 ```
 
-#### GET `/users` (Admin)
-Get all users with pagination and filters (requires admin permissions).
-
-**Headers:**
-```
-Authorization: Bearer <token>
-```
-
-**Query Parameters:**
-- `page`: Page number (default: 1)
-- `limit`: Users per page (default: 10)
-- `search`: Search by firstName, lastName, email, or phoneNumber
-- `role`: Filter by role ID
-
-**Example:**
-```
-GET /users?page=1&limit=20&search=john&role=68560fca89402fc12be977e1
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "message": "Usuarios obtenidos exitosamente",
-  "data": {
-    "users": [
-      {
-        "_id": "...",
-        "firstName": "John",
-        "lastName": "Doe",
-        "email": "john@example.com",
-        "phoneNumber": "+1234567890",
-        "avatar": "api/users/.../avatar",
-        "role": {
-          "_id": "...",
-          "name": "user",
-          "permissions": { ... }
-        }
-      }
-    ],
-    "pagination": {
-      "page": 1,
-      "limit": 20,
-      "totalUsers": 50,
-      "totalPages": 3,
-      "hasNextPage": true,
-      "hasPrevPage": false
-    }
-  }
-}
-```
-
 #### GET `/users/:id` (Admin)
 Get a specific user by ID (requires admin permissions).
 
@@ -332,6 +314,197 @@ avatarFile: [file] (optional)
 Get a user's profile avatar (public endpoint).
 
 **Response:** Binary image data with appropriate Content-Type header.
+
+#### PUT `/users/me/carer-config`
+Update the authenticated user's care configuration (requires authentication).
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Body:**
+```json
+{
+  "carerConfig": {
+    "homeCare": {
+      "enabled": true,
+      "dayPrice": 50
+    },
+    "petHomeCare": {
+      "enabled": false,
+      "visitPrice": null
+    }
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Configuración de cuidado actualizada exitosamente",
+  "data": {
+    "_id": "...",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john@example.com",
+    "carerConfig": {
+      "homeCare": {
+        "enabled": true,
+        "dayPrice": 50
+      },
+      "petHomeCare": {
+        "enabled": false,
+        "visitPrice": null
+      }
+    }
+  }
+}
+```
+
+#### POST `/users/me/addresses`
+Add a new address to the authenticated user (requires authentication).
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Body:**
+```json
+{
+  "fullAddress": "Av. Corrientes 1234",
+  "floor": "3",
+  "apartment": "A",
+  "coords": {
+    "lat": -34.6037,
+    "lon": -58.3816
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Dirección agregada exitosamente",
+  "data": {
+    "fullAddress": "Av. Corrientes 1234",
+    "floor": "3",
+    "apartment": "A",
+    "coords": {
+      "lat": -34.6037,
+      "lon": -58.3816
+    }
+  }
+}
+```
+
+#### PUT `/users/me/addresses/:index`
+Update a specific address of the authenticated user (requires authentication).
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Body:**
+```json
+{
+  "fullAddress": "Av. Corrientes 1234",
+  "floor": "4",
+  "coords": {
+    "lat": -34.6037,
+    "lon": -58.3816
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Dirección actualizada exitosamente",
+  "data": {
+    "fullAddress": "Av. Corrientes 1234",
+    "floor": "4",
+    "coords": {
+      "lat": -34.6037,
+      "lon": -58.3816
+    }
+  }
+}
+```
+
+#### DELETE `/users/me/addresses/:index`
+Delete a specific address of the authenticated user (requires authentication).
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Dirección eliminada exitosamente",
+  "data": null
+}
+```
+
+#### GET `/users` (Admin)
+Get all users with pagination and filters (requires admin permissions).
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Query Parameters:**
+- `page`: Page number (default: 1)
+- `limit`: Users per page (default: 10)
+- `search`: Search by firstName, lastName, email, or phoneNumber
+- `role`: Filter by role ID
+
+**Example:**
+```
+GET /users?page=1&limit=20&search=john&role=68560fca89402fc12be977e1
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Usuarios obtenidos exitosamente",
+  "data": {
+    "users": [
+      {
+        "_id": "...",
+        "firstName": "John",
+        "lastName": "Doe",
+        "email": "john@example.com",
+        "phoneNumber": "+1234567890",
+        "avatar": "api/users/.../avatar",
+        "role": {
+          "_id": "...",
+          "name": "user",
+          "permissions": { ... }
+        }
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "totalUsers": 50,
+      "totalPages": 3,
+      "hasNextPage": true,
+      "hasPrevPage": false
+    }
+  }
+}
+```
 
 ### Pet Types
 
@@ -763,50 +936,6 @@ Get a pet's avatar (public endpoint).
 
 **Response:** Binary image data with appropriate Content-Type header.
 
-### 📋 Pets Endpoints Summary
-
-| Endpoint | Method | Authentication | Permissions | Description |
-|----------|--------|----------------|-------------|-------------|
-| `/pets` | POST | ✅ Bearer Token | ✅ `pets.create` | Create new pet (user) |
-| `/pets/my` | GET | ✅ Bearer Token | ✅ `pets.read` | Get user's pets |
-| `/pets/:id` | GET | ✅ Bearer Token | ✅ `pets.read` | Get specific pet (owner only) |
-| `/pets/:id` | PUT | ✅ Bearer Token | ✅ `pets.update` | Update pet (owner only) |
-| `/pets/:id` | DELETE | ✅ Bearer Token | ✅ `pets.delete` | Delete pet (owner only) |
-| `/pets/admin/all` | GET | ✅ Bearer Token | ✅ `pets.getAll` | Get all pets (admin only) |
-| `/pets/admin/:id` | GET | ✅ Bearer Token | ✅ `pets.read` | Get any pet (admin only) |
-| `/pets/:id/avatar` | GET | ❌ None | ❌ None | Get pet's avatar (public) |
-
-### 📋 Pet Types Endpoints Summary
-
-| Endpoint | Method | Authentication | Permissions | Description |
-|----------|--------|----------------|-------------|-------------|
-| `/pet-types` | POST | ✅ Bearer Token | ✅ `petTypes.create` | Create pet type (admin) |
-| `/pet-types` | GET | ✅ Bearer Token | ✅ `petTypes.getAll` | Get all pet types |
-| `/pet-types/:id` | GET | ✅ Bearer Token | ✅ `petTypes.read` | Get specific pet type |
-| `/pet-types/:id` | PUT | ✅ Bearer Token | ✅ `petTypes.update` | Update pet type (admin) |
-| `/pet-types/:id` | DELETE | ✅ Bearer Token | ✅ `petTypes.delete` | Delete pet type (admin) |
-
-### 📋 Pet Characteristics Endpoints Summary
-
-| Endpoint | Method | Authentication | Permissions | Description |
-|----------|--------|----------------|-------------|-------------|
-| `/pet-characteristics` | POST | ✅ Bearer Token | ✅ `petCharacteristics.create` | Create characteristic (admin) |
-| `/pet-characteristics` | GET | ✅ Bearer Token | ✅ `petCharacteristics.getAll` | Get all characteristics |
-| `/pet-characteristics/:id` | GET | ✅ Bearer Token | ✅ `petCharacteristics.read` | Get specific characteristic |
-| `/pet-characteristics/:id` | PUT | ✅ Bearer Token | ✅ `petCharacteristics.update` | Update characteristic (admin) |
-| `/pet-characteristics/:id` | DELETE | ✅ Bearer Token | ✅ `petCharacteristics.delete` | Delete characteristic (admin) |
-
-### 📋 Users Endpoints Summary
-
-| Endpoint | Method | Authentication | Permissions | Description |
-|----------|--------|----------------|-------------|-------------|
-| `/users/me` | GET | ✅ Bearer Token | ❌ None | Get authenticated user's profile |
-| `/users/me` | PUT | ✅ Bearer Token | ❌ None | Update authenticated user's profile + avatar (optional) |
-| `/users` | GET | ✅ Bearer Token | ✅ `users.getAll` | List all users (admin only) |
-| `/users/:id` | GET | ✅ Bearer Token | ✅ `users.read` | Get specific user (admin only) |
-| `/users/:id` | PUT | ✅ Bearer Token | ✅ `users.update` | Update specific user + avatar (optional) (admin only) |
-| `/users/:id/avatar` | GET | ❌ None | ❌ None | Get user's avatar (public) |
-
 ## 🔐 Authentication
 
 For protected endpoints, include the header:
@@ -814,168 +943,7 @@ For protected endpoints, include the header:
 Authorization: Bearer <token>
 ```
 
-## 🐾 Pet Management Workflow
-
-### 1. **Setup (Admin Only)**
-First, admins need to create the basic structure:
-
-**Create Pet Types:**
-```bash
-POST /api/pet-types
-{
-  "name": "Perro"
-}
-
-POST /api/pet-types
-{
-  "name": "Gato"
-}
-```
-
-**Create Pet Characteristics:**
-```bash
-POST /api/pet-characteristics
-{
-  "name": "Tamaño"
-}
-
-POST /api/pet-characteristics
-{
-  "name": "Edad"
-}
-
-POST /api/pet-characteristics
-{
-  "name": "Necesita Medicación"
-}
-```
-
-### 2. **User Pet Management**
-Users can then create and manage their pets:
-
-**Create a Pet:**
-```bash
-POST /api/pets
-Content-Type: multipart/form-data
-
-name: "Luna"
-comment: "Mi perrita favorita"
-petTypeId: "id_del_perro"
-characteristics: [
-  {
-    "characteristicId": "id_del_tamaño",
-    "value": "grande"
-  },
-  {
-    "characteristicId": "id_de_edad",
-    "value": "5 años"
-  },
-  {
-    "characteristicId": "id_de_medicacion",
-    "value": "no"
-  }
-]
-avatarFile: [file] (optional)
-```
-
-**View My Pets:**
-```bash
-GET /api/pets/my?search=luna&page=1&limit=10
-```
-
-### 3. **Admin Monitoring**
-Admins can monitor all pets in the system:
-
-**View All Pets:**
-```bash
-GET /api/pets/admin/all?owner=usuario_id&petType=perro&page=1&limit=20
-```
-
-**View Specific Pet:**
-```bash
-GET /api/pets/admin/cualquier_mascota_id
-```
-
-### 4. **Data Structure**
-Each pet contains:
-- **Basic Info**: name, comment, avatar
-- **Type**: reference to PetType (Perro, Gato, etc.)
-- **Characteristics**: array of characteristic-value pairs
-- **Owner**: reference to User
-- **Timestamps**: createdAt, updatedAt
-
-**Example Pet Response:**
-```json
-{
-  "_id": "...",
-  "name": "Luna",
-  "comment": "Mi perrita favorita",
-  "avatar": "/api/pets/.../avatar",
-  "petType": {
-    "_id": "...",
-    "name": "Perro"
-  },
-  "characteristics": [
-    {
-      "characteristic": {
-        "_id": "...",
-        "name": "Tamaño"
-      },
-      "value": "grande"
-    },
-    {
-      "characteristic": {
-        "_id": "...",
-        "name": "Edad"
-      },
-      "value": "5 años"
-    }
-  ],
-  "owner": {
-    "_id": "...",
-    "firstName": "John",
-    "lastName": "Doe"
-  },
-  "createdAt": "2024-01-01T00:00:00.000Z",
-  "updatedAt": "2024-01-01T00:00:00.000Z"
-}
-```
-
-## 🏗️ Project Structure
-
-```
-src/
-├── app.ts                 # Entry point
-├── models/               # MongoDB models
-│   ├── User.ts          # User model
-│   ├── Role.ts          # Role model
-│   ├── Admin.ts         # Admin model
-│   ├── PetType.ts       # Pet type model
-│   ├── PetCharacteristic.ts # Pet characteristic model
-│   └── Pet.ts           # Pet model
-├── routes/              # Route controllers
-│   ├── auth.ts          # Authentication routes
-│   ├── users.ts         # User routes (including unified profile updates)
-│   ├── roles.ts         # Role routes
-│   ├── admins.ts        # Admin routes
-│   ├── logs.ts          # Audit logs routes
-│   ├── petTypes.ts      # Pet types routes
-│   ├── petCharacteristics.ts # Pet characteristics routes
-│   └── pets.ts          # Pet routes (user and admin services)
-├── middleware/          # Middlewares
-│   ├── auth.ts          # JWT authentication
-│   ├── permissions.ts   # Permission control
-│   ├── errorHandler.ts  # Error handling
-│   └── upload.ts        # Image upload middleware
-└── utils/               # Utilities
-    ├── auth.ts          # JWT and bcrypt functions
-    ├── audit.ts         # Audit logging
-    ├── auditLogger.ts   # Audit logger
-    ├── changeDetector.ts # Change detection
-    └── response.ts      # Response helper
-```
-
-## 🔧 Available Scripts
+## �� Available Scripts
 
 - `npm run dev`: Run server in development mode with hot reload
 - `npm test`: Run tests (pending implementation)

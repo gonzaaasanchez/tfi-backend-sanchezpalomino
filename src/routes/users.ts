@@ -328,6 +328,218 @@ const updateMyCarerConfig: RequestHandler = async (req, res, next) => {
   }
 };
 
+// POST /users/me/addresses - Agregar una nueva dirección al usuario autenticado
+const addMyAddress: RequestHandler = async (req, res, next) => {
+  try {
+    const userId = req.user?._id;
+    if (!userId) {
+      ResponseHelper.unauthorized(res);
+      return;
+    }
+
+    const newAddress = req.body;
+
+    // Validar que solo se envíe la dirección
+    if (Object.keys(req.body).length > 1) {
+      ResponseHelper.validationError(res, 'Solo se permite enviar los datos de la dirección');
+      return;
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      ResponseHelper.notFound(res, 'Usuario no encontrado');
+      return;
+    }
+
+    // Agregar la nueva dirección al array
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $push: { addresses: newAddress } },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      ResponseHelper.notFound(res, 'Usuario no encontrado');
+      return;
+    }
+
+    // Obtener la dirección recién agregada (la última del array)
+    const addedAddress = updatedUser.addresses?.[updatedUser.addresses.length - 1];
+
+    // Registrar el cambio
+    const userName = `${req.user.firstName} ${req.user.lastName}`;
+    logChanges(
+      'User',
+      userId.toString(),
+      userId.toString(),
+      userName,
+      [{ field: 'addresses', oldValue: 'N/A', newValue: 'Dirección agregada' }]
+    );
+
+    ResponseHelper.success(
+      res,
+      'Dirección agregada exitosamente',
+      addedAddress
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+// PUT /users/me/addresses/:index - Actualizar una dirección específica del usuario autenticado
+const updateMyAddress: RequestHandler = async (req, res, next) => {
+  try {
+    const userId = req.user?._id;
+    if (!userId) {
+      ResponseHelper.unauthorized(res);
+      return;
+    }
+
+    const addressIndex = parseInt(req.params.index);
+    const updatedAddress = req.body;
+
+    // Validar que solo se envíe la dirección
+    if (Object.keys(req.body).length > 1) {
+      ResponseHelper.validationError(res, 'Solo se permite enviar los datos de la dirección');
+      return;
+    }
+
+    // Validar que el índice sea válido
+    if (isNaN(addressIndex) || addressIndex < 0) {
+      ResponseHelper.validationError(res, 'Índice de dirección inválido');
+      return;
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      ResponseHelper.notFound(res, 'Usuario no encontrado');
+      return;
+    }
+
+    // Verificar que la dirección existe
+    if (!user.addresses || addressIndex >= user.addresses.length) {
+      ResponseHelper.notFound(res, 'Dirección no encontrada');
+      return;
+    }
+
+    // Detectar cambios antes de actualizar
+    const oldAddress = user.addresses[addressIndex];
+    const changes: any[] = [];
+    
+    // Comparar campos manualmente
+    Object.keys(updatedAddress).forEach(key => {
+      if ((oldAddress as any)[key] !== (updatedAddress as any)[key]) {
+        changes.push({
+          field: key,
+          oldValue: (oldAddress as any)[key],
+          newValue: (updatedAddress as any)[key]
+        });
+      }
+    });
+
+    // Actualizar la dirección específica
+    const updateQuery: any = {};
+    Object.keys(updatedAddress).forEach(key => {
+      updateQuery[`addresses.${addressIndex}.${key}`] = updatedAddress[key];
+    });
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: updateQuery },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      ResponseHelper.notFound(res, 'Usuario no encontrado');
+      return;
+    }
+
+    // Si hubo cambios, registrarlos
+    if (changes.length > 0) {
+      const userName = `${req.user.firstName} ${req.user.lastName}`;
+      logChanges(
+        'User',
+        userId.toString(),
+        userId.toString(),
+        userName,
+        changes.map(change => ({
+          ...change,
+          field: `addresses[${addressIndex}].${change.field}`
+        }))
+      );
+    }
+
+    ResponseHelper.success(
+      res,
+      'Dirección actualizada exitosamente',
+      updatedUser.addresses?.[addressIndex]
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+// DELETE /users/me/addresses/:index - Eliminar una dirección específica del usuario autenticado
+const deleteMyAddress: RequestHandler = async (req, res, next) => {
+  try {
+    const userId = req.user?._id;
+    if (!userId) {
+      ResponseHelper.unauthorized(res);
+      return;
+    }
+
+    const addressIndex = parseInt(req.params.index);
+
+    // Validar que el índice sea válido
+    if (isNaN(addressIndex) || addressIndex < 0) {
+      ResponseHelper.validationError(res, 'Índice de dirección inválido');
+      return;
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      ResponseHelper.notFound(res, 'Usuario no encontrado');
+      return;
+    }
+
+    // Verificar que la dirección existe
+    if (!user.addresses || addressIndex >= user.addresses.length) {
+      ResponseHelper.notFound(res, 'Dirección no encontrada');
+      return;
+    }
+
+    // Eliminar la dirección específica
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $pull: { addresses: user.addresses[addressIndex] } },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      ResponseHelper.notFound(res, 'Usuario no encontrado');
+      return;
+    }
+
+    // Registrar el cambio
+    const userName = `${req.user.firstName} ${req.user.lastName}`;
+    logChanges(
+      'User',
+      userId.toString(),
+      userId.toString(),
+      userName,
+      [{ field: 'addresses', oldValue: 'Dirección eliminada', newValue: 'N/A' }]
+    );
+
+    ResponseHelper.success(
+      res,
+      'Dirección eliminada exitosamente',
+      null
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Rutas para el usuario autenticado (sin permisos especiales) - DEBEN IR PRIMERO
 router.get('/me', authMiddleware, getMyProfile);
 router.put(
@@ -338,6 +550,11 @@ router.put(
   updateMyProfile
 );
 router.put('/me/carer-config', authMiddleware, updateMyCarerConfig);
+
+// Rutas para gestionar direcciones
+router.post('/me/addresses', authMiddleware, addMyAddress);
+router.put('/me/addresses/:index', authMiddleware, updateMyAddress);
+router.delete('/me/addresses/:index', authMiddleware, deleteMyAddress);
 
 // Rutas para admins (con permisos) - DEBEN IR DESPUÉS
 // @ts-ignore

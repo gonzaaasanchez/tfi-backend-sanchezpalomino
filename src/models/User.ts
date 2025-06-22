@@ -20,6 +20,15 @@ export interface IUser extends Document {
       visitPrice?: number;
     };
   };
+  addresses?: Array<{
+    fullAddress: string;
+    floor?: string;
+    apartment?: string;
+    coords: {
+      lat: number;
+      lon: number;
+    };
+  }>;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -108,6 +117,43 @@ const UserSchema: Schema = new Schema(
       },
       required: false,
     },
+    addresses: [
+      {
+        fullAddress: {
+          type: String,
+          required: [true, 'La dirección completa es requerida'],
+          trim: true,
+          minlength: [10, 'La dirección debe tener al menos 10 caracteres'],
+          maxlength: [200, 'La dirección no puede exceder 200 caracteres'],
+        },
+        floor: {
+          type: String,
+          required: false,
+          trim: true,
+          maxlength: [10, 'El piso no puede exceder 10 caracteres'],
+        },
+        apartment: {
+          type: String,
+          required: false,
+          trim: true,
+          maxlength: [10, 'El departamento no puede exceder 10 caracteres'],
+        },
+        coords: {
+          lat: {
+            type: Number,
+            required: [true, 'La latitud es requerida'],
+            min: [-90, 'La latitud debe estar entre -90 y 90'],
+            max: [90, 'La latitud debe estar entre -90 y 90'],
+          },
+          lon: {
+            type: Number,
+            required: [true, 'La longitud es requerida'],
+            min: [-180, 'La longitud debe estar entre -180 y 180'],
+            max: [180, 'La longitud debe estar entre -180 y 180'],
+          },
+        },
+      },
+    ],
   },
   {
     timestamps: true,
