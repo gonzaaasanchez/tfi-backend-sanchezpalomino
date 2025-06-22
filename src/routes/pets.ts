@@ -352,7 +352,34 @@ const updatePet: RequestHandler = async (req, res, next) => {
       logChanges('Pet', petId, userId.toString(), userName, changes);
     }
 
-    ResponseHelper.success(res, 'Mascota actualizada exitosamente', updatedPet);
+    ResponseHelper.success(
+      res,
+      'Mascota actualizada exitosamente',
+      {
+        id: updatedPet._id,
+        name: updatedPet.name,
+        comment: updatedPet.comment,
+        avatar: updatedPet.avatar,
+        petType: {
+          id: (updatedPet.petType as any)._id,
+          name: (updatedPet.petType as any).name,
+        },
+        characteristics: updatedPet.characteristics.map((char) => ({
+          id: (char.characteristic as any)._id,
+          name: (char.characteristic as any).name,
+          value: char.value,
+        })),
+        owner: {
+          id: (updatedPet.owner as any)._id,
+          name: `${(updatedPet.owner as any).firstName} ${
+            (updatedPet.owner as any).lastName
+          }`,
+          email: (updatedPet.owner as any).email,
+        },
+        createdAt: updatedPet.createdAt,
+        updatedAt: updatedPet.updatedAt,
+      }
+    );
   } catch (error) {
     next(error);
   }
