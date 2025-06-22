@@ -479,7 +479,7 @@ router.post(
   '/',
   authMiddleware,
   permissionMiddleware('pets', 'create'),
-  uploadImage.single('avatarfile'),
+  uploadImage.single('avatarFile'),
   handleUploadError,
   createPet
 );
@@ -502,7 +502,7 @@ router.put(
   '/:id',
   authMiddleware,
   permissionMiddleware('pets', 'update'),
-  uploadImage.single('avatarfile'),
+  uploadImage.single('avatarFile'),
   handleUploadError,
   updatePet
 );
