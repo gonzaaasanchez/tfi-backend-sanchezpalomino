@@ -49,20 +49,22 @@ const PetSchema: Schema = new Schema(
       ref: 'PetType',
       required: [true, 'El tipo de mascota es requerido'],
     },
-    characteristics: [{
-      characteristic: {
-        type: Schema.Types.ObjectId,
-        ref: 'PetCharacteristic',
-        required: true,
+    characteristics: [
+      {
+        characteristic: {
+          type: Schema.Types.ObjectId,
+          ref: 'PetCharacteristic',
+          required: true,
+        },
+        value: {
+          type: String,
+          required: true,
+          trim: true,
+          minlength: [1, 'El valor debe tener al menos 1 carácter'],
+          maxlength: [100, 'El valor no puede exceder 100 caracteres'],
+        },
       },
-      value: {
-        type: String,
-        required: true,
-        trim: true,
-        minlength: [1, 'El valor debe tener al menos 1 carácter'],
-        maxlength: [100, 'El valor no puede exceder 100 caracteres'],
-      },
-    }],
+    ],
     owner: {
       type: Schema.Types.ObjectId,
       ref: 'User',
@@ -86,4 +88,4 @@ PetSchema.index({ owner: 1 });
 PetSchema.index({ petType: 1 });
 PetSchema.index({ 'characteristics.characteristic': 1 });
 
-export default mongoose.model<IPet>('Pet', PetSchema); 
+export default mongoose.model<IPet>('Pet', PetSchema);

@@ -21,7 +21,10 @@ const createPetCharacteristic: RequestHandler = async (req, res, next) => {
     // Verificar si la característica ya existe
     const existingCharacteristic = await PetCharacteristic.findOne({ name });
     if (existingCharacteristic) {
-      ResponseHelper.validationError(res, 'Ya existe una característica con ese nombre');
+      ResponseHelper.validationError(
+        res,
+        'Ya existe una característica con ese nombre'
+      );
       return;
     }
 
@@ -34,9 +37,13 @@ const createPetCharacteristic: RequestHandler = async (req, res, next) => {
       ? `${req.user.firstName} ${req.user.lastName}`
       : 'Sistema';
     const userId = req.user?._id?.toString() || 'system';
-    logChanges('PetCharacteristic', characteristic._id?.toString() ?? '', userId, userName, [
-      { field: 'name', oldValue: null, newValue: name },
-    ]);
+    logChanges(
+      'PetCharacteristic',
+      characteristic._id?.toString() ?? '',
+      userId,
+      userName,
+      [{ field: 'name', oldValue: null, newValue: name }]
+    );
 
     ResponseHelper.success(
       res,
@@ -71,18 +78,24 @@ const getAllPetCharacteristics: RequestHandler = async (req, res, next) => {
       .sort({ createdAt: -1 });
 
     // Obtener el total para la paginación
-    const totalCharacteristics = await PetCharacteristic.countDocuments(filters);
+    const totalCharacteristics = await PetCharacteristic.countDocuments(
+      filters
+    );
     const totalPages = Math.ceil(totalCharacteristics / limit);
 
-    ResponseHelper.success(res, 'Características de mascota obtenidas exitosamente', {
-      items: characteristics,
-      pagination: {
-        page,
-        limit,
-        total: totalCharacteristics,
-        totalPages,
-      },
-    });
+    ResponseHelper.success(
+      res,
+      'Características de mascota obtenidas exitosamente',
+      {
+        items: characteristics,
+        pagination: {
+          page,
+          limit,
+          total: totalCharacteristics,
+          totalPages,
+        },
+      }
+    );
   } catch (error) {
     next(error);
   }
@@ -99,7 +112,11 @@ const getPetCharacteristic: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    ResponseHelper.success(res, 'Característica de mascota obtenida exitosamente', characteristic);
+    ResponseHelper.success(
+      res,
+      'Característica de mascota obtenida exitosamente',
+      characteristic
+    );
   } catch (error) {
     next(error);
   }
@@ -123,12 +140,15 @@ const updatePetCharacteristic: RequestHandler = async (req, res, next) => {
     }
 
     // Verificar si ya existe otra característica con el mismo nombre
-    const existingCharacteristic = await PetCharacteristic.findOne({ 
-      name, 
-      _id: { $ne: characteristicId } 
+    const existingCharacteristic = await PetCharacteristic.findOne({
+      name,
+      _id: { $ne: characteristicId },
     });
     if (existingCharacteristic) {
-      ResponseHelper.validationError(res, 'Ya existe una característica con ese nombre');
+      ResponseHelper.validationError(
+        res,
+        'Ya existe una característica con ese nombre'
+      );
       return;
     }
 
@@ -192,12 +212,13 @@ const deletePetCharacteristic: RequestHandler = async (req, res, next) => {
       characteristicId,
       req.user._id.toString(),
       userName,
-      [
-        { field: 'name', oldValue: characteristic.name, newValue: null },
-      ]
+      [{ field: 'name', oldValue: characteristic.name, newValue: null }]
     );
 
-    ResponseHelper.success(res, 'Característica de mascota eliminada exitosamente');
+    ResponseHelper.success(
+      res,
+      'Característica de mascota eliminada exitosamente'
+    );
   } catch (error) {
     next(error);
   }
@@ -205,14 +226,39 @@ const deletePetCharacteristic: RequestHandler = async (req, res, next) => {
 
 // Rutas - Usar sistema de permisos correcto
 // @ts-ignore - Express 5.1.0 type compatibility issue
-router.post('/', authMiddleware, permissionMiddleware('petCharacteristics', 'create'), createPetCharacteristic);
+router.post(
+  '/',
+  authMiddleware,
+  permissionMiddleware('petCharacteristics', 'create'),
+  createPetCharacteristic
+);
 // @ts-ignore - Express 5.1.0 type compatibility issue
-router.get('/', authMiddleware, permissionMiddleware('petCharacteristics', 'getAll'), getAllPetCharacteristics);
+router.get(
+  '/',
+  authMiddleware,
+  permissionMiddleware('petCharacteristics', 'getAll'),
+  getAllPetCharacteristics
+);
 // @ts-ignore - Express 5.1.0 type compatibility issue
-router.get('/:id', authMiddleware, permissionMiddleware('petCharacteristics', 'read'), getPetCharacteristic);
+router.get(
+  '/:id',
+  authMiddleware,
+  permissionMiddleware('petCharacteristics', 'read'),
+  getPetCharacteristic
+);
 // @ts-ignore - Express 5.1.0 type compatibility issue
-router.put('/:id', authMiddleware, permissionMiddleware('petCharacteristics', 'update'), updatePetCharacteristic);
+router.put(
+  '/:id',
+  authMiddleware,
+  permissionMiddleware('petCharacteristics', 'update'),
+  updatePetCharacteristic
+);
 // @ts-ignore - Express 5.1.0 type compatibility issue
-router.delete('/:id', authMiddleware, permissionMiddleware('petCharacteristics', 'delete'), deletePetCharacteristic);
+router.delete(
+  '/:id',
+  authMiddleware,
+  permissionMiddleware('petCharacteristics', 'delete'),
+  deletePetCharacteristic
+);
 
-export default router; 
+export default router;

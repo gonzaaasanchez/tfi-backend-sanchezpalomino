@@ -21,7 +21,10 @@ const createPetType: RequestHandler = async (req, res, next) => {
     // Verificar si el tipo de mascota ya existe
     const existingPetType = await PetType.findOne({ name });
     if (existingPetType) {
-      ResponseHelper.validationError(res, 'Ya existe un tipo de mascota con ese nombre');
+      ResponseHelper.validationError(
+        res,
+        'Ya existe un tipo de mascota con ese nombre'
+      );
       return;
     }
 
@@ -99,7 +102,11 @@ const getPetType: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    ResponseHelper.success(res, 'Tipo de mascota obtenido exitosamente', petType);
+    ResponseHelper.success(
+      res,
+      'Tipo de mascota obtenido exitosamente',
+      petType
+    );
   } catch (error) {
     next(error);
   }
@@ -123,12 +130,15 @@ const updatePetType: RequestHandler = async (req, res, next) => {
     }
 
     // Verificar si ya existe otro tipo con el mismo nombre
-    const existingPetType = await PetType.findOne({ 
-      name, 
-      _id: { $ne: petTypeId } 
+    const existingPetType = await PetType.findOne({
+      name,
+      _id: { $ne: petTypeId },
     });
     if (existingPetType) {
-      ResponseHelper.validationError(res, 'Ya existe un tipo de mascota con ese nombre');
+      ResponseHelper.validationError(
+        res,
+        'Ya existe un tipo de mascota con ese nombre'
+      );
       return;
     }
 
@@ -187,15 +197,9 @@ const deletePetType: RequestHandler = async (req, res, next) => {
 
     // Log de eliminación
     const userName = `${req.user.firstName} ${req.user.lastName}`;
-    logChanges(
-      'PetType',
-      petTypeId,
-      req.user._id.toString(),
-      userName,
-      [
-        { field: 'name', oldValue: petType.name, newValue: null },
-      ]
-    );
+    logChanges('PetType', petTypeId, req.user._id.toString(), userName, [
+      { field: 'name', oldValue: petType.name, newValue: null },
+    ]);
 
     ResponseHelper.success(res, 'Tipo de mascota eliminado exitosamente');
   } catch (error) {
@@ -205,14 +209,39 @@ const deletePetType: RequestHandler = async (req, res, next) => {
 
 // Rutas - Usar sistema de permisos correcto
 // @ts-ignore - Express 5.1.0 type compatibility issue
-router.post('/', authMiddleware, permissionMiddleware('petTypes', 'create'), createPetType);
+router.post(
+  '/',
+  authMiddleware,
+  permissionMiddleware('petTypes', 'create'),
+  createPetType
+);
 // @ts-ignore - Express 5.1.0 type compatibility issue
-router.get('/', authMiddleware, permissionMiddleware('petTypes', 'getAll'), getAllPetTypes);
+router.get(
+  '/',
+  authMiddleware,
+  permissionMiddleware('petTypes', 'getAll'),
+  getAllPetTypes
+);
 // @ts-ignore - Express 5.1.0 type compatibility issue
-router.get('/:id', authMiddleware, permissionMiddleware('petTypes', 'read'), getPetType);
+router.get(
+  '/:id',
+  authMiddleware,
+  permissionMiddleware('petTypes', 'read'),
+  getPetType
+);
 // @ts-ignore - Express 5.1.0 type compatibility issue
-router.put('/:id', authMiddleware, permissionMiddleware('petTypes', 'update'), updatePetType);
+router.put(
+  '/:id',
+  authMiddleware,
+  permissionMiddleware('petTypes', 'update'),
+  updatePetType
+);
 // @ts-ignore - Express 5.1.0 type compatibility issue
-router.delete('/:id', authMiddleware, permissionMiddleware('petTypes', 'delete'), deletePetType);
+router.delete(
+  '/:id',
+  authMiddleware,
+  permissionMiddleware('petTypes', 'delete'),
+  deletePetType
+);
 
-export default router; 
+export default router;
