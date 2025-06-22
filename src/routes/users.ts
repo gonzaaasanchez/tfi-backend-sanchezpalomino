@@ -328,6 +328,63 @@ const updateMyCarerConfig: RequestHandler = async (req, res, next) => {
   }
 };
 
+// GET /users/me/addresses - Obtener todas las direcciones del usuario autenticado
+const getMyAddresses: RequestHandler = async (req, res, next) => {
+  try {
+    const userId = req.user?._id;
+    if (!userId) {
+      ResponseHelper.unauthorized(res);
+      return;
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      ResponseHelper.notFound(res, 'Usuario no encontrado');
+      return;
+    }
+
+    const addresses = user.addresses || [];
+    ResponseHelper.success(res, 'Direcciones obtenidas exitosamente', addresses);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// GET /users/me/addresses/:index - Obtener una dirección específica del usuario autenticado
+const getMyAddress: RequestHandler = async (req, res, next) => {
+  try {
+    const userId = req.user?._id;
+    if (!userId) {
+      ResponseHelper.unauthorized(res);
+      return;
+    }
+
+    const addressIndex = parseInt(req.params.index);
+
+    // Validar que el índice sea válido
+    if (isNaN(addressIndex) || addressIndex < 0) {
+      ResponseHelper.validationError(res, 'Índice de dirección inválido');
+      return;
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      ResponseHelper.notFound(res, 'Usuario no encontrado');
+      return;
+    }
+
+    if (!user.addresses || addressIndex >= user.addresses.length) {
+      ResponseHelper.notFound(res, 'Dirección no encontrada');
+      return;
+    }
+
+    const address = user.addresses[addressIndex];
+    ResponseHelper.success(res, 'Dirección obtenida exitosamente', address);
+  } catch (error) {
+    next(error);
+  }
+};
+
 // POST /users/me/addresses - Agregar una nueva dirección al usuario autenticado
 const addMyAddress: RequestHandler = async (req, res, next) => {
   try {
@@ -428,7 +485,7 @@ const updateMyAddress: RequestHandler = async (req, res, next) => {
     // Actualizar la dirección específica
     const updateQuery: any = {};
     Object.keys(updatedAddress).forEach(key => {
-      updateQuery[`addresses.${addressIndex}.${key}`] = updatedAddress[key];
+      updateQuery[`addresses.${addressIndex}.${key}`] = (updatedAddress as any)[key];
     });
 
     const updatedUser = await User.findByIdAndUpdate(
@@ -540,6 +597,8 @@ router.put(
 router.put('/me/carer-config', authMiddleware, updateMyCarerConfig);
 
 // Rutas para gestionar direcciones
+router.get('/me/addresses', authMiddleware, getMyAddresses);
+router.get('/me/addresses/:index', authMiddleware, getMyAddress);
 router.post('/me/addresses', authMiddleware, addMyAddress);
 router.put('/me/addresses/:index', authMiddleware, updateMyAddress);
 router.delete('/me/addresses/:index', authMiddleware, deleteMyAddress);

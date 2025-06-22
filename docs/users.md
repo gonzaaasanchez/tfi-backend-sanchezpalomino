@@ -180,6 +180,69 @@ Authorization: Bearer <token>
 }
 ```
 
+## GET `/users/me/addresses`
+Get all addresses of the authenticated user (requires authentication).
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Direcciones obtenidas exitosamente",
+  "data": [
+    {
+      "name": "Casa Principal",
+      "fullAddress": "Av. Corrientes 1234, Buenos Aires, Argentina",
+      "floor": "3",
+      "apartment": "A",
+      "coords": {
+        "lat": -34.6037,
+        "lon": -58.3816
+      }
+    },
+    {
+      "name": "Oficina",
+      "fullAddress": "Av. Santa Fe 5678, Buenos Aires, Argentina",
+      "floor": "2",
+      "coords": {
+        "lat": -34.6037,
+        "lon": -58.3816
+      }
+    }
+  ]
+}
+```
+
+## GET `/users/me/addresses/:index`
+Get a specific address of the authenticated user by index (requires authentication).
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Dirección obtenida exitosamente",
+  "data": {
+    "name": "Casa Principal",
+    "fullAddress": "Av. Corrientes 1234, Buenos Aires, Argentina",
+    "floor": "3",
+    "apartment": "A",
+    "coords": {
+      "lat": -34.6037,
+      "lon": -58.3816
+    }
+  }
+}
+```
+
 ## POST `/users/me/addresses`
 Add a new address to the authenticated user (requires authentication).
 
