@@ -10,6 +10,16 @@ export interface IUser extends Document {
   avatar?: string;
   avatarBuffer?: Buffer;
   avatarContentType?: string;
+  carerConfig?: {
+    homeCare: {
+      enabled: boolean;
+      dayPrice?: number;
+    };
+    petHomeCare: {
+      enabled: boolean;
+      visitPrice?: number;
+    };
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -73,11 +83,102 @@ const UserSchema: Schema = new Schema(
       type: String,
       required: false,
     },
+    carerConfig: {
+      type: {
+        homeCare: {
+          enabled: {
+            type: Boolean,
+            default: false,
+          },
+          dayPrice: {
+            type: Number,
+            min: [0, 'El precio por día no puede ser negativo'],
+          },
+        },
+        petHomeCare: {
+          enabled: {
+            type: Boolean,
+            default: false,
+          },
+          visitPrice: {
+            type: Number,
+            min: [0, 'El precio por visita no puede ser negativo'],
+          },
+        },
+      },
+      required: false,
+    },
   },
   {
     timestamps: true,
   }
 );
+
+// Validación personalizada para carerConfig
+UserSchema.pre('save', function (next) {
+  const user = this as any;
+
+  if (user.carerConfig) {
+    // Validar homeCare
+    if (
+      user.carerConfig.homeCare?.enabled &&
+      !user.carerConfig.homeCare.dayPrice
+    ) {
+      return next(
+        new Error(
+          'El precio por día es requerido cuando el cuidado en hogar está habilitado'
+        )
+      );
+    }
+
+    // Validar petHomeCare
+    if (
+      user.carerConfig.petHomeCare?.enabled &&
+      !user.carerConfig.petHomeCare.visitPrice
+    ) {
+      return next(
+        new Error(
+          'El precio por visita es requerido cuando el cuidado en hogar de mascotas está habilitado'
+        )
+      );
+    }
+  }
+
+  next();
+});
+
+// Validación personalizada para findByIdAndUpdate
+UserSchema.pre('findOneAndUpdate', function (next) {
+  const update = this.getUpdate() as any;
+
+  if (update.carerConfig) {
+    // Validar homeCare
+    if (
+      update.carerConfig.homeCare?.enabled &&
+      !update.carerConfig.homeCare.dayPrice
+    ) {
+      return next(
+        new Error(
+          'El precio por día es requerido cuando el cuidado en hogar está habilitado'
+        )
+      );
+    }
+
+    // Validar petHomeCare
+    if (
+      update.carerConfig.petHomeCare?.enabled &&
+      !update.carerConfig.petHomeCare.visitPrice
+    ) {
+      return next(
+        new Error(
+          'El precio por visita es requerido cuando el cuidado en hogar de mascotas está habilitado'
+        )
+      );
+    }
+  }
+
+  next();
+});
 
 // Método para excluir password y avatarBuffer en las respuestas
 UserSchema.methods.toJSON = function () {

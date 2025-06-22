@@ -264,6 +264,70 @@ const updateUser: RequestHandler = async (req, res, next) => {
   }
 };
 
+// PUT /users/me/carer-config - Actualizar configuración de cuidado del usuario autenticado
+const updateMyCarerConfig: RequestHandler = async (req, res, next) => {
+  try {
+    const userId = req.user?._id;
+    if (!userId) {
+      ResponseHelper.unauthorized(res);
+      return;
+    }
+
+    const carerConfig = req.body.carerConfig;
+
+    // Validar que solo se envíe carerConfig
+    if (Object.keys(req.body).length > 1 || !carerConfig) {
+      ResponseHelper.validationError(res, 'Solo se permite actualizar carerConfig');
+      return;
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      ResponseHelper.notFound(res, 'Usuario no encontrado');
+      return;
+    }
+
+    // Detectar cambios antes de actualizar
+    const changes = getChanges(user, { carerConfig });
+
+    // Actualizar solo la configuración de cuidado
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { carerConfig },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      ResponseHelper.notFound(res, 'Usuario no encontrado');
+      return;
+    }
+
+    // Si hubo cambios, registrarlos
+    if (changes.length > 0) {
+      const userName = `${req.user.firstName} ${req.user.lastName}`;
+      logChanges(
+        'User',
+        userId.toString(),
+        userId.toString(),
+        userName,
+        changes
+      );
+    }
+
+    // Convertir a objeto y eliminar campos sensibles
+    const userResponse = updatedUser.toObject();
+    const { password, avatarBuffer, ...safeUserResponse } = userResponse;
+
+    ResponseHelper.success(
+      res,
+      'Configuración de cuidado actualizada exitosamente',
+      safeUserResponse
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Rutas para el usuario autenticado (sin permisos especiales) - DEBEN IR PRIMERO
 router.get('/me', authMiddleware, getMyProfile);
 router.put(
@@ -273,6 +337,7 @@ router.put(
   handleUploadError,
   updateMyProfile
 );
+router.put('/me/carer-config', authMiddleware, updateMyCarerConfig);
 
 // Rutas para admins (con permisos) - DEBEN IR DESPUÉS
 // @ts-ignore
