@@ -4,6 +4,12 @@ This directory contains the complete API documentation organized by service modu
 
 ## 📚 Available Documentation
 
+### 📊 [Data Models](./models.md)
+- Complete schema documentation
+- Example documents
+- Model relationships
+- Database structure overview
+
 ### 🔐 [Authentication](./authentication.md)
 - User registration and login
 - JWT token management
