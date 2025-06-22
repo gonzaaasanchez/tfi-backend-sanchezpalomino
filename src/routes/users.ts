@@ -339,12 +339,6 @@ const addMyAddress: RequestHandler = async (req, res, next) => {
 
     const newAddress = req.body;
 
-    // Validar que solo se envíe la dirección
-    if (Object.keys(req.body).length > 1) {
-      ResponseHelper.validationError(res, 'Solo se permite enviar los datos de la dirección');
-      return;
-    }
-
     const user = await User.findById(userId);
     if (!user) {
       ResponseHelper.notFound(res, 'Usuario no encontrado');
@@ -397,12 +391,6 @@ const updateMyAddress: RequestHandler = async (req, res, next) => {
 
     const addressIndex = parseInt(req.params.index);
     const updatedAddress = req.body;
-
-    // Validar que solo se envíe la dirección
-    if (Object.keys(req.body).length > 1) {
-      ResponseHelper.validationError(res, 'Solo se permite enviar los datos de la dirección');
-      return;
-    }
 
     // Validar que el índice sea válido
     if (isNaN(addressIndex) || addressIndex < 0) {
