@@ -92,7 +92,28 @@ const createPet: RequestHandler = async (req, res, next) => {
     ResponseHelper.success(
       res,
       'Mascota creada exitosamente',
-      pet,
+      {
+        id: pet._id,
+        name: pet.name,
+        comment: pet.comment,
+        avatar: pet.avatar,
+        petType: {
+          id: (pet.petType as any)._id,
+          name: (pet.petType as any).name
+        },
+        characteristics: pet.characteristics.map(char => ({
+          id: (char.characteristic as any)._id,
+          name: (char.characteristic as any).name,
+          value: char.value
+        })),
+        owner: {
+          id: (pet.owner as any)._id,
+          name: `${(pet.owner as any).firstName} ${(pet.owner as any).lastName}`,
+          email: (pet.owner as any).email
+        },
+        createdAt: pet.createdAt,
+        updatedAt: pet.updatedAt
+      },
       201
     );
   } catch (error) {
@@ -137,7 +158,28 @@ const getMyPets: RequestHandler = async (req, res, next) => {
     const totalPages = Math.ceil(totalPets / limit);
 
     ResponseHelper.success(res, 'Mascotas obtenidas exitosamente', {
-      pets,
+      pets: pets.map(pet => ({
+        id: pet._id,
+        name: pet.name,
+        comment: pet.comment,
+        avatar: pet.avatar,
+        petType: {
+          id: (pet.petType as any)._id,
+          name: (pet.petType as any).name
+        },
+        characteristics: pet.characteristics.map(char => ({
+          id: (char.characteristic as any)._id,
+          name: (char.characteristic as any).name,
+          value: char.value
+        })),
+        owner: {
+          id: (pet.owner as any)._id,
+          name: `${(pet.owner as any).firstName} ${(pet.owner as any).lastName}`,
+          email: (pet.owner as any).email
+        },
+        createdAt: pet.createdAt,
+        updatedAt: pet.updatedAt
+      })),
       pagination: {
         page,
         limit,
