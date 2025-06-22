@@ -21,6 +21,7 @@ export interface IUser extends Document {
     };
   };
   addresses?: Array<{
+    name: string;
     fullAddress: string;
     floor?: string;
     apartment?: string;
@@ -119,6 +120,13 @@ const UserSchema: Schema = new Schema(
     },
     addresses: [
       {
+        name: {
+          type: String,
+          required: [true, 'El nombre de la dirección es requerido'],
+          trim: true,
+          minlength: [2, 'El nombre debe tener al menos 2 caracteres'],
+          maxlength: [50, 'El nombre no puede exceder 50 caracteres'],
+        },
         fullAddress: {
           type: String,
           required: [true, 'La dirección completa es requerida'],

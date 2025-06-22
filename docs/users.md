@@ -191,7 +191,8 @@ Authorization: Bearer <token>
 **Body:**
 ```json
 {
-  "fullAddress": "Av. Corrientes 1234",
+  "name": "Casa Principal",
+  "fullAddress": "Av. Corrientes 1234, Buenos Aires, Argentina",
   "floor": "3",
   "apartment": "A",
   "coords": {
@@ -207,7 +208,8 @@ Authorization: Bearer <token>
   "success": true,
   "message": "Dirección agregada exitosamente",
   "data": {
-    "fullAddress": "Av. Corrientes 1234",
+    "name": "Casa Principal",
+    "fullAddress": "Av. Corrientes 1234, Buenos Aires, Argentina",
     "floor": "3",
     "apartment": "A",
     "coords": {
@@ -229,7 +231,8 @@ Authorization: Bearer <token>
 **Body:**
 ```json
 {
-  "fullAddress": "Av. Corrientes 1234",
+  "name": "Oficina",
+  "fullAddress": "Av. Corrientes 1234, Buenos Aires, Argentina",
   "floor": "4",
   "coords": {
     "lat": -34.6037,
@@ -244,7 +247,8 @@ Authorization: Bearer <token>
   "success": true,
   "message": "Dirección actualizada exitosamente",
   "data": {
-    "fullAddress": "Av. Corrientes 1234",
+    "name": "Oficina",
+    "fullAddress": "Av. Corrientes 1234, Buenos Aires, Argentina",
     "floor": "4",
     "coords": {
       "lat": -34.6037,

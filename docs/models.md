@@ -26,6 +26,7 @@ This document describes all the data models used in the TFI Backend API.
     }
   },
   addresses: [{
+    name: { type: String, required: true },
     fullAddress: { type: String, required: true },
     floor: { type: String },
     apartment: { type: String },
@@ -58,6 +59,7 @@ This document describes all the data models used in the TFI Backend API.
   },
   "addresses": [
     {
+      "name": "Home",
       "fullAddress": "Av. Corrientes 1234",
       "floor": "3",
       "apartment": "A",
@@ -281,4 +283,4 @@ This document describes all the data models used in the TFI Backend API.
 - Passwords are hashed using bcrypt before storage
 - Avatar images are stored as Buffer in the database
 - ObjectId references are used for relationships between collections
-- Audit logs track all CRUD operations on main entities 
+- Audit logs track all CRUD operations on main entities
