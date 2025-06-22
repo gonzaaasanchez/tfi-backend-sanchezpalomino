@@ -198,11 +198,11 @@ const getAllUsers: RequestHandler = async (req, res, next) => {
     });
 
     ResponseHelper.success(res, 'Usuarios obtenidos exitosamente', {
-      users: safeUsers,
+      items: safeUsers,
       pagination: {
         page,
         limit,
-        totalUsers,
+        total: totalUsers,
         totalPages,
         hasNextPage: page < totalPages,
         hasPrevPage: page > 1,

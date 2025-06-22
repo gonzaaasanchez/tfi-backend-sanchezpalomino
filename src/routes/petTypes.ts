@@ -75,7 +75,7 @@ const getAllPetTypes: RequestHandler = async (req, res, next) => {
     const totalPages = Math.ceil(totalPetTypes / limit);
 
     ResponseHelper.success(res, 'Tipos de mascota obtenidos exitosamente', {
-      petTypes,
+      items: petTypes,
       pagination: {
         page,
         limit,

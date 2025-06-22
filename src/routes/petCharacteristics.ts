@@ -75,7 +75,7 @@ const getAllPetCharacteristics: RequestHandler = async (req, res, next) => {
     const totalPages = Math.ceil(totalCharacteristics / limit);
 
     ResponseHelper.success(res, 'Características de mascota obtenidas exitosamente', {
-      characteristics,
+      items: characteristics,
       pagination: {
         page,
         limit,
