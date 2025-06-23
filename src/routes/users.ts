@@ -6,6 +6,8 @@ import { logChanges } from '../utils/audit';
 import { getChanges } from '../utils/changeDetector';
 import { uploadImage, handleUploadError } from '../middleware/upload';
 import { ResponseHelper } from '../utils/response';
+import Role from '../models/Role';
+import PetType from '../models/PetType';
 
 const router = Router();
 
@@ -281,6 +283,21 @@ const updateMyCarerConfig: RequestHandler = async (req, res, next) => {
       return;
     }
 
+    // Validar petTypes si se proporcionan
+    if (carerConfig.petTypes && Array.isArray(carerConfig.petTypes)) {
+      // Verificar que todos los IDs de petTypes sean válidos
+      const petTypeIds = carerConfig.petTypes;
+      const validPetTypes = await PetType.find({ _id: { $in: petTypeIds } });
+      
+      if (validPetTypes.length !== petTypeIds.length) {
+        ResponseHelper.validationError(
+          res, 
+          'Uno o más tipos de mascota no son válidos'
+        );
+        return;
+      }
+    }
+
     const user = await User.findById(userId);
     if (!user) {
       ResponseHelper.notFound(res, 'Usuario no encontrado');
@@ -295,7 +312,7 @@ const updateMyCarerConfig: RequestHandler = async (req, res, next) => {
       userId,
       { carerConfig },
       { new: true }
-    );
+    ).populate('carerConfig.petTypes', 'name');
 
     if (!updatedUser) {
       ResponseHelper.notFound(res, 'Usuario no encontrado');

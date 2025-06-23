@@ -23,7 +23,8 @@ This document describes all the data models used in the TFI Backend API.
     petHomeCare: {
       enabled: { type: Boolean, default: false },
       visitPrice: { type: Number, default: 0 }
-    }
+    },
+    petTypes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PetType' }]
   },
   addresses: [{
     name: { type: String, required: true },
@@ -55,7 +56,8 @@ This document describes all the data models used in the TFI Backend API.
     "petHomeCare": {
       "enabled": false,
       "visitPrice": 0
-    }
+    },
+    "petTypes": []
   },
   "addresses": [
     {

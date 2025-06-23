@@ -19,6 +19,7 @@ export interface IUser extends Document {
       enabled: boolean;
       visitPrice?: number;
     };
+    petTypes?: mongoose.Types.ObjectId[];
   };
   addresses?: Array<{
     name: string;
@@ -114,6 +115,10 @@ const UserSchema: Schema = new Schema(
             type: Number,
             min: [0, 'El precio por visita no puede ser negativo'],
           },
+        },
+        petTypes: {
+          type: [Schema.Types.ObjectId],
+          ref: 'PetType',
         },
       },
       required: false,

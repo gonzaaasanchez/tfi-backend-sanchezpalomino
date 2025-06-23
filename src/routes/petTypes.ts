@@ -207,6 +207,20 @@ const deletePetType: RequestHandler = async (req, res, next) => {
   }
 };
 
+// GET /pet-types/all - Obtener todos los tipos de mascota sin paginación
+const getAllPetTypesSimple: RequestHandler = async (req, res, next) => {
+  try {
+    // Obtener todos los tipos de mascota ordenados por nombre
+    const petTypes = await PetType.find({})
+      .sort({ name: 1 })
+      .select('_id name');
+
+    ResponseHelper.success(res, 'Tipos de mascota obtenidos exitosamente', petTypes);
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Rutas - Usar sistema de permisos correcto
 // @ts-ignore - Express 5.1.0 type compatibility issue
 router.post(
@@ -214,6 +228,13 @@ router.post(
   authMiddleware,
   permissionMiddleware('petTypes', 'create'),
   createPetType
+);
+// @ts-ignore - Express 5.1.0 type compatibility issue
+router.get(
+  '/all',
+  authMiddleware,
+  permissionMiddleware('petTypes', 'read'),
+  getAllPetTypesSimple
 );
 // @ts-ignore - Express 5.1.0 type compatibility issue
 router.get(

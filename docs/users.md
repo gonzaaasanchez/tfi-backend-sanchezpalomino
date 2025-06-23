@@ -151,7 +151,8 @@ Authorization: Bearer <token>
     "petHomeCare": {
       "enabled": false,
       "visitPrice": null
-    }
+    },
+    "petTypes": ["507f1f77bcf86cd799439011", "507f1f77bcf86cd799439012"]
   }
 }
 ```
@@ -174,7 +175,17 @@ Authorization: Bearer <token>
       "petHomeCare": {
         "enabled": false,
         "visitPrice": null
-      }
+      },
+      "petTypes": [
+        {
+          "_id": "507f1f77bcf86cd799439011",
+          "name": "Perro"
+        },
+        {
+          "_id": "507f1f77bcf86cd799439012",
+          "name": "Gato"
+        }
+      ]
     }
   }
 }
