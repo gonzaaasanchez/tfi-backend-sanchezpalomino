@@ -350,7 +350,7 @@ const getMyAddresses: RequestHandler = async (req, res, next) => {
   }
 };
 
-// GET /users/me/addresses/:index - Obtener una dirección específica del usuario autenticado
+// GET /users/me/addresses/:id - Obtener una dirección específica del usuario autenticado
 const getMyAddress: RequestHandler = async (req, res, next) => {
   try {
     const userId = req.user?._id;
@@ -359,13 +359,7 @@ const getMyAddress: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    const addressIndex = parseInt(req.params.index);
-
-    // Validar que el índice sea válido
-    if (isNaN(addressIndex) || addressIndex < 0) {
-      ResponseHelper.validationError(res, 'Índice de dirección inválido');
-      return;
-    }
+    const addressId = req.params.id;
 
     const user = await User.findById(userId);
     if (!user) {
@@ -373,12 +367,21 @@ const getMyAddress: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    if (!user.addresses || addressIndex >= user.addresses.length) {
+    if (!user.addresses || user.addresses.length === 0) {
+      ResponseHelper.notFound(res, 'No hay direcciones disponibles');
+      return;
+    }
+
+    // Buscar la dirección por ID
+    const address = user.addresses.find(
+      (address: any) => address._id?.toString() === addressId
+    );
+
+    if (!address) {
       ResponseHelper.notFound(res, 'Dirección no encontrada');
       return;
     }
 
-    const address = user.addresses[addressIndex];
     ResponseHelper.success(res, 'Dirección obtenida exitosamente', address);
   } catch (error) {
     next(error);
@@ -437,7 +440,7 @@ const addMyAddress: RequestHandler = async (req, res, next) => {
   }
 };
 
-// PUT /users/me/addresses/:index - Actualizar una dirección específica del usuario autenticado
+// PUT /users/me/addresses/:id - Actualizar una dirección específica del usuario autenticado
 const updateMyAddress: RequestHandler = async (req, res, next) => {
   try {
     const userId = req.user?._id;
@@ -446,14 +449,8 @@ const updateMyAddress: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    const addressIndex = parseInt(req.params.index);
+    const addressId = req.params.id;
     const updatedAddress = req.body;
-
-    // Validar que el índice sea válido
-    if (isNaN(addressIndex) || addressIndex < 0) {
-      ResponseHelper.validationError(res, 'Índice de dirección inválido');
-      return;
-    }
 
     const user = await User.findById(userId);
     if (!user) {
@@ -461,8 +458,18 @@ const updateMyAddress: RequestHandler = async (req, res, next) => {
       return;
     }
 
+    if (!user.addresses || user.addresses.length === 0) {
+      ResponseHelper.notFound(res, 'No hay direcciones disponibles');
+      return;
+    }
+
+    // Buscar la dirección por ID
+    const addressIndex = user.addresses.findIndex(
+      (address: any) => address._id?.toString() === addressId
+    );
+
     // Verificar que la dirección existe
-    if (!user.addresses || addressIndex >= user.addresses.length) {
+    if (addressIndex === -1) {
       ResponseHelper.notFound(res, 'Dirección no encontrada');
       return;
     }
@@ -524,7 +531,7 @@ const updateMyAddress: RequestHandler = async (req, res, next) => {
   }
 };
 
-// DELETE /users/me/addresses/:index - Eliminar una dirección específica del usuario autenticado
+// DELETE /users/me/addresses/:id - Eliminar una dirección específica del usuario autenticado
 const deleteMyAddress: RequestHandler = async (req, res, next) => {
   try {
     const userId = req.user?._id;
@@ -533,13 +540,7 @@ const deleteMyAddress: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    const addressIndex = parseInt(req.params.index);
-
-    // Validar que el índice sea válido
-    if (isNaN(addressIndex) || addressIndex < 0) {
-      ResponseHelper.validationError(res, 'Índice de dirección inválido');
-      return;
-    }
+    const addressId = req.params.id;
 
     const user = await User.findById(userId);
     if (!user) {
@@ -547,8 +548,17 @@ const deleteMyAddress: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Verificar que la dirección existe
-    if (!user.addresses || addressIndex >= user.addresses.length) {
+    if (!user.addresses || user.addresses.length === 0) {
+      ResponseHelper.notFound(res, 'No hay direcciones para eliminar');
+      return;
+    }
+
+    // Buscar la dirección por ID
+    const addressToDelete = user.addresses.find(
+      (address: any) => address._id?.toString() === addressId
+    );
+
+    if (!addressToDelete) {
       ResponseHelper.notFound(res, 'Dirección no encontrada');
       return;
     }
@@ -556,7 +566,7 @@ const deleteMyAddress: RequestHandler = async (req, res, next) => {
     // Eliminar la dirección específica
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { $pull: { addresses: user.addresses[addressIndex] } },
+      { $pull: { addresses: addressToDelete } },
       { new: true }
     );
 
@@ -598,10 +608,10 @@ router.put('/me/carer-config', authMiddleware, updateMyCarerConfig);
 
 // Rutas para gestionar direcciones
 router.get('/me/addresses', authMiddleware, getMyAddresses);
-router.get('/me/addresses/:index', authMiddleware, getMyAddress);
+router.get('/me/addresses/:id', authMiddleware, getMyAddress);
 router.post('/me/addresses', authMiddleware, addMyAddress);
-router.put('/me/addresses/:index', authMiddleware, updateMyAddress);
-router.delete('/me/addresses/:index', authMiddleware, deleteMyAddress);
+router.put('/me/addresses/:id', authMiddleware, updateMyAddress);
+router.delete('/me/addresses/:id', authMiddleware, deleteMyAddress);
 
 // Rutas para admins (con permisos) - DEBEN IR DESPUÉS
 // @ts-ignore

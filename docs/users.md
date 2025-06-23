@@ -195,6 +195,7 @@ Authorization: Bearer <token>
   "message": "Direcciones obtenidas exitosamente",
   "data": [
     {
+      "_id": "6858625883100127c2b2e8dc",
       "name": "Casa Principal",
       "fullAddress": "Av. Corrientes 1234, Buenos Aires, Argentina",
       "floor": "3",
@@ -205,6 +206,7 @@ Authorization: Bearer <token>
       }
     },
     {
+      "_id": "6858625883100127c2b2e8dd",
       "name": "Oficina",
       "fullAddress": "Av. Santa Fe 5678, Buenos Aires, Argentina",
       "floor": "2",
@@ -217,13 +219,16 @@ Authorization: Bearer <token>
 }
 ```
 
-## GET `/users/me/addresses/:index`
-Get a specific address of the authenticated user by index (requires authentication).
+## GET `/users/me/addresses/:id`
+Get a specific address of the authenticated user by ID (requires authentication).
 
 **Headers:**
 ```
 Authorization: Bearer <token>
 ```
+
+**Parameters:**
+- `id`: MongoDB ObjectId of the address
 
 **Response:**
 ```json
@@ -231,6 +236,7 @@ Authorization: Bearer <token>
   "success": true,
   "message": "Dirección obtenida exitosamente",
   "data": {
+    "_id": "6858625883100127c2b2e8dc",
     "name": "Casa Principal",
     "fullAddress": "Av. Corrientes 1234, Buenos Aires, Argentina",
     "floor": "3",
@@ -271,6 +277,7 @@ Authorization: Bearer <token>
   "success": true,
   "message": "Dirección agregada exitosamente",
   "data": {
+    "_id": "6858625883100127c2b2e8dc",
     "name": "Casa Principal",
     "fullAddress": "Av. Corrientes 1234, Buenos Aires, Argentina",
     "floor": "3",
@@ -283,13 +290,16 @@ Authorization: Bearer <token>
 }
 ```
 
-## PUT `/users/me/addresses/:index`
+## PUT `/users/me/addresses/:id`
 Update a specific address of the authenticated user (requires authentication).
 
 **Headers:**
 ```
 Authorization: Bearer <token>
 ```
+
+**Parameters:**
+- `id`: MongoDB ObjectId of the address
 
 **Body:**
 ```json
@@ -310,6 +320,7 @@ Authorization: Bearer <token>
   "success": true,
   "message": "Dirección actualizada exitosamente",
   "data": {
+    "_id": "6858625883100127c2b2e8dc",
     "name": "Oficina",
     "fullAddress": "Av. Corrientes 1234, Buenos Aires, Argentina",
     "floor": "4",
@@ -321,13 +332,16 @@ Authorization: Bearer <token>
 }
 ```
 
-## DELETE `/users/me/addresses/:index`
+## DELETE `/users/me/addresses/:id`
 Delete a specific address of the authenticated user (requires authentication).
 
 **Headers:**
 ```
 Authorization: Bearer <token>
 ```
+
+**Parameters:**
+- `id`: MongoDB ObjectId of the address
 
 **Response:**
 ```json
