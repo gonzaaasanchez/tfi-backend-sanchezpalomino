@@ -20,7 +20,9 @@ const getMyProfile: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    const user = await User.findById(userId).populate('role');
+    const user = await User.findById(userId)
+      .populate('role')
+      .populate('carerConfig.petTypes', 'name');
     if (!user) {
       ResponseHelper.notFound(res, 'Usuario no encontrado');
       return;
