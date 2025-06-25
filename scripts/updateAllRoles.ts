@@ -29,6 +29,9 @@ const rolePermissions = {
       delete: true,
       getAll: true,
     },
+    caregiverSearch: {
+      read: true,
+    },
   },
   // User: solo puede gestionar sus propias mascotas y ver tipos/características
   user: {
@@ -52,6 +55,9 @@ const rolePermissions = {
       update: true,
       delete: true,
       getAll: false, // Solo ve sus propias mascotas
+    },
+    caregiverSearch: {
+      read: true, // Puede buscar cuidadores
     },
   },
 };
@@ -81,6 +87,7 @@ async function updateAllRoles() {
       console.log(`     PetTypes.getAll: ${role.permissions.petTypes?.getAll || 'undefined'}`);
       console.log(`     PetCharacteristics.getAll: ${role.permissions.petCharacteristics?.getAll || 'undefined'}`);
       console.log(`     Pets.getAll: ${role.permissions.pets?.getAll || 'undefined'}`);
+      console.log(`     CaregiverSearch.read: ${role.permissions.caregiverSearch?.read || 'undefined'}`);
 
       // Determinar qué permisos asignar
       let newPermissions;
@@ -101,6 +108,7 @@ async function updateAllRoles() {
       role.permissions.petTypes = newPermissions.petTypes;
       role.permissions.petCharacteristics = newPermissions.petCharacteristics;
       role.permissions.pets = newPermissions.pets;
+      role.permissions.caregiverSearch = newPermissions.caregiverSearch;
 
       await role.save();
       updatedCount++;
@@ -118,6 +126,7 @@ async function updateAllRoles() {
       console.log(`\n🔸 ${role.name.toUpperCase()}:`);
       console.log(`   PetTypes: ${role.permissions.petTypes.getAll ? 'Ver todos' : 'Sin acceso'}`);
       console.log(`   PetCharacteristics: ${role.permissions.petCharacteristics.getAll ? 'Ver todos' : 'Sin acceso'}`);
+      console.log(`   CaregiverSearch: ${role.permissions.caregiverSearch?.read ? 'Buscar cuidadores' : 'Sin acceso'}`);
       
       if (role.permissions.pets.create) {
         console.log(`   Pets: Crear, leer, actualizar, eliminar ${role.permissions.pets.getAll ? '(todas)' : '(propias)'}`);

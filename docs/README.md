@@ -35,6 +35,12 @@ This directory contains the complete API documentation organized by service modu
 - User pet management
 - Admin pet services
 
+### 🔍 [Caregiver Search](./caregiver-search.md)
+- Search for available caregivers
+- Filter by care type, pet types, price, and distance
+- Automatic price calculation with commission
+- Pagination and sorting
+
 ### 👨‍💼 [Admin Services](./admin.md)
 - Role management
 - Admin user management

@@ -50,6 +50,9 @@ export interface IRole extends Document {
       delete: boolean;
       getAll: boolean;
     };
+    caregiverSearch: {
+      read: boolean;
+    };
   };
   isSystem: boolean;
   createdAt: Date;
@@ -113,6 +116,9 @@ const RoleSchema = new Schema<IRole>(
         update: { type: Boolean, default: false },
         delete: { type: Boolean, default: false },
         getAll: { type: Boolean, default: false },
+      },
+      caregiverSearch: {
+        read: { type: Boolean, default: false },
       },
     },
     isSystem: {

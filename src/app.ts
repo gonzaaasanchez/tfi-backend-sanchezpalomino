@@ -12,6 +12,7 @@ import usersRoutes from './routes/users';
 import petTypesRoutes from './routes/petTypes';
 import petCharacteristicsRoutes from './routes/petCharacteristics';
 import petsRoutes from './routes/pets';
+import caregiverSearchRoutes from './routes/caregiverSearch';
 import { errorHandler } from './middleware/errorHandler';
 
 // Cargar variables de entorno
@@ -36,6 +37,7 @@ app.use('/api/users', usersRoutes);
 app.use('/api/pet-types', petTypesRoutes);
 app.use('/api/pet-characteristics', petCharacteristicsRoutes);
 app.use('/api/pets', petsRoutes);
+app.use('/api/caregiver-search', caregiverSearchRoutes);
 
 // Ruta de prueba
 app.get('/', (req, res) => {
