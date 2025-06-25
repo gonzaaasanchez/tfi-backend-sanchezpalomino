@@ -6,7 +6,11 @@
     "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
     "build": "tsc",
     "start": "node dist/app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "udpdateAllRoles": "ts-node scripts/updateAllRoles.ts",
+    "createUsers": "ts-node scripts/createUsers.ts",
+    "createPets": "ts-node scripts/createPets.ts",
+    "createPetCharacteristics": "ts-node scripts/createPetCharacteristics.ts"
   },
   "keywords": [],
   "author": "",
