@@ -135,7 +135,8 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
 
     // Construir filtros para buscar cuidadores
     const filters: any = {
-      'carerConfig': { $exists: true, $ne: null }
+      'carerConfig': { $exists: true, $ne: null },
+      '_id': { $ne: req.user?._id } // Excluir al usuario autenticado
     };
 
     // Filtrar por tipo de cuidado habilitado
