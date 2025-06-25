@@ -253,7 +253,7 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
     const totalCaregivers = await User.countDocuments(filters);
 
     ResponseHelper.success(res, 'Búsqueda completada exitosamente', {
-      results,
+      items: results,
       pagination: {
         page,
         limit,
