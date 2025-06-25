@@ -110,8 +110,12 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
     const endDateOnly = new Date(end.getFullYear(), end.getMonth(), end.getDate());
     const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
-    if (startDateOnly < nowDateOnly) {
-      ResponseHelper.validationError(res, 'La fecha de inicio no puede ser en el pasado');
+    // La fecha de inicio debe ser al menos mañana (no hoy)
+    const tomorrow = new Date(nowDateOnly);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    if (startDateOnly < tomorrow) {
+      ResponseHelper.validationError(res, 'La fecha de inicio debe ser al menos mañana');
       return;
     }
     
