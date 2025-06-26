@@ -105,21 +105,21 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
     const end = new Date(endDate);
     const now = new Date();
     
-    // Normalizar fechas para comparar solo la fecha (sin tiempo)
-    const startDateOnly = new Date(start.getFullYear(), start.getMonth(), start.getDate());
-    const endDateOnly = new Date(end.getFullYear(), end.getMonth(), end.getDate());
-    const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    
-    // La fecha de inicio debe ser al menos mañana (no hoy)
-    const tomorrow = new Date(nowDateOnly);
+    // Calcular mañana (fecha actual + 1 día)
+    const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0); // Normalizar a inicio del día
     
-    if (startDateOnly < tomorrow) {
+    // Normalizar fecha de inicio
+    const startNormalized = new Date(start);
+    startNormalized.setHours(0, 0, 0, 0);
+    
+    if (startNormalized < tomorrow) {
       ResponseHelper.validationError(res, 'La fecha de inicio debe ser al menos mañana');
       return;
     }
     
-    if (endDateOnly < startDateOnly) {
+    if (end < start) {
       ResponseHelper.validationError(res, 'La fecha de fin debe ser posterior a la fecha de inicio');
       return;
     }
