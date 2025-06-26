@@ -56,7 +56,7 @@ function calculateDaysDifference(startDate: string, endDate: string): number {
   const diffTime = end.getTime() - start.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-  return diffDays + 1; // +1 para incluir ambos días
+  return diffDays;
 }
 
 // Función para calcular la distancia entre dos coordenadas (fórmula de Haversine)
