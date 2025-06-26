@@ -17,8 +17,6 @@ interface SearchParams {
   userAddressId?: string; // Solo para hogar de la mascota
   maxDistance?: number; // Distancia máxima en km
   maxPrice?: number; // Precio máximo a pagar
-  page?: number;
-  limit?: number;
 }
 
 // Interfaz para el resultado de búsqueda
@@ -117,9 +115,13 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
       userAddressId,
       maxDistance,
       maxPrice,
-      page = 1,
-      limit = 10,
     }: SearchParams = req.body;
+
+    // Parámetros de ordenamiento desde query params
+    const sortBy = (req.query.sortBy as 'price' | 'distance') || 'price';
+    const sortOrder = (req.query.sortOrder as 'asc' | 'desc') || 'asc';
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
 
     // Validaciones básicas
     if (
@@ -305,15 +307,34 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
       results.push(result);
     }
 
-    // Ordenar por precio total (más barato primero) - usar valores numéricos para ordenar
+    // Ordenar resultados según parámetros de ordenamiento
     results.sort((a, b) => {
-      const aPrice = parseFloat(
-        a.totalPrice.replace(/\./g, '').replace(',', '.')
-      );
-      const bPrice = parseFloat(
-        b.totalPrice.replace(/\./g, '').replace(',', '.')
-      );
-      return aPrice - bPrice;
+      const sortField = sortBy;
+      const order = sortOrder;
+      
+      let aValue: number;
+      let bValue: number;
+      
+      if (sortField === 'price') {
+        // Convertir precios formateados de vuelta a números para comparar
+        aValue = parseFloat(a.totalPrice.replace(/\./g, '').replace(',', '.'));
+        bValue = parseFloat(b.totalPrice.replace(/\./g, '').replace(',', '.'));
+      } else if (sortField === 'distance') {
+        // Usar distancia (si no hay distancia, poner un valor muy alto)
+        aValue = a.distance || 999999;
+        bValue = b.distance || 999999;
+      } else {
+        // Fallback a precio
+        aValue = parseFloat(a.totalPrice.replace(/\./g, '').replace(',', '.'));
+        bValue = parseFloat(b.totalPrice.replace(/\./g, '').replace(',', '.'));
+      }
+      
+      // Aplicar orden
+      if (order === 'asc') {
+        return aValue - bValue; // Menor a mayor
+      } else {
+        return bValue - aValue; // Mayor a menor
+      }
     });
 
     // Obtener total para paginación
