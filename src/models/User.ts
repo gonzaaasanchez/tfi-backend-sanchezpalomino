@@ -20,6 +20,7 @@ export interface IUser extends Document {
       visitPrice?: number;
     };
     petTypes?: mongoose.Types.ObjectId[];
+    careAddress?: mongoose.Types.ObjectId;
   };
   addresses?: Array<{
     name: string;
@@ -119,6 +120,10 @@ const UserSchema: Schema = new Schema(
         petTypes: {
           type: [Schema.Types.ObjectId],
           ref: 'PetType',
+        },
+        careAddress: {
+          type: Schema.Types.ObjectId,
+          ref: 'Address',
         },
       },
       required: false,

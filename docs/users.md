@@ -152,10 +152,18 @@ Authorization: Bearer <token>
       "enabled": false,
       "visitPrice": null
     },
-    "petTypes": ["507f1f77bcf86cd799439011", "507f1f77bcf86cd799439012"]
+    "petTypes": ["507f1f77bcf86cd799439011", "507f1f77bcf86cd799439012"],
+    "careAddress": "6858625883100127c2b2e8dc"
   }
 }
 ```
+
+**Validations:**
+- Only the `carerConfig` field is allowed to be updated
+- If `homeCare.enabled` is `true`, `dayPrice` is required
+- If `petHomeCare.enabled` is `true`, `visitPrice` is required
+- `petTypes` must be valid IDs of existing pet types
+- `careAddress` must be a valid ID of one of the user's addresses (or null to clear it)
 
 **Response:**
 ```json
@@ -185,7 +193,8 @@ Authorization: Bearer <token>
           "_id": "507f1f77bcf86cd799439012",
           "name": "Gato"
         }
-      ]
+      ],
+      "careAddress": "6858625883100127c2b2e8dc"
     }
   }
 }

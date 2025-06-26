@@ -28,7 +28,22 @@ const getMyProfile: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    ResponseHelper.success(res, 'Perfil obtenido exitosamente', user);
+    // Crear una copia del objeto user para la respuesta
+    const userResponse = user.toObject();
+
+    // Si hay una dirección de cuidado configurada, obtener su información
+    if (user.carerConfig?.careAddress) {
+      const careAddress = user.addresses?.find(
+        (address: any) => address._id?.toString() === user.carerConfig?.careAddress?.toString()
+      );
+      
+      if (careAddress) {
+        // Agregar la información de la dirección de cuidado a la respuesta
+        (userResponse as any).careAddressData = careAddress;
+      }
+    }
+
+    ResponseHelper.success(res, 'Perfil obtenido exitosamente', userResponse);
   } catch (error) {
     next(error);
   }
@@ -295,6 +310,28 @@ const updateMyCarerConfig: RequestHandler = async (req, res, next) => {
         ResponseHelper.validationError(
           res, 
           'Uno o más tipos de mascota no son válidos'
+        );
+        return;
+      }
+    }
+
+    // Validar careAddress si se proporciona
+    if (carerConfig.careAddress) {
+      const user = await User.findById(userId);
+      if (!user) {
+        ResponseHelper.notFound(res, 'Usuario no encontrado');
+        return;
+      }
+
+      // Verificar que la dirección existe entre las direcciones del usuario
+      const addressExists = user.addresses?.some(
+        (address: any) => address._id?.toString() === carerConfig.careAddress
+      );
+
+      if (!addressExists) {
+        ResponseHelper.validationError(
+          res,
+          'La dirección de cuidado seleccionada no existe entre tus direcciones'
         );
         return;
       }
