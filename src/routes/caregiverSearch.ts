@@ -105,16 +105,16 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
     const end = new Date(endDate);
     const now = new Date();
     
-    // Calcular mañana (fecha actual + 1 día)
+    // Obtener fecha de mañana en formato YYYY-MM-DD
     const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0); // Normalizar a inicio del día
+    const tomorrowStr = tomorrow.toISOString().split('T')[0];
     
-    // Normalizar fecha de inicio
-    const startNormalized = new Date(start);
-    startNormalized.setHours(0, 0, 0, 0);
+    // Obtener fecha de inicio en formato YYYY-MM-DD
+    const startStr = start.toISOString().split('T')[0];
     
-    if (startNormalized < tomorrow) {
+    // Comparar strings de fechas (más confiable)
+    if (startStr < tomorrowStr) {
       ResponseHelper.validationError(res, 'La fecha de inicio debe ser al menos mañana');
       return;
     }
