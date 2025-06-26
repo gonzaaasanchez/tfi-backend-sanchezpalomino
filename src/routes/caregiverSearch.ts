@@ -36,8 +36,8 @@ interface CaregiverSearchResult {
   commission: string; // Comisión del 6% (formateada)
   totalWithCommission: string; // Precio total + comisión (formateado)
   distance?: number; // Distancia calculada en km
+  daysCount: number; // Cantidad de días del período de cuidado
   careDetails: {
-    daysCount: number;
     visitsCount?: number;
     pricePerDay?: string; // Precio por día (formateado)
     pricePerVisit?: string; // Precio por visita (formateado)
@@ -292,8 +292,8 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
         commission: formatCurrency(commission),
         totalWithCommission: formatCurrency(totalWithCommission),
         distance: calculatedDistance,
+        daysCount,
         careDetails: {
-          daysCount,
           visitsCount,
           pricePerDay: pricePerDay ? formatCurrency(pricePerDay) : undefined,
           pricePerVisit: pricePerVisit

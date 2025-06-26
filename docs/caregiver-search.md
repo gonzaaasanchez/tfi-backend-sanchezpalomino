@@ -91,8 +91,8 @@ Requires authentication via JWT token in the header `Authorization: Bearer <toke
         "commission": "1.800,00",
         "totalWithCommission": "31.800,00",
         "distance": 2.5,
+        "daysCount": 3,
         "careDetails": {
-          "daysCount": 3,
           "visitsCount": 6,
           "pricePerVisit": "5.000,00"
         }
@@ -121,16 +121,29 @@ Requires authentication via JWT token in the header `Authorization: Bearer <toke
 }
 ```
 
-### Result Structure
+### Response Structure
+
+The response includes the following fields:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `caregiver` | object | Caregiver data |
+| `items` | array | Array of caregiver search results |
+| `pagination` | object | Pagination information (page, limit, total, etc.) |
+| `searchParams` | object | Search parameters used for the query |
+
+#### Individual Result Structure
+
+Each item in the `items` array contains:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `caregiver` | object | Caregiver data (id, name, email, phone, avatar, addresses) |
 | `totalPrice` | string | Total caregiver fees (formatted with thousand separators) |
 | `commission` | string | 6% commission (formatted with thousand separators) |
 | `totalWithCommission` | string | Total price + commission (formatted with thousand separators) |
 | `distance` | number | Calculated distance in km (if maxDistance was specified) |
-| `careDetails` | object | Calculation details |
+| `daysCount` | number | Total number of days for the care period (including both start and end dates) |
+| `careDetails` | object | Calculation details (visitsCount, pricePerVisit) |
 
 ### Price Formatting
 
