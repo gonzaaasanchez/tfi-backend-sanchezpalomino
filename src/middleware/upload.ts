@@ -1,16 +1,16 @@
 import multer from 'multer';
 import { ResponseHelper } from '../utils/response';
 
-// Configurar multer para almacenar en memoria (para luego guardar en MongoDB)
+// Configure multer to store in memory (to later save in MongoDB)
 const storage = multer.memoryStorage();
 
-// Filtro para validar tipos de archivo
+// Filter to validate file types
 const fileFilter = (
   req: Express.Request,
   file: Express.Multer.File,
   cb: multer.FileFilterCallback
 ) => {
-  // Permitir solo imágenes
+  // Allow only images
   if (file.mimetype.startsWith('image/')) {
     cb(null, true);
   } else {
@@ -18,16 +18,16 @@ const fileFilter = (
   }
 };
 
-// Configurar multer
+// Configure multer
 export const uploadImage = multer({
   storage: storage,
   fileFilter: fileFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB máximo
+    fileSize: 5 * 1024 * 1024, // 5MB maximum
   },
 });
 
-// Middleware para manejar errores de multer
+// Middleware to handle multer errors
 export const handleUploadError = (err: any, req: any, res: any, next: any) => {
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {

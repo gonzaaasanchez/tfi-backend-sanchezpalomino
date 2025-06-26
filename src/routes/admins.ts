@@ -10,7 +10,7 @@ import { ResponseHelper } from '../utils/response';
 
 const router = Router();
 
-// POST /admins/login - Login de admin
+// POST /admins/login - Admin login
 const loginAdmin: RequestHandler = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -20,21 +20,21 @@ const loginAdmin: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Buscar el admin con su rol
+    // Find admin with role
     const admin = await Admin.findOne({ email }).populate('role');
     if (!admin) {
       ResponseHelper.unauthorized(res, 'Credenciales inválidas');
       return;
     }
 
-    // Verificar la contraseña
+    // Verify password
     const isPasswordValid = await verifyPassword(password, admin.password);
     if (!isPasswordValid) {
       ResponseHelper.unauthorized(res, 'Credenciales inválidas');
       return;
     }
 
-    // Generar token
+    // Generate token
     const token = generateToken({
       userId: admin._id?.toString() || '',
       email: admin.email,
@@ -50,7 +50,7 @@ const loginAdmin: RequestHandler = async (req, res, next) => {
   }
 };
 
-// POST /admins - Crear nuevo admin
+// POST /admins - Create new admin
 const createAdmin: RequestHandler = async (req, res, next) => {
   try {
     const { firstName, lastName, email, password, roleId } = req.body;
@@ -68,21 +68,21 @@ const createAdmin: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Verificar si el admin ya existe
+    // Check if admin already exists
     const existingAdmin = await Admin.findOne({ email });
     if (existingAdmin) {
       ResponseHelper.validationError(res, 'El email ya está registrado');
       return;
     }
 
-    // Verificar que el rol existe y no es del sistema
+    // Verify that role exists and is not system role
     const role = await Role.findById(roleId);
     if (!role) {
       ResponseHelper.validationError(res, 'Rol no encontrado');
       return;
     }
 
-    // Solo permitir asignar roles que no sean del sistema (user y superadmin)
+    // Only allow assigning non-system roles (user and superadmin)
     if (role.isSystem) {
       ResponseHelper.validationError(
         res,
@@ -91,10 +91,10 @@ const createAdmin: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Hashear la contraseña
+    // Hash password
     const hashedPassword = await hashPassword(password);
 
-    // Crear el admin
+    // Create admin
     const admin = new Admin({
       firstName,
       lastName,
@@ -105,10 +105,10 @@ const createAdmin: RequestHandler = async (req, res, next) => {
 
     await admin.save();
 
-    // Populate role para la respuesta
+    // Populate role for response
     await admin.populate('role');
 
-    // Log de creación
+    // Creation log
     const userName = req.user
       ? `${req.user.firstName} ${req.user.lastName}`
       : 'Sistema';
@@ -132,10 +132,10 @@ const createAdmin: RequestHandler = async (req, res, next) => {
   }
 };
 
-// GET /admins/me - Obtener perfil del admin autenticado
+// GET /admins/me - Get authenticated admin profile
 const getProfile: RequestHandler = async (req, res, next) => {
   try {
-    // Populate role para incluir información del rol
+    // Populate role to include role information
     await req.user.populate('role');
 
     ResponseHelper.success(res, 'Perfil obtenido exitosamente', {
@@ -146,7 +146,7 @@ const getProfile: RequestHandler = async (req, res, next) => {
   }
 };
 
-// GET /admins - Obtener todos los admins
+// GET /admins - Get all admins
 const getAllAdmins: RequestHandler = async (req, res, next) => {
   try {
     const admins = await Admin.find().populate('role').select('-password');
@@ -156,7 +156,7 @@ const getAllAdmins: RequestHandler = async (req, res, next) => {
   }
 };
 
-// GET /admins/:id - Obtener admin específico
+// GET /admins/:id - Get specific admin
 const getAdmin: RequestHandler = async (req, res, next) => {
   try {
     const admin = await Admin.findById(req.params.id)
@@ -173,7 +173,7 @@ const getAdmin: RequestHandler = async (req, res, next) => {
   }
 };
 
-// PUT /admins/:id - Actualizar admin
+// PUT /admins/:id - Update admin
 const updateAdmin: RequestHandler = async (req, res, next) => {
   try {
     const adminId = req.params.id;
@@ -185,7 +185,7 @@ const updateAdmin: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Si se actualiza el rol, verificar que existe y no es de sistema
+    // If role is being updated, verify it exists and is not system role
     if (updateData.roleId) {
       const role = await Role.findById(updateData.roleId);
       if (!role) {
@@ -199,19 +199,19 @@ const updateAdmin: RequestHandler = async (req, res, next) => {
         );
         return;
       }
-      // Renombrar roleId a role para que coincida con el schema
+      // Rename roleId to role to match schema
       updateData.role = updateData.roleId;
       delete updateData.roleId;
     }
 
-    // Detectar cambios antes de actualizar
+    // Detect changes before updating
     const changes = getChanges(admin, updateData);
 
-    // Actualizar el documento
+    // Update document
     Object.assign(admin, updateData);
     await admin.save();
 
-    // Si hubo cambios, registrarlos
+    // If there were changes, log them
     if (changes.length > 0) {
       const userName = req.user
         ? `${req.user.firstName} ${req.user.lastName}`
@@ -232,7 +232,7 @@ const updateAdmin: RequestHandler = async (req, res, next) => {
   }
 };
 
-// DELETE /admins/:id - Eliminar admin
+// DELETE /admins/:id - Delete admin
 const deleteAdmin: RequestHandler = async (req, res, next) => {
   try {
     const admin = await Admin.findById(req.params.id);
@@ -241,7 +241,7 @@ const deleteAdmin: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Log de eliminación
+    // Deletion log
     const userName = req.user
       ? `${req.user.firstName} ${req.user.lastName}`
       : 'Sistema';
@@ -258,7 +258,9 @@ const deleteAdmin: RequestHandler = async (req, res, next) => {
   }
 };
 
-// Rutas
+// ========================================
+// ROUTES
+// ========================================
 // @ts-ignore - Express 5.1.0 type compatibility issue
 router.post('/login', loginAdmin);
 // @ts-ignore - Express 5.1.0 type compatibility issue

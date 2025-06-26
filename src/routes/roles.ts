@@ -8,7 +8,7 @@ import { ResponseHelper } from '../utils/response';
 
 const router = Router();
 
-// GET /roles - Obtener todos los roles
+// GET /roles - Get all roles
 const getRoles: RequestHandler = async (req, res, next) => {
   try {
     const roles = await Role.find().select('-__v');
@@ -18,7 +18,7 @@ const getRoles: RequestHandler = async (req, res, next) => {
   }
 };
 
-// GET /roles/:id - Obtener un rol específico
+// GET /roles/:id - Get a specific role
 const getRole: RequestHandler = async (req, res, next) => {
   try {
     const role = await Role.findById(req.params.id).select('-__v');
@@ -33,7 +33,7 @@ const getRole: RequestHandler = async (req, res, next) => {
   }
 };
 
-// POST /roles - Crear nuevo rol
+// POST /roles - Create new role
 const createRole: RequestHandler = async (req, res, next) => {
   try {
     const { name, description, permissions } = req.body;
@@ -46,7 +46,7 @@ const createRole: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Validar que se envíen todos los permisos
+    // Validate that all permissions are sent
     if (
       !permissions ||
       !permissions.users ||
@@ -63,14 +63,14 @@ const createRole: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Verificar si el rol ya existe
+    // Check if role already exists
     const existingRole = await Role.findOne({ name });
     if (existingRole) {
       ResponseHelper.validationError(res, 'El rol ya existe');
       return;
     }
 
-    // No permitir crear roles del sistema
+    // Don't allow creating system roles
     if (['superadmin', 'user'].includes(name)) {
       ResponseHelper.validationError(
         res,
@@ -88,7 +88,7 @@ const createRole: RequestHandler = async (req, res, next) => {
 
     const savedRole = await newRole.save();
 
-    // Log de creación
+    // Creation log
     const userName = req.user
       ? `${req.user.firstName} ${req.user.lastName}`
       : 'Sistema';
@@ -104,7 +104,7 @@ const createRole: RequestHandler = async (req, res, next) => {
   }
 };
 
-// PUT /roles/:id - Actualizar rol
+// PUT /roles/:id - Update role
 const updateRole: RequestHandler = async (req, res, next) => {
   try {
     const roleId = req.params.id;
@@ -116,7 +116,7 @@ const updateRole: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // No permitir modificar roles del sistema
+    // Don't allow modifying system roles
     if (role.isSystem) {
       ResponseHelper.validationError(
         res,
@@ -125,14 +125,14 @@ const updateRole: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Detectar cambios antes de actualizar
+    // Detect changes before updating
     const changes = getChanges(role, updateData);
 
-    // Actualizar el documento
+    // Update the document
     Object.assign(role, updateData);
     await role.save();
 
-    // Si hubo cambios, registrarlos
+    // If there were changes, log them
     if (changes.length > 0) {
       const userName = req.user
         ? `${req.user.firstName} ${req.user.lastName}`
@@ -147,7 +147,7 @@ const updateRole: RequestHandler = async (req, res, next) => {
   }
 };
 
-// DELETE /roles/:id - Eliminar rol
+// DELETE /roles/:id - Delete role
 const deleteRole: RequestHandler = async (req, res, next) => {
   try {
     const role = await Role.findById(req.params.id);
@@ -156,7 +156,7 @@ const deleteRole: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // No permitir eliminar roles del sistema
+    // Don't allow deleting system roles
     if (role.isSystem) {
       ResponseHelper.validationError(
         res,
@@ -165,7 +165,7 @@ const deleteRole: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Log de eliminación
+    // Deletion log
     const userName = req.user
       ? `${req.user.firstName} ${req.user.lastName}`
       : 'Sistema';
@@ -182,7 +182,9 @@ const deleteRole: RequestHandler = async (req, res, next) => {
   }
 };
 
-// Rutas con middleware de autenticación y permisos
+// ========================================
+// ROUTES with authentication and permission middleware
+// ========================================
 // @ts-ignore - Express 5.1.0 type compatibility issue
 router.get(
   '/',

@@ -178,12 +178,12 @@ const UserSchema: Schema = new Schema(
   }
 );
 
-// Validación personalizada para carerConfig
+// Custom validation for carerConfig
 UserSchema.pre('save', function (next) {
   const user = this as any;
 
   if (user.carerConfig) {
-    // Validar homeCare
+    // Validate homeCare
     if (
       user.carerConfig.homeCare?.enabled &&
       !user.carerConfig.homeCare.dayPrice
@@ -195,7 +195,7 @@ UserSchema.pre('save', function (next) {
       );
     }
 
-    // Validar petHomeCare
+    // Validate petHomeCare
     if (
       user.carerConfig.petHomeCare?.enabled &&
       !user.carerConfig.petHomeCare.visitPrice
@@ -211,12 +211,12 @@ UserSchema.pre('save', function (next) {
   next();
 });
 
-// Validación personalizada para findByIdAndUpdate
+// Custom validation for findByIdAndUpdate
 UserSchema.pre('findOneAndUpdate', function (next) {
   const update = this.getUpdate() as any;
 
   if (update.carerConfig) {
-    // Validar homeCare
+    // Validate homeCare
     if (
       update.carerConfig.homeCare?.enabled &&
       !update.carerConfig.homeCare.dayPrice
@@ -228,7 +228,7 @@ UserSchema.pre('findOneAndUpdate', function (next) {
       );
     }
 
-    // Validar petHomeCare
+    // Validate petHomeCare
     if (
       update.carerConfig.petHomeCare?.enabled &&
       !update.carerConfig.petHomeCare.visitPrice
@@ -244,7 +244,7 @@ UserSchema.pre('findOneAndUpdate', function (next) {
   next();
 });
 
-// Método para excluir password y avatarBuffer en las respuestas
+// Method to exclude password and avatarBuffer from responses
 UserSchema.methods.toJSON = function () {
   const user = this.toObject();
   delete user.password;

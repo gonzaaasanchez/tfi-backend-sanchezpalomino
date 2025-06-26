@@ -4,7 +4,7 @@ import User from '../models/User';
 import Admin from '../models/Admin';
 import { ResponseHelper } from '../utils/response';
 
-// Extender la interfaz Request para incluir el usuario
+// Extend the Request interface to include the user
 declare global {
   namespace Express {
     interface Request {
@@ -19,20 +19,20 @@ export const authMiddleware = async (
   next: NextFunction
 ) => {
   try {
-    // Obtener el token del header Authorization
+    // Get the token from the Authorization header
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return ResponseHelper.unauthorized(res, 'Token de acceso requerido');
     }
 
-    // Extraer el token (remover "Bearer ")
+    // Extract the token (remove "Bearer ")
     const token = authHeader.substring(7);
 
-    // Verificar el token
+    // Verify the token
     const decoded = verifyToken(token) as JWTPayload;
 
-    // Buscar el usuario o admin según el tipo de token
+    // Find the user or admin based on token type
     let user;
     if (decoded.type === 'admin') {
       user = await Admin.findById(decoded.userId).select('-password');
@@ -44,7 +44,7 @@ export const authMiddleware = async (
       return ResponseHelper.unauthorized(res, 'Usuario no encontrado');
     }
 
-    // Agregar el usuario al request
+    // Add the user to the request
     req.user = {
       ...user.toObject(),
       type: decoded.type,

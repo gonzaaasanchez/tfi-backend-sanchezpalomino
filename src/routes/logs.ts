@@ -6,12 +6,12 @@ import { ResponseHelper } from '../utils/response';
 
 const router = Router();
 
-// GET /logs/:entityType/:entityId - Obtener logs de una entidad específica
+// GET /logs/:entityType/:entityId - Get logs for a specific entity
 const getEntityLogs: RequestHandler = async (req, res, next) => {
   try {
     const { entityType, entityId } = req.params;
 
-    // Obtener el modelo de log
+    // Get log model
     const LogModel = mongoose.model(`${entityType}Log`);
 
     const logs = await LogModel.find({ entityId })
@@ -24,13 +24,13 @@ const getEntityLogs: RequestHandler = async (req, res, next) => {
   }
 };
 
-// GET /logs/:entityType - Obtener todos los logs de una entidad
+// GET /logs/:entityType - Get all logs for an entity type
 const getAllEntityLogs: RequestHandler = async (req, res, next) => {
   try {
     const { entityType } = req.params;
     const limit = parseInt(req.query.limit as string) || 50;
 
-    // Obtener el modelo de log
+    // Get log model
     const LogModel = mongoose.model(`${entityType}Log`);
 
     const logs = await LogModel.find()
@@ -44,7 +44,9 @@ const getAllEntityLogs: RequestHandler = async (req, res, next) => {
   }
 };
 
-// Rutas con middleware de autenticación y permisos
+// ========================================
+// ROUTES with authentication and permission middleware
+// ========================================
 // @ts-ignore - Express 5.1.0 type compatibility issue
 router.get(
   '/:entityType/:entityId',

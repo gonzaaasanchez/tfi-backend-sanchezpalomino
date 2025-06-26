@@ -1,11 +1,11 @@
 import mongoose from 'mongoose';
 
 /**
- * Detecta cambios entre dos objetos
- * @param oldObj - Objeto anterior
- * @param newObj - Objeto nuevo
- * @param excludedFields - Campos a excluir de la comparación
- * @returns Array de cambios detectados
+ * Detects changes between two objects
+ * @param oldObj - Previous object
+ * @param newObj - New object
+ * @param excludedFields - Fields to exclude from comparison
+ * @returns Array of detected changes
  */
 export function detectChanges(
   oldObj: any,
@@ -16,21 +16,21 @@ export function detectChanges(
 
   if (!oldObj || !newObj) return changes;
 
-  // Campos a excluir por defecto
+  // Default fields to exclude
   const excludeFields = [...excludedFields, '__v', 'createdAt', 'updatedAt'];
 
-  // Convertir a objetos planos si son documentos de Mongoose
+  // Convert to plain objects if they are Mongoose documents
   const old = oldObj.toObject ? oldObj.toObject() : oldObj;
   const new_ = newObj.toObject ? newObj.toObject() : newObj;
 
-  // Revisar todos los campos del nuevo objeto
+  // Review all fields of the new object
   for (const key in new_) {
     if (excludeFields.includes(key)) continue;
 
     const oldValue = old[key];
     const newValue = new_[key];
 
-    // Comparar valores (considerando ObjectIds y otros tipos)
+    // Compare values (considering ObjectIds and other types)
     if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
       changes.push({
         field: key,
@@ -44,11 +44,11 @@ export function detectChanges(
 }
 
 /**
- * Detecta cambios para un campo específico
- * @param oldValue - Valor anterior
- * @param newValue - Valor nuevo
- * @param field - Nombre del campo
- * @returns Objeto de cambio o null si no hay cambio
+ * Detects changes for a specific field
+ * @param oldValue - Previous value
+ * @param newValue - New value
+ * @param field - Field name
+ * @returns Change object or null if there's no change
  */
 export function detectFieldChange(
   oldValue: any,
@@ -66,10 +66,10 @@ export function detectFieldChange(
 }
 
 /**
- * Compara un documento de Mongoose con un objeto de nuevos datos y devuelve los cambios.
- * @param doc El documento original de Mongoose.
- * @param newData El objeto con los nuevos datos.
- * @returns Un array de objetos que describen los cambios.
+ * Compares a Mongoose document with a new data object and returns the changes.
+ * @param doc The original Mongoose document.
+ * @param newData The object with new data.
+ * @returns An array of objects describing the changes.
  */
 export function getChanges<T extends mongoose.Document>(
   doc: T,
@@ -83,7 +83,7 @@ export function getChanges<T extends mongoose.Document>(
       Object.prototype.hasOwnProperty.call(oldDoc, key) &&
       newData[key] !== undefined
     ) {
-      // Convertimos a string para comparar de forma segura, especialmente ObjectId
+      // Convert to string for safe comparison, especially ObjectId
       if (String(oldDoc[key]) !== String(newData[key])) {
         changes.push({
           field: key,

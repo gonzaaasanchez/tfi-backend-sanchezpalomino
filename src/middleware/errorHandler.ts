@@ -1,13 +1,13 @@
 import { Request, Response, NextFunction, RequestHandler } from 'express';
 import { ResponseHelper } from '../utils/response';
 
-// Interfaz para errores personalizados
+// Interface for custom errors
 export interface AppError extends Error {
   statusCode?: number;
   isOperational?: boolean;
 }
 
-// Clase para errores personalizados
+// Class for custom errors
 export class CustomError extends Error implements AppError {
   public statusCode: number;
   public isOperational: boolean;
@@ -22,7 +22,7 @@ export class CustomError extends Error implements AppError {
   }
 }
 
-// Middleware de manejo de errores
+// Error handling middleware
 export const errorHandler = (
   err: AppError,
   req: Request,
@@ -32,7 +32,7 @@ export const errorHandler = (
   let error = { ...err };
   error.message = err.message;
 
-  // Log del error para debugging
+  // Error log for debugging
   console.error('Error:', {
     message: err.message,
     stack: err.stack,
@@ -42,13 +42,13 @@ export const errorHandler = (
     user: req.user?.email || 'No autenticado',
   });
 
-  // Error de Mongoose - ID inválido
+  // Mongoose error - Invalid ID
   if (err.name === 'CastError') {
     const message = 'Recurso no encontrado';
     error = new CustomError(message, 404);
   }
 
-  // Error de Mongoose - Validación
+  // Mongoose error - Validation
   if (err.name === 'ValidationError') {
     const message = Object.values((err as any).errors)
       .map((val: any) => val.message)
@@ -56,26 +56,26 @@ export const errorHandler = (
     error = new CustomError(message, 400);
   }
 
-  // Error de Mongoose - Duplicado
+  // Mongoose error - Duplicate
   if ((err as any).code === 11000) {
     const field = Object.keys((err as any).keyValue)[0];
     const message = `${field} ya existe`;
     error = new CustomError(message, 400);
   }
 
-  // Error de JWT
+  // JWT error
   if (err.name === 'JsonWebTokenError') {
     const message = 'Token inválido';
     error = new CustomError(message, 401);
   }
 
-  // Error de JWT expirado
+  // JWT expired error
   if (err.name === 'TokenExpiredError') {
     const message = 'Token expirado';
     error = new CustomError(message, 401);
   }
 
-  // Respuesta de error usando el nuevo formato
+  // Error response using the new format
   const statusCode = error.statusCode || 500;
   const message = error.message || 'Error interno del servidor';
 
@@ -87,7 +87,7 @@ export const errorHandler = (
   );
 };
 
-// Middleware para capturar errores asíncronos con tipos correctos
+// Middleware to capture async errors with correct types
 export const asyncHandler = <T extends Request = Request>(
   fn: (req: T, res: Response, next: NextFunction) => Promise<void> | void
 ): RequestHandler => {

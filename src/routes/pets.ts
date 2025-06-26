@@ -12,10 +12,10 @@ import { ResponseHelper } from '../utils/response';
 const router = Router();
 
 // ========================================
-// SERVICIOS DE USUARIO (Mascotas propias)
+// USER SERVICES (Own pets)
 // ========================================
 
-// POST /pets - Crear nueva mascota
+// POST /pets - Create new pet
 const createPet: RequestHandler = async (req, res, next) => {
   try {
     const { name, comment, petTypeId, characteristics } = req.body;
@@ -34,7 +34,7 @@ const createPet: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Parsear characteristics si viene como string JSON (común en multipart/form-data)
+    // Parse characteristics if it comes as JSON string (common in multipart/form-data)
     let parsedCharacteristics = characteristics;
     if (typeof characteristics === 'string') {
       try {
@@ -48,14 +48,14 @@ const createPet: RequestHandler = async (req, res, next) => {
       }
     }
 
-    // Verificar que el tipo de mascota existe
+    // Verify that the pet type exists
     const petType = await PetType.findById(petTypeId);
     if (!petType) {
       ResponseHelper.validationError(res, 'Tipo de mascota no encontrado');
       return;
     }
 
-    // Verificar que las características existen (si se proporcionan)
+    // Verify that the characteristics exist (if provided)
     if (parsedCharacteristics && parsedCharacteristics.length > 0) {
       const characteristicIds = parsedCharacteristics.map(
         (c: any) => c.characteristicId
@@ -72,7 +72,7 @@ const createPet: RequestHandler = async (req, res, next) => {
       }
     }
 
-    // Preparar datos de la mascota
+    // Prepare pet data
     const petData: any = {
       name,
       comment,
@@ -86,27 +86,27 @@ const createPet: RequestHandler = async (req, res, next) => {
       owner: userId,
     };
 
-    // Si hay una imagen en el request, guardar buffer y generar URL
+    // If there's an image in the request, save buffer and generate URL
     if (req.file) {
-      petData.avatar = `/api/pets/avatar/${userId}`; // URL temporal, se actualizará después
+      petData.avatar = `/api/pets/avatar/${userId}`; // Temporary URL, will be updated later
       petData.avatarBuffer = req.file.buffer;
       petData.avatarContentType = req.file.mimetype;
     }
 
-    // Crear la mascota
+    // Create the pet
     const pet = new Pet(petData);
     await pet.save();
 
-    // Actualizar la URL del avatar con el ID real de la mascota
+    // Update avatar URL with the real pet ID
     if (req.file) {
       pet.avatar = `/api/pets/${pet._id}/avatar`;
       await pet.save();
     }
 
-    // Populate para la respuesta
+    // Populate for response
     await pet.populate(['petType', 'characteristics.characteristic', 'owner']);
 
-    // Log de creación
+    // Creation log
     const userName = `${req.user.firstName} ${req.user.lastName}`;
     logChanges('Pet', pet._id?.toString() ?? '', userId.toString(), userName, [
       { field: 'name', oldValue: null, newValue: name },
@@ -147,7 +147,7 @@ const createPet: RequestHandler = async (req, res, next) => {
   }
 };
 
-// GET /pets/my - Obtener mascotas del usuario autenticado
+// GET /pets/my - Get authenticated user's pets
 const getMyPets: RequestHandler = async (req, res, next) => {
   try {
     const userId = req.user?._id;
@@ -160,7 +160,7 @@ const getMyPets: RequestHandler = async (req, res, next) => {
     const limit = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit;
 
-    // Construir filtros
+    // Build filters
     const filters: any = { owner: userId };
 
     if (req.query.search) {
@@ -172,14 +172,294 @@ const getMyPets: RequestHandler = async (req, res, next) => {
       filters.petType = req.query.petType;
     }
 
-    // Obtener mascotas con paginación y filtros
+    // Get pets with pagination and filters
     const pets = await Pet.find(filters)
       .populate(['petType', 'characteristics.characteristic', 'owner'])
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
 
-    // Obtener el total para la paginación
+    // Get total for pagination
+    const totalPets = await Pet.countDocuments(filters);
+    const totalPages = Math.ceil(totalPets / limit);
+
+    ResponseHelper.success(res, 'Pets obtained successfully', {
+      items: pets.map((pet) => ({
+        id: pet._id,
+        name: pet.name,
+        comment: pet.comment,
+        avatar: pet.avatar,
+        petType: {
+          id: (pet.petType as any)._id,
+          name: (pet.petType as any).name,
+        },
+        characteristics: pet.characteristics.map((char) => ({
+          id: (char.characteristic as any)._id,
+          name: (char.characteristic as any).name,
+          value: char.value,
+        })),
+        owner: {
+          id: (pet.owner as any)._id,
+          name: `${(pet.owner as any).firstName} ${
+            (pet.owner as any).lastName
+          }`,
+          email: (pet.owner as any).email,
+        },
+        createdAt: pet.createdAt,
+        updatedAt: pet.updatedAt,
+      })),
+      pagination: {
+        page,
+        limit,
+        total: totalPets,
+        totalPages,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// GET /pets/:id - Get specific pet (only if owner)
+const getPet: RequestHandler = async (req, res, next) => {
+  try {
+    const petId = req.params.id;
+    const userId = req.user?._id;
+
+    const pet = await Pet.findById(petId).populate([
+      'petType',
+      'characteristics.characteristic',
+      'owner',
+    ]);
+    if (!pet) {
+      ResponseHelper.notFound(res, 'Mascota no encontrada');
+      return;
+    }
+
+    // Verify permissions: only the owner can view the pet
+    if (pet.owner._id.toString() !== userId?.toString()) {
+      ResponseHelper.forbidden(res, 'No tienes permisos para ver esta mascota');
+      return;
+    }
+
+    ResponseHelper.success(res, 'Mascota obtenida exitosamente', pet);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// PUT /pets/:id - Update pet (only if owner)
+const updatePet: RequestHandler = async (req, res, next) => {
+  try {
+    const petId = req.params.id;
+    const userId = req.user?._id;
+    const { name, comment, petTypeId, characteristics } = req.body;
+
+    if (!userId) {
+      ResponseHelper.unauthorized(res);
+      return;
+    }
+
+    const pet = await Pet.findById(petId);
+    if (!pet) {
+      ResponseHelper.notFound(res, 'Mascota no encontrada');
+      return;
+    }
+
+    // Verify permissions: only the owner can update the pet
+    if (pet.owner.toString() !== userId.toString()) {
+      ResponseHelper.forbidden(
+        res,
+        'No tienes permisos para actualizar esta mascota'
+      );
+      return;
+    }
+
+    // Parse characteristics if it comes as JSON string (common in multipart/form-data)
+    let parsedCharacteristics = characteristics;
+    if (typeof characteristics === 'string') {
+      try {
+        parsedCharacteristics = JSON.parse(characteristics);
+      } catch (error) {
+        ResponseHelper.validationError(
+          res,
+          'Formato de características inválido'
+        );
+        return;
+      }
+    }
+
+    // Verify that the pet type exists (if updating)
+    if (petTypeId) {
+      const petType = await PetType.findById(petTypeId);
+      if (!petType) {
+        ResponseHelper.validationError(res, 'Tipo de mascota no encontrado');
+        return;
+      }
+    }
+
+    // Verify that the characteristics exist (if updating)
+    if (parsedCharacteristics && parsedCharacteristics.length > 0) {
+      const characteristicIds = parsedCharacteristics.map(
+        (c: any) => c.characteristicId
+      );
+      const existingCharacteristics = await PetCharacteristic.find({
+        _id: { $in: characteristicIds },
+      });
+      if (existingCharacteristics.length !== characteristicIds.length) {
+        ResponseHelper.validationError(
+          res,
+          'Una o más características no encontradas'
+        );
+        return;
+      }
+    }
+
+    // Prepare update data
+    const updateData: any = {};
+    if (name) updateData.name = name;
+    if (comment !== undefined) updateData.comment = comment;
+    if (petTypeId) updateData.petType = petTypeId;
+    if (parsedCharacteristics !== undefined)
+      updateData.characteristics = parsedCharacteristics.map((c: any) => ({
+        characteristic: c.characteristicId,
+        value: c.value,
+      }));
+
+    // If there's an image in the request, save buffer and generate URL
+    if (req.file) {
+      updateData.avatar = `/api/pets/${petId}/avatar`;
+      updateData.avatarBuffer = req.file.buffer;
+      updateData.avatarContentType = req.file.mimetype;
+    }
+
+    // Detect changes before updating
+    const changes = getChanges(pet, updateData);
+
+    // Update the pet
+    const updatedPet = await Pet.findByIdAndUpdate(petId, updateData, {
+      new: true,
+    }).populate(['petType', 'characteristics.characteristic', 'owner']);
+
+    if (!updatedPet) {
+      ResponseHelper.notFound(res, 'Mascota no encontrada');
+      return;
+    }
+
+    // If there were changes, log them
+    if (changes.length > 0) {
+      const userName = `${req.user.firstName} ${req.user.lastName}`;
+      logChanges('Pet', petId, userId.toString(), userName, changes);
+    }
+
+    ResponseHelper.success(
+      res,
+      'Mascota actualizada exitosamente',
+      {
+        id: updatedPet._id,
+        name: updatedPet.name,
+        comment: updatedPet.comment,
+        avatar: updatedPet.avatar,
+        petType: {
+          id: (updatedPet.petType as any)._id,
+          name: (updatedPet.petType as any).name,
+        },
+        characteristics: updatedPet.characteristics.map((char) => ({
+          id: (char.characteristic as any)._id,
+          name: (char.characteristic as any).name,
+          value: char.value,
+        })),
+        owner: {
+          id: (updatedPet.owner as any)._id,
+          name: `${(updatedPet.owner as any).firstName} ${
+            (updatedPet.owner as any).lastName
+          }`,
+          email: (updatedPet.owner as any).email,
+        },
+        createdAt: updatedPet.createdAt,
+        updatedAt: updatedPet.updatedAt,
+      }
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+// DELETE /pets/:id - Delete pet (only if owner)
+const deletePet: RequestHandler = async (req, res, next) => {
+  try {
+    const petId = req.params.id;
+    const userId = req.user?._id;
+
+    if (!userId) {
+      ResponseHelper.unauthorized(res);
+      return;
+    }
+
+    const pet = await Pet.findById(petId);
+    if (!pet) {
+      ResponseHelper.notFound(res, 'Mascota no encontrada');
+      return;
+    }
+
+    // Verify permissions: only the owner can delete the pet
+    if (pet.owner.toString() !== userId.toString()) {
+      ResponseHelper.forbidden(
+        res,
+        'No tienes permisos para eliminar esta mascota'
+      );
+      return;
+    }
+
+    await Pet.findByIdAndDelete(petId);
+
+    // Deletion log
+    const userName = `${req.user.firstName} ${req.user.lastName}`;
+    logChanges('Pet', petId, userId.toString(), userName, [
+      { field: 'name', oldValue: pet.name, newValue: null },
+    ]);
+
+    ResponseHelper.success(res, 'Mascota eliminada exitosamente');
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ========================================
+// ADMIN SERVICES (Read-only for all pets)
+// ========================================
+
+// GET /pets/admin/all - Get all pets (admins only)
+const getAllPets: RequestHandler = async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+
+    // Build filters
+    const filters: any = {};
+
+    if (req.query.search) {
+      const searchRegex = new RegExp(req.query.search as string, 'i');
+      filters.name = searchRegex;
+    }
+
+    if (req.query.petType) {
+      filters.petType = req.query.petType;
+    }
+
+    if (req.query.owner) {
+      filters.owner = req.query.owner;
+    }
+
+    // Get pets with pagination and filters
+    const pets = await Pet.find(filters)
+      .populate(['petType', 'characteristics.characteristic', 'owner'])
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    // Get total for pagination
     const totalPets = await Pet.countDocuments(filters);
     const totalPages = Math.ceil(totalPets / limit);
 
@@ -220,264 +500,7 @@ const getMyPets: RequestHandler = async (req, res, next) => {
   }
 };
 
-// GET /pets/:id - Obtener mascota específica (solo si es propietario)
-const getPet: RequestHandler = async (req, res, next) => {
-  try {
-    const petId = req.params.id;
-    const userId = req.user?._id;
-
-    const pet = await Pet.findById(petId).populate([
-      'petType',
-      'characteristics.characteristic',
-      'owner',
-    ]);
-    if (!pet) {
-      ResponseHelper.notFound(res, 'Mascota no encontrada');
-      return;
-    }
-
-    // Verificar permisos: solo el propietario puede ver la mascota
-    if (pet.owner._id.toString() !== userId?.toString()) {
-      ResponseHelper.forbidden(res, 'No tienes permisos para ver esta mascota');
-      return;
-    }
-
-    ResponseHelper.success(res, 'Mascota obtenida exitosamente', pet);
-  } catch (error) {
-    next(error);
-  }
-};
-
-// PUT /pets/:id - Actualizar mascota (solo si es propietario)
-const updatePet: RequestHandler = async (req, res, next) => {
-  try {
-    const petId = req.params.id;
-    const userId = req.user?._id;
-    const { name, comment, petTypeId, characteristics } = req.body;
-
-    if (!userId) {
-      ResponseHelper.unauthorized(res);
-      return;
-    }
-
-    const pet = await Pet.findById(petId);
-    if (!pet) {
-      ResponseHelper.notFound(res, 'Mascota no encontrada');
-      return;
-    }
-
-    // Verificar permisos: solo el propietario puede actualizar la mascota
-    if (pet.owner.toString() !== userId.toString()) {
-      ResponseHelper.forbidden(
-        res,
-        'No tienes permisos para actualizar esta mascota'
-      );
-      return;
-    }
-
-    // Parsear characteristics si viene como string JSON (común en multipart/form-data)
-    let parsedCharacteristics = characteristics;
-    if (typeof characteristics === 'string') {
-      try {
-        parsedCharacteristics = JSON.parse(characteristics);
-      } catch (error) {
-        ResponseHelper.validationError(
-          res,
-          'Formato de características inválido'
-        );
-        return;
-      }
-    }
-
-    // Verificar que el tipo de mascota existe (si se actualiza)
-    if (petTypeId) {
-      const petType = await PetType.findById(petTypeId);
-      if (!petType) {
-        ResponseHelper.validationError(res, 'Tipo de mascota no encontrado');
-        return;
-      }
-    }
-
-    // Verificar que las características existen (si se actualizan)
-    if (parsedCharacteristics && parsedCharacteristics.length > 0) {
-      const characteristicIds = parsedCharacteristics.map(
-        (c: any) => c.characteristicId
-      );
-      const existingCharacteristics = await PetCharacteristic.find({
-        _id: { $in: characteristicIds },
-      });
-      if (existingCharacteristics.length !== characteristicIds.length) {
-        ResponseHelper.validationError(
-          res,
-          'Una o más características no encontradas'
-        );
-        return;
-      }
-    }
-
-    // Preparar datos de actualización
-    const updateData: any = {};
-    if (name) updateData.name = name;
-    if (comment !== undefined) updateData.comment = comment;
-    if (petTypeId) updateData.petType = petTypeId;
-    if (parsedCharacteristics !== undefined)
-      updateData.characteristics = parsedCharacteristics.map((c: any) => ({
-        characteristic: c.characteristicId,
-        value: c.value,
-      }));
-
-    // Si hay una imagen en el request, guardar buffer y generar URL
-    if (req.file) {
-      updateData.avatar = `/api/pets/${petId}/avatar`;
-      updateData.avatarBuffer = req.file.buffer;
-      updateData.avatarContentType = req.file.mimetype;
-    }
-
-    // Detectar cambios antes de actualizar
-    const changes = getChanges(pet, updateData);
-
-    // Actualizar la mascota
-    const updatedPet = await Pet.findByIdAndUpdate(petId, updateData, {
-      new: true,
-    }).populate(['petType', 'characteristics.characteristic', 'owner']);
-
-    if (!updatedPet) {
-      ResponseHelper.notFound(res, 'Mascota no encontrada');
-      return;
-    }
-
-    // Si hubo cambios, registrarlos
-    if (changes.length > 0) {
-      const userName = `${req.user.firstName} ${req.user.lastName}`;
-      logChanges('Pet', petId, userId.toString(), userName, changes);
-    }
-
-    ResponseHelper.success(
-      res,
-      'Mascota actualizada exitosamente',
-      {
-        id: updatedPet._id,
-        name: updatedPet.name,
-        comment: updatedPet.comment,
-        avatar: updatedPet.avatar,
-        petType: {
-          id: (updatedPet.petType as any)._id,
-          name: (updatedPet.petType as any).name,
-        },
-        characteristics: updatedPet.characteristics.map((char) => ({
-          id: (char.characteristic as any)._id,
-          name: (char.characteristic as any).name,
-          value: char.value,
-        })),
-        owner: {
-          id: (updatedPet.owner as any)._id,
-          name: `${(updatedPet.owner as any).firstName} ${
-            (updatedPet.owner as any).lastName
-          }`,
-          email: (updatedPet.owner as any).email,
-        },
-        createdAt: updatedPet.createdAt,
-        updatedAt: updatedPet.updatedAt,
-      }
-    );
-  } catch (error) {
-    next(error);
-  }
-};
-
-// DELETE /pets/:id - Eliminar mascota (solo si es propietario)
-const deletePet: RequestHandler = async (req, res, next) => {
-  try {
-    const petId = req.params.id;
-    const userId = req.user?._id;
-
-    if (!userId) {
-      ResponseHelper.unauthorized(res);
-      return;
-    }
-
-    const pet = await Pet.findById(petId);
-    if (!pet) {
-      ResponseHelper.notFound(res, 'Mascota no encontrada');
-      return;
-    }
-
-    // Verificar permisos: solo el propietario puede eliminar la mascota
-    if (pet.owner.toString() !== userId.toString()) {
-      ResponseHelper.forbidden(
-        res,
-        'No tienes permisos para eliminar esta mascota'
-      );
-      return;
-    }
-
-    await Pet.findByIdAndDelete(petId);
-
-    // Log de eliminación
-    const userName = `${req.user.firstName} ${req.user.lastName}`;
-    logChanges('Pet', petId, userId.toString(), userName, [
-      { field: 'name', oldValue: pet.name, newValue: null },
-    ]);
-
-    ResponseHelper.success(res, 'Mascota eliminada exitosamente');
-  } catch (error) {
-    next(error);
-  }
-};
-
-// ========================================
-// SERVICIOS DE ADMIN (Solo lectura de todas las mascotas)
-// ========================================
-
-// GET /pets/admin/all - Obtener todas las mascotas (solo admins)
-const getAllPets: RequestHandler = async (req, res, next) => {
-  try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
-    const skip = (page - 1) * limit;
-
-    // Construir filtros
-    const filters: any = {};
-
-    if (req.query.search) {
-      const searchRegex = new RegExp(req.query.search as string, 'i');
-      filters.name = searchRegex;
-    }
-
-    if (req.query.petType) {
-      filters.petType = req.query.petType;
-    }
-
-    if (req.query.owner) {
-      filters.owner = req.query.owner;
-    }
-
-    // Obtener mascotas con paginación y filtros
-    const pets = await Pet.find(filters)
-      .populate(['petType', 'characteristics.characteristic', 'owner'])
-      .skip(skip)
-      .limit(limit)
-      .sort({ createdAt: -1 });
-
-    // Obtener el total para la paginación
-    const totalPets = await Pet.countDocuments(filters);
-    const totalPages = Math.ceil(totalPets / limit);
-
-    ResponseHelper.success(res, 'Mascotas obtenidas exitosamente', {
-      items: pets,
-      pagination: {
-        page,
-        limit,
-        total: totalPets,
-        totalPages,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// GET /pets/admin/:id - Obtener cualquier mascota (solo admins)
+// GET /pets/admin/:id - Get any pet (admins only)
 const getPetAsAdmin: RequestHandler = async (req, res, next) => {
   try {
     const petId = req.params.id;
@@ -499,10 +522,10 @@ const getPetAsAdmin: RequestHandler = async (req, res, next) => {
 };
 
 // ========================================
-// SERVICIOS PÚBLICOS
+// PUBLIC SERVICES
 // ========================================
 
-// GET /pets/:id/avatar - Obtener avatar de una mascota (público)
+// GET /pets/:id/avatar - Get pet avatar (public)
 const getAvatar: RequestHandler = async (req, res, next) => {
   try {
     const petId = req.params.id;
@@ -518,7 +541,7 @@ const getAvatar: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Establecer el tipo de contenido y enviar el buffer
+    // Set content type and send buffer
     res.set('Content-Type', pet.avatarContentType);
     res.send(pet.avatarBuffer);
   } catch (error) {
@@ -527,7 +550,7 @@ const getAvatar: RequestHandler = async (req, res, next) => {
 };
 
 // ========================================
-// RUTAS - SERVICIOS DE USUARIO
+// ROUTES - USER SERVICES
 // ========================================
 // @ts-ignore - Express 5.1.0 type compatibility issue
 router.post(
@@ -570,7 +593,7 @@ router.delete(
 );
 
 // ========================================
-// RUTAS - SERVICIOS DE ADMIN
+// ROUTES - ADMIN SERVICES
 // ========================================
 // @ts-ignore - Express 5.1.0 type compatibility issue
 router.get(
@@ -588,7 +611,7 @@ router.get(
 );
 
 // ========================================
-// RUTAS - SERVICIOS PÚBLICOS
+// ROUTES - PUBLIC SERVICES
 // ========================================
 router.get('/:id/avatar', getAvatar);
 

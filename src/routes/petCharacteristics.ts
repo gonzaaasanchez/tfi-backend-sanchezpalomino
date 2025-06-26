@@ -8,7 +8,7 @@ import { ResponseHelper } from '../utils/response';
 
 const router = Router();
 
-// POST /pet-characteristics - Crear nueva característica de mascota
+// POST /pet-characteristics - Create new pet characteristic
 const createPetCharacteristic: RequestHandler = async (req, res, next) => {
   try {
     const { name } = req.body;
@@ -18,7 +18,7 @@ const createPetCharacteristic: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Verificar si la característica ya existe
+    // Check if characteristic already exists
     const existingCharacteristic = await PetCharacteristic.findOne({ name });
     if (existingCharacteristic) {
       ResponseHelper.validationError(
@@ -28,11 +28,11 @@ const createPetCharacteristic: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Crear la característica
+    // Create the characteristic
     const characteristic = new PetCharacteristic({ name });
     await characteristic.save();
 
-    // Log de creación
+    // Creation log
     const userName = req.user
       ? `${req.user.firstName} ${req.user.lastName}`
       : 'Sistema';
@@ -56,14 +56,14 @@ const createPetCharacteristic: RequestHandler = async (req, res, next) => {
   }
 };
 
-// GET /pet-characteristics - Obtener todas las características de mascota
+// GET /pet-characteristics - Get all pet characteristics
 const getAllPetCharacteristics: RequestHandler = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit;
 
-    // Construir filtros opcionales
+    // Build optional filters
     const filters: any = {};
 
     if (req.query.search) {
@@ -71,13 +71,13 @@ const getAllPetCharacteristics: RequestHandler = async (req, res, next) => {
       filters.name = searchRegex;
     }
 
-    // Obtener características con paginación y filtros
+    // Get characteristics with pagination and filters
     const characteristics = await PetCharacteristic.find(filters)
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
 
-    // Obtener el total para la paginación
+    // Get total for pagination
     const totalCharacteristics = await PetCharacteristic.countDocuments(
       filters
     );
@@ -101,7 +101,7 @@ const getAllPetCharacteristics: RequestHandler = async (req, res, next) => {
   }
 };
 
-// GET /pet-characteristics/:id - Obtener característica específica
+// GET /pet-characteristics/:id - Get specific characteristic
 const getPetCharacteristic: RequestHandler = async (req, res, next) => {
   try {
     const characteristicId = req.params.id;
@@ -122,7 +122,7 @@ const getPetCharacteristic: RequestHandler = async (req, res, next) => {
   }
 };
 
-// PUT /pet-characteristics/:id - Actualizar característica de mascota
+// PUT /pet-characteristics/:id - Update pet characteristic
 const updatePetCharacteristic: RequestHandler = async (req, res, next) => {
   try {
     const characteristicId = req.params.id;
@@ -139,7 +139,7 @@ const updatePetCharacteristic: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Verificar si ya existe otra característica con el mismo nombre
+    // Check if another characteristic with the same name already exists
     const existingCharacteristic = await PetCharacteristic.findOne({
       name,
       _id: { $ne: characteristicId },
@@ -152,10 +152,10 @@ const updatePetCharacteristic: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Detectar cambios antes de actualizar
+    // Detect changes before updating
     const changes = getChanges(characteristic, { name });
 
-    // Actualizar la característica
+    // Update the characteristic
     const updatedCharacteristic = await PetCharacteristic.findByIdAndUpdate(
       characteristicId,
       { name },
@@ -167,7 +167,7 @@ const updatePetCharacteristic: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Si hubo cambios, registrarlos
+    // If there were changes, log them
     if (changes.length > 0) {
       const userName = `${req.user.firstName} ${req.user.lastName}`;
       logChanges(
@@ -189,7 +189,7 @@ const updatePetCharacteristic: RequestHandler = async (req, res, next) => {
   }
 };
 
-// DELETE /pet-characteristics/:id - Eliminar característica de mascota
+// DELETE /pet-characteristics/:id - Delete pet characteristic
 const deletePetCharacteristic: RequestHandler = async (req, res, next) => {
   try {
     const characteristicId = req.params.id;
@@ -200,12 +200,12 @@ const deletePetCharacteristic: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // TODO: Verificar si hay valores de características usando esta característica antes de eliminar
-    // Por ahora solo eliminamos directamente
+    // TODO: Check if there are characteristic values using this characteristic before deleting
+    // For now just delete directly
 
     await PetCharacteristic.findByIdAndDelete(characteristicId);
 
-    // Log de eliminación
+    // Deletion log
     const userName = `${req.user.firstName} ${req.user.lastName}`;
     logChanges(
       'PetCharacteristic',
@@ -224,7 +224,9 @@ const deletePetCharacteristic: RequestHandler = async (req, res, next) => {
   }
 };
 
-// Rutas - Usar sistema de permisos correcto
+// ========================================
+// ROUTES - Use correct permission system
+// ========================================
 // @ts-ignore - Express 5.1.0 type compatibility issue
 router.post(
   '/',

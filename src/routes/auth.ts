@@ -8,7 +8,7 @@ import { ResponseHelper } from '../utils/response';
 
 const router = Router();
 
-// POST /auth/register
+// POST /auth/register - User registration
 const register: RequestHandler = async (req, res, next) => {
   try {
     const { firstName, lastName, email, password, phoneNumber } = req.body;
@@ -32,7 +32,7 @@ const register: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Obtener el rol 'user' por defecto
+    // Get the default 'user' role
     const userRole = await Role.findOne({ name: 'user' });
     if (!userRole) {
       ResponseHelper.serverError(
@@ -55,10 +55,10 @@ const register: RequestHandler = async (req, res, next) => {
 
     await user.save();
 
-    // Populate role para la respuesta
+    // Populate role for response
     await user.populate('role');
 
-    // Log de creación
+    // Creation log
     logChanges('User', user._id?.toString() || '', 'system', 'Sistema', [
       { field: 'firstName', oldValue: null, newValue: firstName },
       { field: 'lastName', oldValue: null, newValue: lastName },
@@ -79,7 +79,7 @@ const register: RequestHandler = async (req, res, next) => {
   }
 };
 
-// POST /auth/login
+// POST /auth/login - User login
 const login: RequestHandler = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -115,10 +115,10 @@ const login: RequestHandler = async (req, res, next) => {
   }
 };
 
-// GET /auth/me - Obtener perfil del usuario autenticado
+// GET /auth/me - Get authenticated user profile
 const getProfile: RequestHandler = async (req, res, next) => {
   try {
-    // Populate role para incluir información del rol
+    // Populate role to include role information
     await req.user.populate('role');
 
     ResponseHelper.success(res, 'Perfil obtenido exitosamente', {
@@ -129,6 +129,9 @@ const getProfile: RequestHandler = async (req, res, next) => {
   }
 };
 
+// ========================================
+// ROUTES
+// ========================================
 // @ts-ignore - Express 5.1.0 type compatibility issue
 router.post('/register', register);
 // @ts-ignore - Express 5.1.0 type compatibility issue

@@ -53,7 +53,7 @@ const AdminSchema: Schema = new Schema(
   }
 );
 
-// Método para excluir password en las respuestas
+// Method to exclude password from responses
 AdminSchema.methods.toJSON = function () {
   const admin = this.toObject();
   delete admin.password;

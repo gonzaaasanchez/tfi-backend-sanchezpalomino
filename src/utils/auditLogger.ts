@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-// Interfaz base para todos los logs
+// Base interface for all logs
 interface IAuditLog extends Document {
   userId: string;
   userName: string;
@@ -11,21 +11,21 @@ interface IAuditLog extends Document {
   timestamp: Date;
 }
 
-// Cache para modelos de logs
+// Cache for log models
 const logModelsCache = new Map<string, mongoose.Model<IAuditLog>>();
 
 /**
- * Crea o obtiene un modelo de log para una entidad específica
- * @param entityName - Nombre de la entidad (ej: 'User', 'Admin', 'Role')
- * @returns Modelo de Mongoose para los logs de esa entidad
+ * Creates or gets a log model for a specific entity
+ * @param entityName - Entity name (e.g., 'User', 'Admin', 'Role')
+ * @returns Mongoose model for that entity's logs
  */
 function getLogModel(entityName: string): mongoose.Model<IAuditLog> {
-  // Verificar si ya existe en cache
+  // Check if it already exists in cache
   if (logModelsCache.has(entityName)) {
     return logModelsCache.get(entityName)!;
   }
 
-  // Crear el esquema de log
+  // Create the log schema
   const logSchema = new Schema(
     {
       userId: { type: String, required: true },
@@ -41,29 +41,29 @@ function getLogModel(entityName: string): mongoose.Model<IAuditLog> {
     }
   );
 
-  // Crear índices para optimizar consultas
+  // Create indexes to optimize queries
   logSchema.index({ entityId: 1 });
   logSchema.index({ timestamp: -1 });
   logSchema.index({ userId: 1 });
 
-  // Crear el modelo
+  // Create the model
   const LogModel = mongoose.model<IAuditLog>(`${entityName}Log`, logSchema);
 
-  // Guardar en cache
+  // Save in cache
   logModelsCache.set(entityName, LogModel);
 
   return LogModel;
 }
 
 /**
- * Registra un cambio en la base de datos
- * @param entityName - Nombre de la entidad
- * @param userId - ID del usuario que hizo el cambio
- * @param userName - Nombre del usuario
- * @param entityId - ID de la entidad modificada
- * @param field - Campo que se modificó
- * @param oldValue - Valor anterior
- * @param newValue - Valor nuevo
+ * Logs a change in the database
+ * @param entityName - Entity name
+ * @param userId - ID of the user who made the change
+ * @param userName - User name
+ * @param entityId - ID of the modified entity
+ * @param field - Field that was modified
+ * @param oldValue - Previous value
+ * @param newValue - New value
  */
 export async function logChange(
   entityName: string,
@@ -88,17 +88,17 @@ export async function logChange(
     });
   } catch (error) {
     console.error('Error al registrar cambio:', error);
-    // No lanzar el error para no interrumpir la operación principal
+    // Don't throw the error to avoid interrupting the main operation
   }
 }
 
 /**
- * Registra múltiples cambios de una vez
- * @param entityName - Nombre de la entidad
- * @param userId - ID del usuario que hizo el cambio
- * @param userName - Nombre del usuario
- * @param entityId - ID de la entidad modificada
- * @param changes - Array de cambios [{field, oldValue, newValue}]
+ * Logs multiple changes at once
+ * @param entityName - Entity name
+ * @param userId - ID of the user who made the change
+ * @param userName - User name
+ * @param entityId - ID of the modified entity
+ * @param changes - Array of changes [{field, oldValue, newValue}]
  */
 export async function logChanges(
   entityName: string,
@@ -123,15 +123,15 @@ export async function logChanges(
     await LogModel.insertMany(logs);
   } catch (error) {
     console.error('Error al registrar cambios:', error);
-    // No lanzar el error para no interrumpir la operación principal
+    // Don't throw the error to avoid interrupting the main operation
   }
 }
 
 /**
- * Obtiene el historial de cambios de una entidad específica
- * @param entityName - Nombre de la entidad
- * @param entityId - ID de la entidad
- * @returns Array de logs ordenados por fecha descendente
+ * Gets the change history of a specific entity
+ * @param entityName - Entity name
+ * @param entityId - Entity ID
+ * @returns Array of logs sorted by descending date
  */
 export async function getEntityHistory(
   entityName: string,
@@ -148,10 +148,10 @@ export async function getEntityHistory(
 }
 
 /**
- * Obtiene todos los logs de una entidad con filtros opcionales
- * @param entityName - Nombre de la entidad
- * @param filters - Filtros opcionales
- * @returns Array de logs
+ * Gets all logs of an entity with optional filters
+ * @param entityName - Entity name
+ * @param filters - Optional filters
+ * @returns Array of logs
  */
 export async function getEntityLogs(
   entityName: string,

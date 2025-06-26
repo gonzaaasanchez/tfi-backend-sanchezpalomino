@@ -76,14 +76,14 @@ const PetSchema: Schema = new Schema(
   }
 );
 
-// Método para excluir avatarBuffer en las respuestas
+// Method to exclude avatarBuffer from responses
 PetSchema.methods.toJSON = function () {
   const pet = this.toObject();
   delete pet.avatarBuffer;
   return pet;
 };
 
-// Índices para mejorar el rendimiento de las consultas
+// Indexes to improve query performance
 PetSchema.index({ owner: 1 });
 PetSchema.index({ petType: 1 });
 PetSchema.index({ 'characteristics.characteristic': 1 });

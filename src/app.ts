@@ -15,7 +15,7 @@ import petsRoutes from './routes/pets';
 import caregiverSearchRoutes from './routes/caregiverSearch';
 import { errorHandler } from './middleware/errorHandler';
 
-// Cargar variables de entorno
+// Load environment variables
 dotenv.config();
 
 const app = express();
@@ -28,7 +28,7 @@ app.use(cors());
 app.use(helmet());
 app.use(morgan('dev'));
 
-// Rutas
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/roles', rolesRoutes);
 app.use('/api/admins', adminsRoutes);
@@ -39,15 +39,15 @@ app.use('/api/pet-characteristics', petCharacteristicsRoutes);
 app.use('/api/pets', petsRoutes);
 app.use('/api/caregiver-search', caregiverSearchRoutes);
 
-// Ruta de prueba
+// Test route
 app.get('/', (req, res) => {
   res.send('API funcionando');
 });
 
-// Middleware de manejo de errores (debe ir al final)
+// Error handling middleware (must be at the end)
 app.use(errorHandler);
 
-// Conexión a MongoDB y arranque del servidor
+// MongoDB connection and server startup
 mongoose.connect(MONGODB_URI)
   .then(() => {
     console.log('Conectado a MongoDB');

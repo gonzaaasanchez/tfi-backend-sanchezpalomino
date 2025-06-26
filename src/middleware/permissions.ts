@@ -4,7 +4,7 @@ import Admin from '../models/Admin';
 import Role from '../models/Role';
 import { ResponseHelper } from '../utils/response';
 
-// Extender la interfaz Request para incluir user con role
+// Extend the Request interface to include user with role
 declare global {
   namespace Express {
     interface Request {
@@ -13,10 +13,10 @@ declare global {
   }
 }
 
-// Tipos de acciones disponibles
+// Available action types
 export type Action = 'create' | 'read' | 'update' | 'delete' | 'getAll';
 
-// Middleware de permisos
+// Permissions middleware
 export const permissionMiddleware = (
   resource: string,
   action: 'create' | 'read' | 'update' | 'delete' | 'getAll'
@@ -29,7 +29,7 @@ export const permissionMiddleware = (
 
       let userWithRole;
 
-      // Verificar si es un admin o un usuario regular
+      // Check if it's an admin or regular user
       if (req.user.type === 'admin') {
         userWithRole = await Admin.findById(req.user._id).populate('role');
       } else {
@@ -42,12 +42,12 @@ export const permissionMiddleware = (
 
       const role = userWithRole.role as any;
 
-      // Superadmin tiene acceso completo
+      // Superadmin has full access
       if (role.name === 'superadmin') {
         return next();
       }
 
-      // Verificar si el usuario tiene el permiso requerido
+      // Check if the user has the required permission
       if (
         !role.permissions ||
         !role.permissions[resource] ||

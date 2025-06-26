@@ -11,7 +11,7 @@ import PetType from '../models/PetType';
 
 const router = Router();
 
-// GET /users/me - Obtener perfil del usuario autenticado
+// GET /users/me - Get authenticated user profile
 const getMyProfile: RequestHandler = async (req, res, next) => {
   try {
     const userId = req.user?._id;
@@ -28,17 +28,17 @@ const getMyProfile: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Crear una copia del objeto user para la respuesta
+    // Create a copy of the user object for the response
     const userResponse = user.toObject();
 
-    // Si hay una dirección de cuidado configurada, obtener su información
+    // If there's a care address configured, get its information
     if (user.carerConfig?.careAddress) {
       const careAddress = user.addresses?.find(
         (address: any) => address._id?.toString() === user.carerConfig?.careAddress?.toString()
       );
       
       if (careAddress) {
-        // Agregar la información de la dirección de cuidado a la respuesta
+        // Add care address information to the response
         (userResponse as any).careAddressData = careAddress;
       }
     }
@@ -49,7 +49,7 @@ const getMyProfile: RequestHandler = async (req, res, next) => {
   }
 };
 
-// PUT /users/me - Actualizar perfil del usuario autenticado
+// PUT /users/me - Update authenticated user profile
 const updateMyProfile: RequestHandler = async (req, res, next) => {
   try {
     const userId = req.user?._id;
@@ -60,7 +60,7 @@ const updateMyProfile: RequestHandler = async (req, res, next) => {
 
     const updateData = req.body;
 
-    // Prevenir que el usuario modifique campos sensibles
+    // Prevent user from modifying sensitive fields
     delete updateData.role;
     delete updateData._id;
     delete updateData.createdAt;
@@ -68,14 +68,14 @@ const updateMyProfile: RequestHandler = async (req, res, next) => {
     delete updateData.avatarBuffer;
     delete updateData.avatarContentType;
 
-    // Si hay una imagen en el request, guardar buffer y generar URL
+    // If there's an image in the request, save buffer and generate URL
     if (req.file) {
       updateData.avatar = `/api/users/${userId}/avatar`;
       updateData.avatarBuffer = req.file.buffer;
       updateData.avatarContentType = req.file.mimetype;
     }
 
-    // Si el usuario envía una URL de avatar en el body, sobrescribir la generada
+    // If user sends an avatar URL in the body, override the generated one
     if (req.body.avatar && !req.file) {
       updateData.avatar = req.body.avatar;
     }
@@ -86,10 +86,10 @@ const updateMyProfile: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Detectar cambios antes de actualizar
+    // Detect changes before updating
     const changes = getChanges(user, updateData);
 
-    // Actualizar el documento sin populate para evitar problemas con roles
+    // Update the document without populate to avoid role issues
     const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
       new: true,
     });
@@ -99,7 +99,7 @@ const updateMyProfile: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Si hubo cambios, registrarlos
+    // If there were changes, log them
     if (changes.length > 0) {
       const userName = `${req.user.firstName} ${req.user.lastName}`;
       logChanges(
@@ -111,7 +111,7 @@ const updateMyProfile: RequestHandler = async (req, res, next) => {
       );
     }
 
-    // Convertir a objeto y eliminar campos sensibles
+    // Convert to object and remove sensitive fields
     const userResponse = updatedUser.toObject();
     const { password, avatarBuffer, ...safeUserResponse } = userResponse;
 
@@ -125,7 +125,7 @@ const updateMyProfile: RequestHandler = async (req, res, next) => {
   }
 };
 
-// GET /users/:id/avatar - Obtener avatar de un usuario
+// GET /users/:id/avatar - Get user avatar
 const getAvatar: RequestHandler = async (req, res, next) => {
   try {
     const userId = req.params.id;
@@ -141,7 +141,7 @@ const getAvatar: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Establecer el tipo de contenido y enviar el buffer
+    // Set content type and send buffer
     res.set('Content-Type', user.avatarContentType);
     res.send(user.avatarBuffer);
   } catch (error) {
@@ -149,7 +149,7 @@ const getAvatar: RequestHandler = async (req, res, next) => {
   }
 };
 
-// GET /users/:id - Obtener un usuario específico (solo admins)
+// GET /users/:id - Get a specific user (admins only)
 const getOneUser: RequestHandler = async (req, res, next) => {
   try {
     const userId = req.params.id;
@@ -160,7 +160,7 @@ const getOneUser: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Convertir a objeto y eliminar campos sensibles
+    // Convert to object and remove sensitive fields
     const userResponse = user.toObject();
     const { password, avatarBuffer, ...safeUserResponse } = userResponse;
 
@@ -174,14 +174,14 @@ const getOneUser: RequestHandler = async (req, res, next) => {
   }
 };
 
-// GET /users - Obtener todos los usuarios (solo admins)
+// GET /users - Get all users (admins only)
 const getAllUsers: RequestHandler = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit;
 
-    // Construir filtros opcionales
+    // Build optional filters
     const filters: any = {};
 
     if (req.query.search) {
@@ -198,18 +198,18 @@ const getAllUsers: RequestHandler = async (req, res, next) => {
       filters.role = req.query.role;
     }
 
-    // Obtener usuarios con paginación y filtros
+    // Get users with pagination and filters
     const users = await User.find(filters)
       .populate('role')
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
 
-    // Obtener el total de usuarios para la paginación
+    // Get total users for pagination
     const totalUsers = await User.countDocuments(filters);
     const totalPages = Math.ceil(totalUsers / limit);
 
-    // Eliminar campos sensibles de cada usuario
+    // Remove sensitive fields from each user
     const safeUsers = users.map((user) => {
       const userObj = user.toObject();
       const { password, avatarBuffer, ...safeUser } = userObj;
@@ -232,20 +232,20 @@ const getAllUsers: RequestHandler = async (req, res, next) => {
   }
 };
 
-// PUT /users/:id - Actualizar un usuario específico (solo admins)
+// PUT /users/:id - Update a specific user (admins only)
 const updateUser: RequestHandler = async (req, res, next) => {
   try {
     const userId = req.params.id;
     const updateData = req.body;
 
-    // Si hay una imagen en el request, guardar buffer y generar URL
+    // If there's an image in the request, save buffer and generate URL
     if (req.file) {
       updateData.avatar = `/api/users/${userId}/avatar`;
       updateData.avatarBuffer = req.file.buffer;
       updateData.avatarContentType = req.file.mimetype;
     }
 
-    // Si el usuario envía una URL de avatar en el body, sobrescribir la generada
+    // If user sends an avatar URL in the body, override the generated one
     if (req.body.avatar && !req.file) {
       updateData.avatar = req.body.avatar;
     }
@@ -256,15 +256,15 @@ const updateUser: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Detectar cambios antes de actualizar
+    // Detect changes before updating
     const changes = getChanges(user, updateData);
 
-    // Actualizar el documento directamente en la BD sin correr todos los validadores
+    // Update the document directly in the DB without running all validators
     const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
       new: true,
     });
 
-    // Si hubo cambios, registrarlos
+    // If there were changes, log them
     if (changes.length > 0) {
       const userName = req.user
         ? `${req.user.firstName} ${req.user.lastName}`
@@ -283,7 +283,7 @@ const updateUser: RequestHandler = async (req, res, next) => {
   }
 };
 
-// PUT /users/me/carer-config - Actualizar configuración de cuidado del usuario autenticado
+// PUT /users/me/carer-config - Update authenticated user's care configuration
 const updateMyCarerConfig: RequestHandler = async (req, res, next) => {
   try {
     const userId = req.user?._id;
@@ -294,15 +294,15 @@ const updateMyCarerConfig: RequestHandler = async (req, res, next) => {
 
     const carerConfig = req.body.carerConfig;
 
-    // Validar que solo se envíe carerConfig
+    // Validate that only carerConfig is sent
     if (Object.keys(req.body).length > 1 || !carerConfig) {
       ResponseHelper.validationError(res, 'Solo se permite actualizar carerConfig');
       return;
     }
 
-    // Validar petTypes si se proporcionan
+    // Validate petTypes if provided
     if (carerConfig.petTypes && Array.isArray(carerConfig.petTypes)) {
-      // Verificar que todos los IDs de petTypes sean válidos
+      // Verify that all petType IDs are valid
       const petTypeIds = carerConfig.petTypes;
       const validPetTypes = await PetType.find({ _id: { $in: petTypeIds } });
       
@@ -315,7 +315,7 @@ const updateMyCarerConfig: RequestHandler = async (req, res, next) => {
       }
     }
 
-    // Validar careAddress si se proporciona
+    // Validate careAddress if provided
     if (carerConfig.careAddress) {
       const user = await User.findById(userId);
       if (!user) {
@@ -323,7 +323,7 @@ const updateMyCarerConfig: RequestHandler = async (req, res, next) => {
         return;
       }
 
-      // Verificar que la dirección existe entre las direcciones del usuario
+      // Verify that the address exists among the user's addresses
       const addressExists = user.addresses?.some(
         (address: any) => address._id?.toString() === carerConfig.careAddress
       );
@@ -343,10 +343,10 @@ const updateMyCarerConfig: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Detectar cambios antes de actualizar
+    // Detect changes before updating
     const changes = getChanges(user, { carerConfig });
 
-    // Actualizar solo la configuración de cuidado
+    // Update only the care configuration
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { carerConfig },
@@ -358,7 +358,7 @@ const updateMyCarerConfig: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Si hubo cambios, registrarlos
+    // If there were changes, log them
     if (changes.length > 0) {
       const userName = `${req.user.firstName} ${req.user.lastName}`;
       logChanges(
@@ -370,7 +370,7 @@ const updateMyCarerConfig: RequestHandler = async (req, res, next) => {
       );
     }
 
-    // Convertir a objeto y eliminar campos sensibles
+    // Convert to object and remove sensitive fields
     const userResponse = updatedUser.toObject();
     const { password, avatarBuffer, ...safeUserResponse } = userResponse;
 
@@ -406,7 +406,7 @@ const getMyAddresses: RequestHandler = async (req, res, next) => {
   }
 };
 
-// GET /users/me/addresses/:id - Obtener una dirección específica del usuario autenticado
+// GET /users/me/addresses/:id - Get a specific address of the authenticated user
 const getMyAddress: RequestHandler = async (req, res, next) => {
   try {
     const userId = req.user?._id;
@@ -428,7 +428,7 @@ const getMyAddress: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Buscar la dirección por ID
+    // Find the address by ID
     const address = user.addresses.find(
       (address: any) => address._id?.toString() === addressId
     );
@@ -444,7 +444,7 @@ const getMyAddress: RequestHandler = async (req, res, next) => {
   }
 };
 
-// POST /users/me/addresses - Agregar una nueva dirección al usuario autenticado
+// POST /users/me/addresses - Add a new address to the authenticated user
 const addMyAddress: RequestHandler = async (req, res, next) => {
   try {
     const userId = req.user?._id;
@@ -461,7 +461,7 @@ const addMyAddress: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Agregar la nueva dirección al array
+    // Add the new address to the array
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { $push: { addresses: newAddress } },
@@ -473,10 +473,10 @@ const addMyAddress: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Obtener la dirección recién agregada (la última del array)
+    // Get the newly added address (the last one in the array)
     const addedAddress = updatedUser.addresses?.[updatedUser.addresses.length - 1];
 
-    // Registrar el cambio
+    // Log the change
     const userName = `${req.user.firstName} ${req.user.lastName}`;
     logChanges(
       'User',
@@ -496,7 +496,7 @@ const addMyAddress: RequestHandler = async (req, res, next) => {
   }
 };
 
-// PUT /users/me/addresses/:id - Actualizar una dirección específica del usuario autenticado
+// PUT /users/me/addresses/:id - Update a specific address of the authenticated user
 const updateMyAddress: RequestHandler = async (req, res, next) => {
   try {
     const userId = req.user?._id;
@@ -519,22 +519,22 @@ const updateMyAddress: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Buscar la dirección por ID
+    // Find the address by ID
     const addressIndex = user.addresses.findIndex(
       (address: any) => address._id?.toString() === addressId
     );
 
-    // Verificar que la dirección existe
+    // Verify that the address exists
     if (addressIndex === -1) {
       ResponseHelper.notFound(res, 'Dirección no encontrada');
       return;
     }
 
-    // Detectar cambios antes de actualizar
+    // Detect changes before updating
     const oldAddress = user.addresses[addressIndex];
     const changes: any[] = [];
     
-    // Comparar campos manualmente
+    // Compare fields manually
     Object.keys(updatedAddress).forEach(key => {
       if ((oldAddress as any)[key] !== (updatedAddress as any)[key]) {
         changes.push({
@@ -545,7 +545,7 @@ const updateMyAddress: RequestHandler = async (req, res, next) => {
       }
     });
 
-    // Actualizar la dirección específica
+    // Update the specific address
     const updateQuery: any = {};
     Object.keys(updatedAddress).forEach(key => {
       updateQuery[`addresses.${addressIndex}.${key}`] = (updatedAddress as any)[key];
@@ -562,7 +562,7 @@ const updateMyAddress: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Si hubo cambios, registrarlos
+    // If there were changes, log them
     if (changes.length > 0) {
       const userName = `${req.user.firstName} ${req.user.lastName}`;
       logChanges(
@@ -587,7 +587,7 @@ const updateMyAddress: RequestHandler = async (req, res, next) => {
   }
 };
 
-// DELETE /users/me/addresses/:id - Eliminar una dirección específica del usuario autenticado
+// DELETE /users/me/addresses/:id - Delete a specific address of the authenticated user
 const deleteMyAddress: RequestHandler = async (req, res, next) => {
   try {
     const userId = req.user?._id;
@@ -609,7 +609,7 @@ const deleteMyAddress: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Buscar la dirección por ID
+    // Find the address by ID
     const addressToDelete = user.addresses.find(
       (address: any) => address._id?.toString() === addressId
     );
@@ -619,7 +619,7 @@ const deleteMyAddress: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Eliminar la dirección específica
+    // Delete the specific address
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { $pull: { addresses: addressToDelete } },
@@ -631,7 +631,7 @@ const deleteMyAddress: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Registrar el cambio
+    // Log the change
     const userName = `${req.user.firstName} ${req.user.lastName}`;
     logChanges(
       'User',
@@ -651,7 +651,7 @@ const deleteMyAddress: RequestHandler = async (req, res, next) => {
   }
 };
 
-// Rutas para el usuario autenticado (sin permisos especiales) - DEBEN IR PRIMERO
+// Routes for authenticated user (no special permissions) - MUST GO FIRST
 router.get('/me', authMiddleware, getMyProfile);
 router.put(
   '/me',
@@ -662,14 +662,14 @@ router.put(
 );
 router.put('/me/carer-config', authMiddleware, updateMyCarerConfig);
 
-// Rutas para gestionar direcciones
+// Routes to manage addresses
 router.get('/me/addresses', authMiddleware, getMyAddresses);
 router.get('/me/addresses/:id', authMiddleware, getMyAddress);
 router.post('/me/addresses', authMiddleware, addMyAddress);
 router.put('/me/addresses/:id', authMiddleware, updateMyAddress);
 router.delete('/me/addresses/:id', authMiddleware, deleteMyAddress);
 
-// Rutas para admins (con permisos) - DEBEN IR DESPUÉS
+// Routes for admins (with permissions) - MUST GO AFTER
 // @ts-ignore
 router.get(
   '/',

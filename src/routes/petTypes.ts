@@ -8,7 +8,7 @@ import { ResponseHelper } from '../utils/response';
 
 const router = Router();
 
-// POST /pet-types - Crear nuevo tipo de mascota
+// POST /pet-types - Create new pet type
 const createPetType: RequestHandler = async (req, res, next) => {
   try {
     const { name } = req.body;
@@ -18,7 +18,7 @@ const createPetType: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Verificar si el tipo de mascota ya existe
+    // Check if pet type already exists
     const existingPetType = await PetType.findOne({ name });
     if (existingPetType) {
       ResponseHelper.validationError(
@@ -28,11 +28,11 @@ const createPetType: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Crear el tipo de mascota
+    // Create the pet type
     const petType = new PetType({ name });
     await petType.save();
 
-    // Log de creación
+    // Creation log
     const userName = req.user
       ? `${req.user.firstName} ${req.user.lastName}`
       : 'Sistema';
@@ -52,14 +52,14 @@ const createPetType: RequestHandler = async (req, res, next) => {
   }
 };
 
-// GET /pet-types - Obtener todos los tipos de mascota
+// GET /pet-types - Get all pet types
 const getAllPetTypes: RequestHandler = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit;
 
-    // Construir filtros opcionales
+    // Build optional filters
     const filters: any = {};
 
     if (req.query.search) {
@@ -67,13 +67,13 @@ const getAllPetTypes: RequestHandler = async (req, res, next) => {
       filters.name = searchRegex;
     }
 
-    // Obtener tipos de mascota con paginación y filtros
+    // Get pet types with pagination and filters
     const petTypes = await PetType.find(filters)
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
 
-    // Obtener el total para la paginación
+    // Get total for pagination
     const totalPetTypes = await PetType.countDocuments(filters);
     const totalPages = Math.ceil(totalPetTypes / limit);
 
@@ -91,7 +91,7 @@ const getAllPetTypes: RequestHandler = async (req, res, next) => {
   }
 };
 
-// GET /pet-types/:id - Obtener tipo de mascota específico
+// GET /pet-types/:id - Get specific pet type
 const getPetType: RequestHandler = async (req, res, next) => {
   try {
     const petTypeId = req.params.id;
@@ -112,7 +112,7 @@ const getPetType: RequestHandler = async (req, res, next) => {
   }
 };
 
-// PUT /pet-types/:id - Actualizar tipo de mascota
+// PUT /pet-types/:id - Update pet type
 const updatePetType: RequestHandler = async (req, res, next) => {
   try {
     const petTypeId = req.params.id;
@@ -129,7 +129,7 @@ const updatePetType: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Verificar si ya existe otro tipo con el mismo nombre
+    // Check if another type with the same name already exists
     const existingPetType = await PetType.findOne({
       name,
       _id: { $ne: petTypeId },
@@ -142,10 +142,10 @@ const updatePetType: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Detectar cambios antes de actualizar
+    // Detect changes before updating
     const changes = getChanges(petType, { name });
 
-    // Actualizar el tipo de mascota
+    // Update the pet type
     const updatedPetType = await PetType.findByIdAndUpdate(
       petTypeId,
       { name },
@@ -157,7 +157,7 @@ const updatePetType: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Si hubo cambios, registrarlos
+    // If there were changes, log them
     if (changes.length > 0) {
       const userName = `${req.user.firstName} ${req.user.lastName}`;
       logChanges(
@@ -179,7 +179,7 @@ const updatePetType: RequestHandler = async (req, res, next) => {
   }
 };
 
-// DELETE /pet-types/:id - Eliminar tipo de mascota
+// DELETE /pet-types/:id - Delete pet type
 const deletePetType: RequestHandler = async (req, res, next) => {
   try {
     const petTypeId = req.params.id;
@@ -190,12 +190,12 @@ const deletePetType: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // TODO: Verificar si hay mascotas usando este tipo antes de eliminar
-    // Por ahora solo eliminamos directamente
+    // TODO: Check if there are pets using this type before deleting
+    // For now just delete directly
 
     await PetType.findByIdAndDelete(petTypeId);
 
-    // Log de eliminación
+    // Deletion log
     const userName = `${req.user.firstName} ${req.user.lastName}`;
     logChanges('PetType', petTypeId, req.user._id.toString(), userName, [
       { field: 'name', oldValue: petType.name, newValue: null },
@@ -207,21 +207,27 @@ const deletePetType: RequestHandler = async (req, res, next) => {
   }
 };
 
-// GET /pet-types/all - Obtener todos los tipos de mascota sin paginación
+// GET /pet-types/all - Get all pet types without pagination
 const getAllPetTypesSimple: RequestHandler = async (req, res, next) => {
   try {
-    // Obtener todos los tipos de mascota ordenados por nombre
+    // Get all pet types ordered by name
     const petTypes = await PetType.find({})
       .sort({ name: 1 })
       .select('_id name');
 
-    ResponseHelper.success(res, 'Tipos de mascota obtenidos exitosamente', petTypes);
+    ResponseHelper.success(
+      res,
+      'Tipos de mascota obtenidos exitosamente',
+      petTypes
+    );
   } catch (error) {
     next(error);
   }
 };
 
-// Rutas - Usar sistema de permisos correcto
+// ========================================
+// ROUTES - Use correct permission system
+// ========================================
 // @ts-ignore - Express 5.1.0 type compatibility issue
 router.post(
   '/',

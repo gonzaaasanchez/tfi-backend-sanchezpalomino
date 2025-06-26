@@ -10,14 +10,14 @@ export interface JWTPayload {
   type?: 'admin' | 'user';
 }
 
-// Generar JWT token
+// Generate JWT token
 export const generateToken = (payload: JWTPayload): string => {
   return jwt.sign(payload, JWT_SECRET, {
     expiresIn: JWT_EXPIRES_IN,
   } as jwt.SignOptions);
 };
 
-// Verificar JWT token
+// Verify JWT token
 export const verifyToken = (token: string): JWTPayload => {
   try {
     return jwt.verify(token, JWT_SECRET) as JWTPayload;
@@ -26,13 +26,13 @@ export const verifyToken = (token: string): JWTPayload => {
   }
 };
 
-// Hashear contraseña
+// Hash password
 export const hashPassword = async (password: string): Promise<string> => {
   const saltRounds = 12;
   return await bcrypt.hash(password, saltRounds);
 };
 
-// Verificar contraseña
+// Verify password
 export const verifyPassword = async (
   password: string,
   hashedPassword: string

@@ -1,17 +1,17 @@
 import mongoose, { Schema } from 'mongoose';
 
-// Cache para modelos de logs
+// Cache for log models
 const logModelsCache = new Map<string, mongoose.Model<any>>();
 
 /**
- * Función simple para registrar un cambio
- * @param entityName - Nombre de la entidad (ej: 'User', 'Admin', 'Role')
- * @param entityId - ID de la entidad
- * @param userId - ID del usuario que hizo el cambio
- * @param userName - Nombre del usuario
- * @param field - Campo que cambió
- * @param oldValue - Valor anterior
- * @param newValue - Valor nuevo
+ * Simple function to log a change
+ * @param entityName - Entity name (e.g., 'User', 'Admin', 'Role')
+ * @param entityId - Entity ID
+ * @param userId - ID of the user who made the change
+ * @param userName - User name
+ * @param field - Field that changed
+ * @param oldValue - Previous value
+ * @param newValue - New value
  */
 export async function logChange(
   entityName: string,
@@ -23,11 +23,11 @@ export async function logChange(
   newValue: any
 ): Promise<void> {
   try {
-    // Obtener o crear el modelo de log para esta entidad
+    // Get or create the log model for this entity
     let LogModel = logModelsCache.get(entityName);
 
     if (!LogModel) {
-      // Crear el esquema de log
+      // Create the log schema
       const logSchema = new Schema(
         {
           userId: { type: String, required: true },
@@ -43,16 +43,16 @@ export async function logChange(
         }
       );
 
-      // Crear índices
+      // Create indexes
       logSchema.index({ entityId: 1 });
       logSchema.index({ timestamp: -1 });
 
-      // Crear el modelo
+      // Create the model
       LogModel = mongoose.model(`${entityName}Log`, logSchema);
       logModelsCache.set(entityName, LogModel);
     }
 
-    // Crear el log
+    // Create the log
     await LogModel.create({
       userId,
       userName,
@@ -64,17 +64,17 @@ export async function logChange(
     });
   } catch (error) {
     console.error('Error al registrar cambio:', error);
-    // No lanzar error para no interrumpir la operación principal
+    // Don't throw error to avoid interrupting the main operation
   }
 }
 
 /**
- * Función para registrar múltiples cambios de una vez
- * @param entityName - Nombre de la entidad
- * @param entityId - ID de la entidad
- * @param userId - ID del usuario
- * @param userName - Nombre del usuario
- * @param changes - Array de cambios [{field, oldValue, newValue}]
+ * Function to log multiple changes at once
+ * @param entityName - Entity name
+ * @param entityId - Entity ID
+ * @param userId - User ID
+ * @param userName - User name
+ * @param changes - Array of changes [{field, oldValue, newValue}]
  */
 export async function logChanges(
   entityName: string,
