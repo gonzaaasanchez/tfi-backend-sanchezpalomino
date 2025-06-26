@@ -32,14 +32,14 @@ interface CaregiverSearchResult {
     avatar?: string;
     addresses: any[];
   };
-  totalPrice: number; // Precio total de los honorarios
-  commission: number; // Comisión del 6%
-  totalWithCommission: number; // Precio total + comisión
+  totalPrice: string; // Precio total de los honorarios (formateado)
+  commission: string; // Comisión del 6% (formateada)
+  totalWithCommission: string; // Precio total + comisión (formateado)
   careDetails: {
     daysCount: number;
     visitsCount?: number;
-    pricePerDay?: number;
-    pricePerVisit?: number;
+    pricePerDay?: string; // Precio por día (formateado)
+    pricePerVisit?: string; // Precio por visita (formateado)
   };
 }
 
@@ -76,6 +76,25 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 async function getPetTypesFromPets(petIds: string[]): Promise<string[]> {
   const pets = await Pet.find({ _id: { $in: petIds } }).populate('petType');
   return pets.map(pet => pet.petType._id.toString());
+}
+
+// Función para formatear números con separadores de miles y decimales
+function formatCurrency(amount: number): string {
+  // Redondear a 2 decimales
+  const rounded = Math.round(amount * 100) / 100;
+  
+  // Convertir a string con separador de decimales
+  const parts = rounded.toString().split('.');
+  const integerPart = parts[0];
+  const decimalPart = parts[1] || '00';
+  
+  // Agregar separadores de miles
+  const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  
+  // Asegurar que tenga 2 decimales
+  const formattedDecimal = decimalPart.padEnd(2, '0').substring(0, 2);
+  
+  return `${formattedInteger},${formattedDecimal}`;
 }
 
 // POST /caregiver-search - Buscar cuidadores disponibles
@@ -232,22 +251,26 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
           avatar: caregiver.avatar,
           addresses: caregiver.addresses || []
         },
-        totalPrice,
-        commission,
-        totalWithCommission,
+        totalPrice: formatCurrency(totalPrice),
+        commission: formatCurrency(commission),
+        totalWithCommission: formatCurrency(totalWithCommission),
         careDetails: {
           daysCount,
           visitsCount,
-          pricePerDay,
-          pricePerVisit
+          pricePerDay: pricePerDay ? formatCurrency(pricePerDay) : undefined,
+          pricePerVisit: pricePerVisit ? formatCurrency(pricePerVisit) : undefined
         }
       };
 
       results.push(result);
     }
 
-    // Ordenar por precio total (más barato primero)
-    results.sort((a, b) => a.totalPrice - b.totalPrice);
+    // Ordenar por precio total (más barato primero) - usar valores numéricos para ordenar
+    results.sort((a, b) => {
+      const aPrice = parseFloat(a.totalPrice.replace(/\./g, '').replace(',', '.'));
+      const bPrice = parseFloat(b.totalPrice.replace(/\./g, '').replace(',', '.'));
+      return aPrice - bPrice;
+    });
 
     // Obtener total para paginación
     const totalCaregivers = await User.countDocuments(filters);
