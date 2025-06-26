@@ -11,7 +11,7 @@ This service allows users to search for available caregivers that meet the speci
 - Enabled care type (pet's home or caregiver's home)
 - Pet types they can care for
 - Configured prices
-- Distance (for pet home care)
+- Distance (for any care type)
 - Date availability
 
 ## Authentication
@@ -41,7 +41,7 @@ Requires authentication via JWT token in the header `Authorization: Bearer <toke
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `startDate` | string | Care start date (YYYY-MM-DD) |
+| `startDate` | string | Care start date (YYYY-MM-DD) - must be at least tomorrow |
 | `endDate` | string | Care end date (YYYY-MM-DD) |
 | `careLocation` | string | Care type: `"pet_home"` or `"caregiver_home"` |
 | `petIds` | string[] | Array with pet IDs to be cared for |
@@ -51,8 +51,8 @@ Requires authentication via JWT token in the header `Authorization: Bearer <toke
 | Field | Type | Description | Condition |
 |-------|------|-------------|-----------|
 | `visitsPerDay` | number | Number of visits per day | Only for `careLocation: "pet_home"` |
-| `userAddressId` | string | User's address ID | Only for `careLocation: "pet_home"` |
-| `maxDistance` | number | Maximum distance in km | Only for `careLocation: "pet_home"` |
+| `userAddressId` | string | User's address ID | Required for distance calculation |
+| `maxDistance` | number | Maximum distance in km | Works for any care type |
 | `maxPrice` | number | Maximum price to pay | Optional |
 | `page` | number | Page number (default: 1) | Optional |
 | `limit` | number | Results per page (default: 10) | Optional |
@@ -66,7 +66,7 @@ Requires authentication via JWT token in the header `Authorization: Bearer <toke
   "success": true,
   "message": "Search completed successfully",
   "data": {
-    "results": [
+    "items": [
       {
         "caregiver": {
           "_id": "507f1f77bcf86cd799439014",
@@ -87,13 +87,14 @@ Requires authentication via JWT token in the header `Authorization: Bearer <toke
             }
           ]
         },
-        "totalPrice": 30000,
-        "commission": 1800,
-        "totalWithCommission": 31800,
+        "totalPrice": "30.000,00",
+        "commission": "1.800,00",
+        "totalWithCommission": "31.800,00",
+        "distance": 2.5,
         "careDetails": {
           "daysCount": 3,
           "visitsCount": 6,
-          "pricePerVisit": 5000
+          "pricePerVisit": "5.000,00"
         }
       }
     ],
@@ -125,10 +126,22 @@ Requires authentication via JWT token in the header `Authorization: Bearer <toke
 | Field | Type | Description |
 |-------|------|-------------|
 | `caregiver` | object | Caregiver data |
-| `totalPrice` | number | Total caregiver fees |
-| `commission` | number | 6% commission |
-| `totalWithCommission` | number | Total price + commission |
+| `totalPrice` | string | Total caregiver fees (formatted with thousand separators) |
+| `commission` | string | 6% commission (formatted with thousand separators) |
+| `totalWithCommission` | string | Total price + commission (formatted with thousand separators) |
+| `distance` | number | Calculated distance in km (if maxDistance was specified) |
 | `careDetails` | object | Calculation details |
+
+### Price Formatting
+
+All price fields are formatted with:
+- **Thousand separator**: `.` (dot)
+- **Decimal separator**: `,` (comma)
+- **Always 2 decimal places**
+
+Examples:
+- `"30.000,00"` instead of `30000`
+- `"1.250,50"` instead of `1250.5`
 
 ### Calculations
 
@@ -162,11 +175,11 @@ Example: 29/07 to 31/07 = 3 days (29, 30, 31)
 }
 ```
 
-### 400 - Past Date
+### 400 - Date Validation
 ```json
 {
   "success": false,
-  "message": "Start date cannot be in the past"
+  "message": "Start date must be at least tomorrow"
 }
 ```
 
@@ -205,7 +218,7 @@ curl -X POST http://localhost:3000/api/caregiver-search \
   }'
 ```
 
-### Example 2: Search for Caregiver Home Care
+### Example 2: Search for Caregiver Home Care with Distance
 ```bash
 curl -X POST http://localhost:3000/api/caregiver-search \
   -H "Authorization: Bearer <token>" \
@@ -215,6 +228,8 @@ curl -X POST http://localhost:3000/api/caregiver-search \
     "endDate": "2024-08-07",
     "careLocation": "caregiver_home",
     "petIds": ["507f1f77bcf86cd799439011", "507f1f77bcf86cd799439012"],
+    "userAddressId": "507f1f77bcf86cd799439013",
+    "maxDistance": 20,
     "maxPrice": 100000
   }'
 ```
@@ -224,7 +239,7 @@ curl -X POST http://localhost:3000/api/caregiver-search \
 1. **Care Type**: Only caregivers with the enabled option
 2. **Pet Types**: Only caregivers who can care for the requested pet types
 3. **Price**: Only caregivers within the specified price range
-4. **Distance**: Only for pet home care, filter by maximum distance
+4. **Distance**: Filter by maximum distance (works for any care type)
 5. **Sorting**: Results ordered by total price (cheapest first)
 
 ## Important Notes
@@ -233,4 +248,6 @@ curl -X POST http://localhost:3000/api/caregiver-search \
 - Caregivers must have their `carerConfig` configured with prices
 - Distance is calculated using the Haversine formula between coordinates
 - Commission is fixed at 6% of total price
-- Results include pagination to handle large data volumes 
+- Results include pagination to handle large data volumes
+- Start date must be at least tomorrow (not today)
+- All prices are formatted with thousand separators for better readability 

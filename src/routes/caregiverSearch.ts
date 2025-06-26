@@ -35,6 +35,7 @@ interface CaregiverSearchResult {
   totalPrice: string; // Precio total de los honorarios (formateado)
   commission: string; // Comisión del 6% (formateada)
   totalWithCommission: string; // Precio total + comisión (formateado)
+  distance?: number; // Distancia calculada en km
   careDetails: {
     daysCount: number;
     visitsCount?: number;
@@ -47,27 +48,34 @@ interface CaregiverSearchResult {
 function calculateDaysDifference(startDate: string, endDate: string): number {
   const start = new Date(startDate);
   const end = new Date(endDate);
-  
+
   // Ajustar las fechas para incluir ambos días
   start.setHours(0, 0, 0, 0);
   end.setHours(23, 59, 59, 999);
-  
+
   const diffTime = end.getTime() - start.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  
+
   return diffDays + 1; // +1 para incluir ambos días
 }
 
 // Función para calcular la distancia entre dos coordenadas (fórmula de Haversine)
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+function calculateDistance(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number {
   const R = 6371; // Radio de la Tierra en km
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   const distance = R * c; // Distancia en km
   return distance;
 }
@@ -75,25 +83,25 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 // Función para obtener los tipos de mascotas de una lista de mascotas
 async function getPetTypesFromPets(petIds: string[]): Promise<string[]> {
   const pets = await Pet.find({ _id: { $in: petIds } }).populate('petType');
-  return pets.map(pet => pet.petType._id.toString());
+  return pets.map((pet) => pet.petType._id.toString());
 }
 
 // Función para formatear números con separadores de miles y decimales
 function formatCurrency(amount: number): string {
   // Redondear a 2 decimales
   const rounded = Math.round(amount * 100) / 100;
-  
+
   // Convertir a string con separador de decimales
   const parts = rounded.toString().split('.');
   const integerPart = parts[0];
   const decimalPart = parts[1] || '00';
-  
+
   // Agregar separadores de miles
   const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-  
+
   // Asegurar que tenga 2 decimales
   const formattedDecimal = decimalPart.padEnd(2, '0').substring(0, 2);
-  
+
   return `${formattedInteger},${formattedDecimal}`;
 }
 
@@ -110,11 +118,17 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
       maxDistance,
       maxPrice,
       page = 1,
-      limit = 10
+      limit = 10,
     }: SearchParams = req.body;
 
     // Validaciones básicas
-    if (!startDate || !endDate || !careLocation || !petIds || petIds.length === 0) {
+    if (
+      !startDate ||
+      !endDate ||
+      !careLocation ||
+      !petIds ||
+      petIds.length === 0
+    ) {
       ResponseHelper.validationError(res, 'Faltan parámetros requeridos');
       return;
     }
@@ -123,34 +137,46 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
     const start = new Date(startDate);
     const end = new Date(endDate);
     const now = new Date();
-    
+
     // Obtener fecha de mañana en formato YYYY-MM-DD
     const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
     const tomorrowStr = tomorrow.toISOString().split('T')[0];
-    
+
     // Obtener fecha de inicio en formato YYYY-MM-DD
     const startStr = start.toISOString().split('T')[0];
-    
+
     // Comparar strings de fechas (más confiable)
     if (startStr < tomorrowStr) {
-      ResponseHelper.validationError(res, 'La fecha de inicio debe ser al menos mañana');
+      ResponseHelper.validationError(
+        res,
+        'La fecha de inicio debe ser al menos mañana'
+      );
       return;
     }
-    
+
     if (end < start) {
-      ResponseHelper.validationError(res, 'La fecha de fin debe ser posterior a la fecha de inicio');
+      ResponseHelper.validationError(
+        res,
+        'La fecha de fin debe ser posterior a la fecha de inicio'
+      );
       return;
     }
 
     // Validaciones específicas por tipo de cuidado
     if (careLocation === 'pet_home') {
       if (!visitsPerDay || visitsPerDay <= 0) {
-        ResponseHelper.validationError(res, 'La cantidad de visitas por día es requerida para cuidado en hogar de la mascota');
+        ResponseHelper.validationError(
+          res,
+          'La cantidad de visitas por día es requerida para cuidado en hogar de la mascota'
+        );
         return;
       }
       if (!userAddressId) {
-        ResponseHelper.validationError(res, 'El ID de la dirección del usuario es requerido para cuidado en hogar de la mascota');
+        ResponseHelper.validationError(
+          res,
+          'El ID de la dirección del usuario es requerido para cuidado en hogar de la mascota'
+        );
         return;
       }
     }
@@ -163,8 +189,8 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
 
     // Construir filtros para buscar cuidadores
     const filters: any = {
-      'carerConfig': { $exists: true, $ne: null },
-      '_id': { $ne: req.user?._id } // Excluir al usuario autenticado
+      carerConfig: { $exists: true, $ne: null },
+      _id: { $ne: req.user?._id }, // Excluir al usuario autenticado
     };
 
     // Filtrar por tipo de cuidado habilitado
@@ -214,23 +240,34 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
         continue;
       }
 
-      // Filtrar por distancia si se especifica y es cuidado en hogar de la mascota
-      if (maxDistance && careLocation === 'pet_home' && userAddressId) {
+      // Calcular distancia si se especifica maxDistance
+      let calculatedDistance: number | undefined;
+      if (maxDistance && userAddressId) {
         // Obtener la dirección del usuario
         const user = await User.findById(req.user?._id);
-        const userAddress = user?.addresses?.find(addr => (addr as any)._id?.toString() === userAddressId);
-        
-        if (userAddress && caregiver.addresses && caregiver.addresses.length > 0) {
-          // Calcular distancia con la primera dirección del cuidador (simplificado)
+        const userAddress = user?.addresses?.find(
+          (addr) => (addr as any)._id?.toString() === userAddressId
+        );
+
+        if (
+          userAddress &&
+          caregiver.addresses &&
+          caregiver.addresses.length > 0
+        ) {
+          // Calcular distancia con la primera dirección del cuidador
           const caregiverAddress = caregiver.addresses[0];
-          const distance = calculateDistance(
+          calculatedDistance = calculateDistance(
             userAddress.coords.lat,
             userAddress.coords.lon,
             caregiverAddress.coords.lat,
             caregiverAddress.coords.lon
           );
           
-          if (distance > maxDistance) {
+          // Redondear distancia a 2 decimales
+          calculatedDistance = Math.round(calculatedDistance * 100) / 100;
+
+          // Filtrar por distancia máxima
+          if (calculatedDistance > maxDistance) {
             continue; // Saltar si está muy lejos
           }
         }
@@ -249,17 +286,20 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
           email: caregiver.email,
           phoneNumber: caregiver.phoneNumber,
           avatar: caregiver.avatar,
-          addresses: caregiver.addresses || []
+          addresses: caregiver.addresses || [],
         },
         totalPrice: formatCurrency(totalPrice),
         commission: formatCurrency(commission),
         totalWithCommission: formatCurrency(totalWithCommission),
+        distance: calculatedDistance,
         careDetails: {
           daysCount,
           visitsCount,
           pricePerDay: pricePerDay ? formatCurrency(pricePerDay) : undefined,
-          pricePerVisit: pricePerVisit ? formatCurrency(pricePerVisit) : undefined
-        }
+          pricePerVisit: pricePerVisit
+            ? formatCurrency(pricePerVisit)
+            : undefined,
+        },
       };
 
       results.push(result);
@@ -267,8 +307,12 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
 
     // Ordenar por precio total (más barato primero) - usar valores numéricos para ordenar
     results.sort((a, b) => {
-      const aPrice = parseFloat(a.totalPrice.replace(/\./g, '').replace(',', '.'));
-      const bPrice = parseFloat(b.totalPrice.replace(/\./g, '').replace(',', '.'));
+      const aPrice = parseFloat(
+        a.totalPrice.replace(/\./g, '').replace(',', '.')
+      );
+      const bPrice = parseFloat(
+        b.totalPrice.replace(/\./g, '').replace(',', '.')
+      );
       return aPrice - bPrice;
     });
 
@@ -294,16 +338,20 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
         userAddressId,
         maxDistance,
         maxPrice,
-        daysCount
-      }
+        daysCount,
+      },
     });
-
   } catch (error) {
     next(error);
   }
 };
 
 // Rutas
-router.post('/', authMiddleware, permissionMiddleware('caregiverSearch', 'read'), searchCaregivers);
+router.post(
+  '/',
+  authMiddleware,
+  permissionMiddleware('caregiverSearch', 'read'),
+  searchCaregivers
+);
 
-export default router; 
+export default router;
