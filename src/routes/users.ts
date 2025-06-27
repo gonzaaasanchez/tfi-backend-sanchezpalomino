@@ -6,6 +6,7 @@ import { logChanges } from '../utils/audit';
 import { getChanges } from '../utils/changeDetector';
 import { uploadImage, handleUploadError } from '../middleware/upload';
 import { ResponseHelper } from '../utils/response';
+import { addCareAddressData } from '../utils/userHelpers';
 import Role from '../models/Role';
 import PetType from '../models/PetType';
 
@@ -31,17 +32,8 @@ const getMyProfile: RequestHandler = async (req, res, next) => {
     // Create a copy of the user object for the response
     const userResponse = user.toObject();
 
-    // If there's a care address configured, get its information
-    if (user.carerConfig?.careAddress) {
-      const careAddress = user.addresses?.find(
-        (address: any) => address._id?.toString() === user.carerConfig?.careAddress?.toString()
-      );
-      
-      if (careAddress) {
-        // Add care address information to the response
-        (userResponse as any).careAddressData = careAddress;
-      }
-    }
+    // Add careAddressData if careAddress is configured
+    addCareAddressData(userResponse);
 
     ResponseHelper.success(res, 'Perfil obtenido exitosamente', userResponse);
   } catch (error) {
@@ -94,26 +86,25 @@ const updateMyProfile: RequestHandler = async (req, res, next) => {
       new: true,
     });
 
+    if (changes.length > 0) {
+      const userName = req.user
+        ? `${req.user.firstName} ${req.user.lastName}`
+        : 'Sistema';
+      const userIdPerformingAction = req.user?._id?.toString() || 'system';
+      logChanges('User', userId, userIdPerformingAction, userName, changes);
+    }
+
     if (!updatedUser) {
       ResponseHelper.notFound(res, 'Usuario no encontrado');
       return;
     }
 
-    // If there were changes, log them
-    if (changes.length > 0) {
-      const userName = `${req.user.firstName} ${req.user.lastName}`;
-      logChanges(
-        'User',
-        userId.toString(),
-        userId.toString(),
-        userName,
-        changes
-      );
-    }
-
     // Convert to object and remove sensitive fields
     const userResponse = updatedUser.toObject();
     const { password, avatarBuffer, ...safeUserResponse } = userResponse;
+
+    // Add careAddressData if careAddress is configured
+    addCareAddressData(safeUserResponse);
 
     ResponseHelper.success(
       res,
@@ -164,6 +155,9 @@ const getOneUser: RequestHandler = async (req, res, next) => {
     const userResponse = user.toObject();
     const { password, avatarBuffer, ...safeUserResponse } = userResponse;
 
+    // Add careAddressData if careAddress is configured
+    addCareAddressData(safeUserResponse);
+
     ResponseHelper.success(
       res,
       'Usuario obtenido exitosamente',
@@ -213,6 +207,10 @@ const getAllUsers: RequestHandler = async (req, res, next) => {
     const safeUsers = users.map((user) => {
       const userObj = user.toObject();
       const { password, avatarBuffer, ...safeUser } = userObj;
+      
+      // Add careAddressData if careAddress is configured
+      addCareAddressData(safeUser);
+      
       return safeUser;
     });
 
@@ -273,10 +271,22 @@ const updateUser: RequestHandler = async (req, res, next) => {
       logChanges('User', userId, userIdPerformingAction, userName, changes);
     }
 
+    if (!updatedUser) {
+      ResponseHelper.notFound(res, 'Usuario no encontrado');
+      return;
+    }
+
+    // Convert to object and remove sensitive fields
+    const userResponse = updatedUser.toObject();
+    const { password, avatarBuffer, ...safeUserResponse } = userResponse;
+
+    // Add careAddressData if careAddress is configured
+    addCareAddressData(safeUserResponse);
+
     ResponseHelper.success(
       res,
       'Usuario actualizado exitosamente',
-      updatedUser
+      safeUserResponse
     );
   } catch (error) {
     next(error);
@@ -373,6 +383,9 @@ const updateMyCarerConfig: RequestHandler = async (req, res, next) => {
     // Convert to object and remove sensitive fields
     const userResponse = updatedUser.toObject();
     const { password, avatarBuffer, ...safeUserResponse } = userResponse;
+
+    // Add careAddressData if careAddress is configured
+    addCareAddressData(safeUserResponse);
 
     ResponseHelper.success(
       res,

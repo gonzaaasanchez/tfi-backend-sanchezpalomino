@@ -5,6 +5,7 @@ import { hashPassword, verifyPassword, generateToken } from '../utils/auth';
 import { authMiddleware } from '../middleware/auth';
 import { logChanges } from '../utils/audit';
 import { ResponseHelper } from '../utils/response';
+import { addCareAddressData } from '../utils/userHelpers';
 
 const router = Router();
 
@@ -106,8 +107,11 @@ const login: RequestHandler = async (req, res, next) => {
       email: user.email,
     });
 
+    const userResponse = user.toJSON();
+    addCareAddressData(userResponse);
+
     ResponseHelper.success(res, 'Login exitoso', {
-      user: user.toJSON(),
+      user: userResponse,
       token,
     });
   } catch (error) {
@@ -121,8 +125,11 @@ const getProfile: RequestHandler = async (req, res, next) => {
     // Populate role to include role information
     await req.user.populate('role');
 
+    const userResponse = req.user.toJSON();
+    addCareAddressData(userResponse);
+
     ResponseHelper.success(res, 'Perfil obtenido exitosamente', {
-      user: req.user.toJSON(),
+      user: userResponse,
     });
   } catch (error) {
     next(error);
