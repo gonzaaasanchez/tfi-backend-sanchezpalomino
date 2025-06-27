@@ -6,7 +6,7 @@ export const addCareAddressData = (userResponse: any) => {
     );
     
     if (careAddress) {
-      userResponse.careAddressData = careAddress;
+      userResponse.carerConfig.careAddressData = careAddress;
     }
   }
   return userResponse;
