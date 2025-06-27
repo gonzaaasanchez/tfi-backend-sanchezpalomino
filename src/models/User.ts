@@ -123,7 +123,6 @@ const UserSchema: Schema = new Schema(
         },
         careAddress: {
           type: Schema.Types.ObjectId,
-          ref: 'Address',
         },
       },
       required: false,
