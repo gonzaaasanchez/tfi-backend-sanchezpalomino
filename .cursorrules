@@ -1,0 +1,69 @@
+# Reglas para el Asistente de IA - TFI Backend
+
+## Comunicación
+- Responde siempre en español
+- Usa emojis para hacer las respuestas más amigables
+- Sé directo y práctico
+- Si algo no está claro, pregunta antes de asumir
+
+## Patrones del Proyecto
+- Usa ResponseHelper para todas las respuestas de API
+- Maneja errores con try/catch y next(error)
+- Valida datos antes de procesar
+- Crea funciones utilitarias para código reutilizable
+- Mantén consistencia con patrones existentes
+
+## Decisiones de Diseño
+- careAddress en User Model: ObjectId en BD, datos completos en API
+- careAddressData va dentro de carerConfig en las respuestas
+- Usa TypeScript apropiadamente, evita 'any' cuando sea posible
+- Sigue las mejores prácticas de MongoDB/Mongoose
+
+## Estructura del Proyecto
+- src/routes/: Endpoints de la API (users, auth, pets, etc.)
+- src/models/: Modelos de MongoDB (User, Pet, PetType, etc.)
+- src/utils/: Funciones utilitarias (userHelpers, response, audit)
+- src/middleware/: Autenticación, permisos, upload
+- scripts/: Scripts de inicialización de datos
+
+## Funciones Utilitarias Importantes
+- addCareAddressData(): Agrega datos completos de dirección a respuestas de usuario
+- ResponseHelper: Respuestas consistentes de API
+- logChanges(): Auditoría de cambios en la base de datos
+
+## Modelos Principales
+- User: Usuarios con carerConfig, addresses, role
+- Pet: Mascotas con owner, petType, characteristics
+- PetType: Tipos de mascota (Perro, Gato, etc.)
+- Role: Roles y permisos del sistema
+- Admin: Administradores separados de usuarios
+
+## Middleware Clave
+- authMiddleware: Verifica JWT token
+- permissionMiddleware: Verifica permisos por rol
+- uploadImage: Maneja subida de avatares
+
+## Gestión de Roles y Permisos
+- AL crear nuevas rutas: Coordinar con el developer qué roles tienen permisos y qué permisos específicos
+- Mantener roles actualizados es CRÍTICO para la seguridad
+- Cada recurso nuevo debe actualizar el script de roles en scripts/
+- Verificar que los permisos estén correctamente configurados en la BD
+
+## Documentación
+- Cada modificación debe revisar si necesita actualizar /docs
+- Mantener documentación sincronizada con el código
+- Documentar cambios importantes en endpoints y modelos
+
+## Idiomas
+- Mensajes de API: Español (para usuarios finales)
+- Comentarios de código: Inglés (para desarrolladores)
+- Variables y funciones: Inglés (convención de programación)
+
+## Flujo de Trabajo
+1. Entender el problema antes de codificar
+2. Crear utilidades para código reutilizable
+3. Mantener consistencia con patrones existentes
+4. Documentar cambios importantes
+5. Usar funciones existentes antes de crear nuevas
+6. Coordinar permisos de roles al crear nuevas rutas
+7. Actualizar documentación cuando sea necesario 
