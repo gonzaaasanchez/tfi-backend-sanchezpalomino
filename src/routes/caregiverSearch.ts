@@ -1,16 +1,22 @@
 import { Router, RequestHandler } from 'express';
 import User from '../models/User';
-import Pet from '../models/Pet';
 import { authMiddleware } from '../middleware/auth';
 import { permissionMiddleware } from '../middleware/permissions';
 import { ResponseHelper } from '../utils/response';
+import {
+  formatCurrency,
+  calculateDaysDifference,
+  calculateDistance,
+  getPetTypesFromPets,
+} from '../utils/common';
+import { CareLocation, CARE_LOCATION } from '../types';
 
 const router = Router();
 
 interface SearchParams {
   startDate: string;
   endDate: string;
-  careLocation: 'pet_home' | 'caregiver_home';
+  careLocation: CareLocation;
   petIds: string[];
   visitsPerDay?: number;
   userAddressId?: string;
@@ -38,59 +44,6 @@ interface CaregiverSearchResult {
     pricePerDay?: string;
     pricePerVisit?: string;
   };
-}
-
-function calculateDaysDifference(startDate: string, endDate: string): number {
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-
-  start.setHours(0, 0, 0, 0);
-  end.setHours(23, 59, 59, 999);
-
-  const diffTime = end.getTime() - start.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-  return diffDays;
-}
-
-// Function to calculate distance between two coordinates (Haversine formula)
-function calculateDistance(
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number
-): number {
-  const R = 6371; // Earth's radius in km
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  const distance = R * c; // Distance in km
-  return distance;
-}
-
-async function getPetTypesFromPets(petIds: string[]): Promise<string[]> {
-  const pets = await Pet.find({ _id: { $in: petIds } }).populate('petType');
-  return pets.map((pet) => pet.petType._id.toString());
-}
-
-function formatCurrency(amount: number): string {
-  const rounded = Math.round(amount * 100) / 100;
-
-  const parts = rounded.toString().split('.');
-  const integerPart = parts[0];
-  const decimalPart = parts[1] || '00';
-
-  const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-
-  const formattedDecimal = decimalPart.padEnd(2, '0').substring(0, 2);
-
-  return `${formattedInteger},${formattedDecimal}`;
 }
 
 // POST /caregiver-search - Search for available caregivers
@@ -156,7 +109,7 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
     }
 
     // Specific validations by care type
-    if (careLocation === 'pet_home') {
+    if (careLocation === CARE_LOCATION.PET_HOME) {
       if (!visitsPerDay || visitsPerDay <= 0) {
         ResponseHelper.validationError(
           res,
@@ -186,7 +139,7 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
     };
 
     // Filter by enabled care type
-    if (careLocation === 'pet_home') {
+    if (careLocation === CARE_LOCATION.PET_HOME) {
       filters['carerConfig.petHomeCare.enabled'] = true;
     } else {
       filters['carerConfig.homeCare.enabled'] = true;
@@ -212,7 +165,7 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
       let pricePerVisit: number | undefined;
       let visitsCount: number | undefined;
 
-      if (careLocation === 'pet_home') {
+      if (careLocation === CARE_LOCATION.PET_HOME) {
         // Pet home care
         pricePerVisit = caregiver.carerConfig?.petHomeCare?.visitPrice;
         if (!pricePerVisit) continue; // Skip if no visit price

@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
+import { AddressWithId } from '../types';
 
 export interface IUser extends Document {
   firstName: string;
@@ -22,16 +23,7 @@ export interface IUser extends Document {
     petTypes?: mongoose.Types.ObjectId[];
     careAddress?: mongoose.Types.ObjectId;
   };
-  addresses?: Array<{
-    name: string;
-    fullAddress: string;
-    floor?: string;
-    apartment?: string;
-    coords: {
-      lat: number;
-      lon: number;
-    };
-  }>;
+  addresses?: AddressWithId[];
   createdAt: Date;
   updatedAt: Date;
 }

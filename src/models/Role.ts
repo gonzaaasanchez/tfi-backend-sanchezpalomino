@@ -53,6 +53,12 @@ export interface IRole extends Document {
     caregiverSearch: {
       read: boolean;
     };
+    reservations: {
+      create: boolean;
+      read: boolean;
+      update: boolean;
+      admin: boolean;
+    };
   };
   isSystem: boolean;
   createdAt: Date;
@@ -119,6 +125,12 @@ const RoleSchema = new Schema<IRole>(
       },
       caregiverSearch: {
         read: { type: Boolean, default: false },
+      },
+      reservations: {
+        create: { type: Boolean, default: false },
+        read: { type: Boolean, default: false },
+        update: { type: Boolean, default: false },
+        admin: { type: Boolean, default: false },
       },
     },
     isSystem: {

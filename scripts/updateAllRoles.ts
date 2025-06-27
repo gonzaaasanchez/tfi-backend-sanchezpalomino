@@ -4,9 +4,9 @@ import Role from '../src/models/Role';
 
 dotenv.config();
 
-// Configuración de permisos para cada rol
+// Permission configuration for each role
 const rolePermissions = {
-  // Superadmin: acceso completo a todo
+  // Superadmin: complete access to everything
   superadmin: {
     petTypes: {
       create: true,
@@ -32,8 +32,14 @@ const rolePermissions = {
     caregiverSearch: {
       read: true,
     },
+    reservations: {
+      create: true,
+      read: true,
+      update: true,
+      admin: true,
+    },
   },
-  // User: solo puede gestionar sus propias mascotas y ver tipos/características
+  // User: can only manage their own pets and view types/characteristics
   user: {
     petTypes: {
       create: false,
@@ -54,96 +60,150 @@ const rolePermissions = {
       read: true,
       update: true,
       delete: true,
-      getAll: false, // Solo ve sus propias mascotas
+      getAll: false, // Only sees their own pets
     },
     caregiverSearch: {
-      read: true, // Puede buscar cuidadores
+      read: true, // Can search for caregivers
+    },
+    reservations: {
+      create: true,
+      read: true,
+      update: true,
+      admin: false,
     },
   },
 };
 
 async function updateAllRoles() {
   try {
-    console.log('🔗 Conectando a la base de datos...');
+    console.log('🔗 Connecting to database...');
     await mongoose.connect(process.env.MONGODB_URI!);
-    console.log('✅ Conexión exitosa a MongoDB');
+    console.log('✅ Successfully connected to MongoDB');
 
-    console.log('\n📋 Actualizando roles existentes...');
+    console.log('\n📋 Updating existing roles...');
 
-    // Obtener todos los roles existentes
+    // Get all existing roles
     const existingRoles = await Role.find();
-    console.log(`📊 Encontrados ${existingRoles.length} roles:`);
-    existingRoles.forEach(role => {
-      console.log(`  - ${role.name} (${role.isSystem ? 'Sistema' : 'Personalizado'})`);
+    console.log(`📊 Found ${existingRoles.length} roles:`);
+    existingRoles.forEach((role) => {
+      console.log(`  - ${role.name} (${role.isSystem ? 'System' : 'Custom'})`);
     });
 
     let updatedCount = 0;
 
     for (const role of existingRoles) {
-      console.log(`\n🔄 Procesando rol: ${role.name}`);
+      console.log(`\n🔄 Processing role: ${role.name}`);
 
-      // Mostrar permisos actuales
-      console.log(`  📋 Permisos actuales:`);
-      console.log(`     PetTypes.getAll: ${role.permissions.petTypes?.getAll || 'undefined'}`);
-      console.log(`     PetCharacteristics.getAll: ${role.permissions.petCharacteristics?.getAll || 'undefined'}`);
-      console.log(`     Pets.getAll: ${role.permissions.pets?.getAll || 'undefined'}`);
-      console.log(`     CaregiverSearch.read: ${role.permissions.caregiverSearch?.read || 'undefined'}`);
+      // Show current permissions
+      console.log(`  📋 Current permissions:`);
+      console.log(
+        `     PetTypes.getAll: ${
+          role.permissions.petTypes?.getAll || 'undefined'
+        }`
+      );
+      console.log(
+        `     PetCharacteristics.getAll: ${
+          role.permissions.petCharacteristics?.getAll || 'undefined'
+        }`
+      );
+      console.log(
+        `     Pets.getAll: ${role.permissions.pets?.getAll || 'undefined'}`
+      );
+      console.log(
+        `     CaregiverSearch.read: ${
+          role.permissions.caregiverSearch?.read || 'undefined'
+        }`
+      );
+      console.log(
+        `     Reservations.create: ${
+          role.permissions.reservations?.create || 'undefined'
+        }`
+      );
 
-      // Determinar qué permisos asignar
+      // Determine which permissions to assign
       let newPermissions;
-      
+
       if (role.name === 'superadmin') {
         newPermissions = rolePermissions.superadmin;
-        console.log('  🔐 Asignando permisos de superadmin (acceso completo)');
+        console.log('  🔐 Assigning superadmin permissions (complete access)');
       } else if (role.name === 'user') {
         newPermissions = rolePermissions.user;
-        console.log('  👤 Asignando permisos de usuario (gestión propia)');
+        console.log('  👤 Assigning user permissions (own management)');
       } else {
-        // Para roles personalizados, asignar permisos de usuario por defecto
+        // For custom roles, assign user permissions by default
         newPermissions = rolePermissions.user;
-        console.log('  🎯 Asignando permisos de usuario por defecto');
+        console.log('  🎯 Assigning user permissions by default');
       }
 
-      // Actualizar los permisos del rol
+      // Update role permissions
       role.permissions.petTypes = newPermissions.petTypes;
       role.permissions.petCharacteristics = newPermissions.petCharacteristics;
       role.permissions.pets = newPermissions.pets;
       role.permissions.caregiverSearch = newPermissions.caregiverSearch;
+      role.permissions.reservations = newPermissions.reservations;
 
       await role.save();
       updatedCount++;
-      console.log(`  ✅ Rol ${role.name} actualizado exitosamente`);
+      console.log(`  ✅ Role ${role.name} updated successfully`);
     }
 
-    console.log(`\n🎉 Proceso completado!`);
-    console.log(`📈 Roles actualizados: ${updatedCount}/${existingRoles.length}`);
+    console.log(`\n🎉 Process completed!`);
+    console.log(`📈 Roles updated: ${updatedCount}/${existingRoles.length}`);
 
-    // Mostrar resumen de permisos por rol
-    console.log('\n📋 Resumen de permisos por rol:');
+    // Show permission summary by role
+    console.log('\n📋 Permission summary by role:');
     const updatedRoles = await Role.find();
-    
+
     for (const role of updatedRoles) {
       console.log(`\n🔸 ${role.name.toUpperCase()}:`);
-      console.log(`   PetTypes: ${role.permissions.petTypes.getAll ? 'Ver todos' : 'Sin acceso'}`);
-      console.log(`   PetCharacteristics: ${role.permissions.petCharacteristics.getAll ? 'Ver todos' : 'Sin acceso'}`);
-      console.log(`   CaregiverSearch: ${role.permissions.caregiverSearch?.read ? 'Buscar cuidadores' : 'Sin acceso'}`);
-      
+      console.log(
+        `   PetTypes: ${
+          role.permissions.petTypes.getAll ? 'View all' : 'No access'
+        }`
+      );
+      console.log(
+        `   PetCharacteristics: ${
+          role.permissions.petCharacteristics.getAll ? 'View all' : 'No access'
+        }`
+      );
+      console.log(
+        `   CaregiverSearch: ${
+          role.permissions.caregiverSearch?.read
+            ? 'Search caregivers'
+            : 'No access'
+        }`
+      );
+      console.log(
+        `   Reservations: ${
+          role.permissions.reservations?.create
+            ? 'Create/Read/Update'
+            : 'No access'
+        } ${role.permissions.reservations?.admin ? '(Admin)' : ''}`
+      );
+
       if (role.permissions.pets.create) {
-        console.log(`   Pets: Crear, leer, actualizar, eliminar ${role.permissions.pets.getAll ? '(todas)' : '(propias)'}`);
+        console.log(
+          `   Pets: Create, read, update, delete ${
+            role.permissions.pets.getAll ? '(all)' : '(own)'
+          }`
+        );
       } else if (role.permissions.pets.read) {
-        console.log(`   Pets: Solo lectura ${role.permissions.pets.getAll ? '(todas)' : '(propias)'}`);
+        console.log(
+          `   Pets: Read only ${
+            role.permissions.pets.getAll ? '(all)' : '(own)'
+          }`
+        );
       } else {
-        console.log(`   Pets: Sin acceso`);
+        console.log(`   Pets: No access`);
       }
     }
-
   } catch (error) {
-    console.error('❌ Error durante la actualización:', error);
+    console.error('❌ Error during update:', error);
   } finally {
     await mongoose.disconnect();
-    console.log('\n🔌 Desconectado de MongoDB');
+    console.log('\n🔌 Disconnected from MongoDB');
   }
 }
 
-// Ejecutar el script
-updateAllRoles(); 
+// Execute the script
+updateAllRoles();

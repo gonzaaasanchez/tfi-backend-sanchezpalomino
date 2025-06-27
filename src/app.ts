@@ -13,6 +13,7 @@ import petTypesRoutes from './routes/petTypes';
 import petCharacteristicsRoutes from './routes/petCharacteristics';
 import petsRoutes from './routes/pets';
 import caregiverSearchRoutes from './routes/caregiverSearch';
+import reservationsRoutes from './routes/reservations';
 import { errorHandler } from './middleware/errorHandler';
 
 // Load environment variables
@@ -38,6 +39,7 @@ app.use('/api/pet-types', petTypesRoutes);
 app.use('/api/pet-characteristics', petCharacteristicsRoutes);
 app.use('/api/pets', petsRoutes);
 app.use('/api/caregiver-search', caregiverSearchRoutes);
+app.use('/api/reservations', reservationsRoutes);
 
 // Test route
 app.get('/', (req, res) => {
@@ -48,7 +50,8 @@ app.get('/', (req, res) => {
 app.use(errorHandler);
 
 // MongoDB connection and server startup
-mongoose.connect(MONGODB_URI)
+mongoose
+  .connect(MONGODB_URI)
   .then(() => {
     console.log('Conectado a MongoDB');
     app.listen(PORT, () => {
