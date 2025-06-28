@@ -33,6 +33,7 @@ interface CaregiverSearchResult {
     phoneNumber?: string;
     avatar?: string;
     addresses: any[];
+    carerConfig?: any;
   };
   totalPrice: string;
   commission: string;
@@ -232,6 +233,7 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
           phoneNumber: caregiver.phoneNumber,
           avatar: caregiver.avatar,
           addresses: caregiver.addresses || [],
+          carerConfig: caregiver.carerConfig,
         },
         totalPrice: formatCurrency(totalPrice),
         commission: formatCurrency(commission),

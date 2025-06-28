@@ -10,7 +10,8 @@
     "updateAllRoles": "ts-node scripts/updateAllRoles.ts",
     "createUsers": "ts-node scripts/createUsers.ts",
     "createPets": "ts-node scripts/createPets.ts",
-    "createPetCharacteristics": "ts-node scripts/createPetCharacteristics.ts"
+    "createPetCharacteristics": "ts-node scripts/createPetCharacteristics.ts",
+    "fillCareAddress": "ts-node scripts/fillCareAddress.ts"
   },
   "keywords": [],
   "author": "",
