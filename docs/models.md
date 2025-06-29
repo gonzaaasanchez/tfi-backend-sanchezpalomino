@@ -5,6 +5,7 @@ This document describes all the data models used in the TFI Backend API.
 ## 👤 User Model
 
 ### Schema
+
 ```typescript
 {
   firstName: { type: String, required: true },
@@ -40,6 +41,7 @@ This document describes all the data models used in the TFI Backend API.
 ```
 
 ### Example Document
+
 ```json
 {
   "_id": "507f1f77bcf86cd799439011",
@@ -79,6 +81,7 @@ This document describes all the data models used in the TFI Backend API.
 ## 🏷️ Role Model
 
 ### Schema
+
 ```typescript
 {
   name: { type: String, required: true, unique: true },
@@ -95,6 +98,7 @@ This document describes all the data models used in the TFI Backend API.
 ```
 
 ### Example Document
+
 ```json
 {
   "_id": "507f1f77bcf86cd799439012",
@@ -116,6 +120,7 @@ This document describes all the data models used in the TFI Backend API.
 ## 👨‍💼 Admin Model
 
 ### Schema
+
 ```typescript
 {
   firstName: { type: String, required: true },
@@ -127,6 +132,7 @@ This document describes all the data models used in the TFI Backend API.
 ```
 
 ### Example Document
+
 ```json
 {
   "_id": "507f1f77bcf86cd799439013",
@@ -142,6 +148,7 @@ This document describes all the data models used in the TFI Backend API.
 ## 🐕 PetType Model
 
 ### Schema
+
 ```typescript
 {
   name: { type: String, required: true, unique: true }
@@ -149,6 +156,7 @@ This document describes all the data models used in the TFI Backend API.
 ```
 
 ### Example Document
+
 ```json
 {
   "_id": "507f1f77bcf86cd799439014",
@@ -161,6 +169,7 @@ This document describes all the data models used in the TFI Backend API.
 ## 🏷️ PetCharacteristic Model
 
 ### Schema
+
 ```typescript
 {
   name: { type: String, required: true, unique: true }
@@ -168,6 +177,7 @@ This document describes all the data models used in the TFI Backend API.
 ```
 
 ### Example Document
+
 ```json
 {
   "_id": "507f1f77bcf86cd799439015",
@@ -180,6 +190,7 @@ This document describes all the data models used in the TFI Backend API.
 ## 🐾 Pet Model
 
 ### Schema
+
 ```typescript
 {
   name: { type: String, required: true },
@@ -196,6 +207,7 @@ This document describes all the data models used in the TFI Backend API.
 ```
 
 ### Example Document
+
 ```json
 {
   "_id": "507f1f77bcf86cd799439016",
@@ -221,6 +233,7 @@ This document describes all the data models used in the TFI Backend API.
 ## 📊 Audit Log Model
 
 ### Schema
+
 ```typescript
 {
   action: { type: String, required: true, enum: ['CREATE', 'UPDATE', 'DELETE'] },
@@ -237,6 +250,7 @@ This document describes all the data models used in the TFI Backend API.
 ```
 
 ### Example Document
+
 ```json
 {
   "_id": "507f1f77bcf86cd799439018",
@@ -257,27 +271,145 @@ This document describes all the data models used in the TFI Backend API.
 }
 ```
 
+## 📅 Reservation Model
+
+### Schema
+
+```typescript
+{
+  startDate: { type: Date, required: true },
+  endDate: { type: Date, required: true },
+  careLocation: {
+    type: String,
+    required: true,
+    enum: ['pet_home', 'caregiver_home']
+  },
+  address: {
+    name: { type: String, required: true },
+    fullAddress: { type: String, required: true },
+    floor: { type: String },
+    apartment: { type: String },
+    coords: {
+      lat: { type: Number, required: true },
+      lon: { type: Number, required: true }
+    }
+  },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  caregiver: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  pets: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Pet', required: true }],
+  visitsCount: {
+    type: Number,
+    required: function() { return this.careLocation === 'pet_home'; }
+  },
+  totalPrice: { type: Number, required: true },
+  commission: { type: Number, required: true },
+  totalOwner: { type: Number, required: true },
+  totalCaregiver: { type: Number, required: true },
+  distance: { type: Number },
+  status: {
+    type: String,
+    required: true,
+    enum: ['pending', 'confirmed', 'started', 'finished', 'cancelled_owner', 'cancelled_caregiver'],
+    default: 'pending'
+  }
+}
+```
+
+### Example Document
+
+```json
+{
+  "_id": "507f1f77bcf86cd799439020",
+  "startDate": "2024-01-15T00:00:00.000Z",
+  "endDate": "2024-01-20T00:00:00.000Z",
+  "careLocation": "pet_home",
+  "address": {
+    "name": "Casa Principal",
+    "fullAddress": "Av. Corrientes 1234, Buenos Aires",
+    "floor": "3",
+    "apartment": "A",
+    "coords": {
+      "lat": -34.6037,
+      "lon": -58.3816
+    }
+  },
+  "user": "507f1f77bcf86cd799439011",
+  "caregiver": "507f1f77bcf86cd799439021",
+  "pets": ["507f1f77bcf86cd799439016"],
+  "visitsCount": 10,
+  "totalPrice": 1200,
+  "commission": 72,
+  "totalOwner": 1272,
+  "totalCaregiver": 1128,
+  "distance": 5.2,
+  "status": "pending",
+  "createdAt": "2024-01-10T10:30:00.000Z",
+  "updatedAt": "2024-01-10T10:30:00.000Z"
+}
+```
+
+### Price Calculation Logic
+
+- **totalPrice**: Base price for the service
+- **commission**: 6% of totalPrice (platform fee)
+- **totalOwner**: totalPrice + commission (what the owner pays)
+- **totalCaregiver**: totalPrice - commission (what the caregiver receives)
+
+### Care Location Types
+
+- **pet_home**: Care provided at the pet's home (requires visitsPerDay)
+- **caregiver_home**: Care provided at the caregiver's home
+
+### Status Values
+
+- **pending**: Awaiting caregiver confirmation
+- **confirmed**: Caregiver has accepted the reservation
+- **started**: Care period has begun
+- **finished**: Care period has ended
+- **cancelled_owner**: Cancelled by the pet owner
+- **cancelled_caregiver**: Cancelled by the caregiver
+
 ## 🔗 Relationships
 
 ### User ↔ Role
+
 - **User** has one **Role** (required)
 - **Role** can have many **Users**
 
 ### User ↔ Pet
+
 - **User** can have many **Pets** (owner relationship)
 - **Pet** belongs to one **User** (owner)
 
 ### Pet ↔ PetType
+
 - **Pet** has one **PetType** (required)
 - **PetType** can have many **Pets**
 
 ### Pet ↔ PetCharacteristic
+
 - **Pet** can have many **PetCharacteristics** (through characteristics array)
 - **PetCharacteristic** can be used by many **Pets**
 
 ### Audit Log ↔ User
+
 - **Audit Log** references one **User** (who performed the action)
 - **User** can have many **Audit Logs**
+
+### Reservation ↔ User (Owner)
+
+- **Reservation** has one **User** as owner (required)
+- **User** can have many **Reservations** as owner
+
+### Reservation ↔ User (Caregiver)
+
+- **Reservation** has one **User** as caregiver (required)
+- **User** can have many **Reservations** as caregiver
+
+### Reservation ↔ Pet
+
+- **Reservation** can have many **Pets** (array of pet IDs)
+- **Pet** can be part of many **Reservations**
 
 ## 📝 Notes
 

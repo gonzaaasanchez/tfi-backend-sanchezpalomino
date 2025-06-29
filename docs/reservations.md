@@ -64,7 +64,7 @@ Create a new pet care reservation.
       "careLocation": "pet_home",
       "totalPrice": "$1,200.00",
       "commission": "$72.00",
-      "totalWithCommission": "$1,272.00",
+      "totalOwner": "$1,272.00",
       "distance": 5.2,
       "status": "pending",
       "createdAt": "2024-01-10T10:30:00.000Z"
@@ -72,6 +72,8 @@ Create a new pet care reservation.
   }
 }
 ```
+
+> **Note**: The creation response only shows `totalOwner` (what the owner pays). The `totalCaregiver` value is calculated and stored but not returned in the creation response.
 
 ### Get User Reservations
 
@@ -186,7 +188,7 @@ curl -X GET "http://localhost:3000/api/reservations?page=1&limit=5&role=owner" \
         "visitsCount": 10,
         "totalPrice": "$1,200.00",
         "commission": "$72.00",
-        "totalWithCommission": "$1,272.00",
+        "totalOwner": "$1,272.00",
         "distance": 5.2,
         "status": "pending",
         "createdAt": "2024-01-10T10:30:00.000Z",
@@ -204,6 +206,11 @@ curl -X GET "http://localhost:3000/api/reservations?page=1&limit=5&role=owner" \
   }
 }
 ```
+
+> **Note**: The total field returned depends on the user's role in the reservation:
+> - **Owner**: Returns `totalOwner` (what they pay)
+> - **Caregiver**: Returns `totalCaregiver` (what they receive)
+> - **Admin**: Returns both `totalOwner` and `totalCaregiver`
 
 ### Get Specific Reservation
 
@@ -271,7 +278,7 @@ Get details of a specific reservation.
       "visitsCount": 10,
       "totalPrice": "$1,200.00",
       "commission": "$72.00",
-      "totalWithCommission": "$1,272.00",
+      "totalOwner": "$1,272.00",
       "distance": 5.2,
       "status": "pending",
       "createdAt": "2024-01-10T10:30:00.000Z",
@@ -280,6 +287,11 @@ Get details of a specific reservation.
   }
 }
 ```
+
+> **Note**: The total field returned depends on the user's role in the reservation:
+> - **Owner**: Returns `totalOwner` (what they pay)
+> - **Caregiver**: Returns `totalCaregiver` (what they receive)
+> - **Admin**: Returns both `totalOwner` and `totalCaregiver`
 
 ### Accept Reservation
 
@@ -351,11 +363,165 @@ Get all reservations in the system (admin only).
 | `userId`      | string | -       | Filter by user ID          |
 | `caregiverId` | string | -       | Filter by caregiver ID     |
 
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Reservas obtenidas exitosamente",
+  "data": {
+    "items": [
+      {
+        "id": "507f1f77bcf86cd799439015",
+        "startDate": "2024-01-15",
+        "endDate": "2024-01-20",
+        "careLocation": "pet_home",
+        "address": {
+          "name": "Casa Principal",
+          "fullAddress": "Av. Corrientes 1234, Buenos Aires",
+          "floor": "3",
+          "apartment": "A",
+          "coords": {
+            "lat": -34.6037,
+            "lon": -58.3816
+          }
+        },
+        "user": {
+          "id": "507f1f77bcf86cd799439016",
+          "firstName": "Juan",
+          "lastName": "Pérez",
+          "email": "juan@email.com",
+          "avatar": "avatar.jpg",
+          "phoneNumber": "+5491112345678"
+        },
+        "caregiver": {
+          "id": "507f1f77bcf86cd799439017",
+          "firstName": "María",
+          "lastName": "García",
+          "email": "maria@email.com",
+          "avatar": "avatar.jpg",
+          "phoneNumber": "+5491187654321"
+        },
+        "pets": [
+          {
+            "id": "507f1f77bcf86cd799439012",
+            "name": "Luna",
+            "petType": {
+              "id": "507f1f77bcf86cd799439018",
+              "name": "Perro"
+            },
+            "characteristics": [
+              {
+                "id": "507f1f77bcf86cd799439019",
+                "name": "Temperamento",
+                "value": "Amigable"
+              }
+            ],
+            "comment": "Muy juguetona y sociable",
+            "avatar": "/api/pets/507f1f77bcf86cd799439012/avatar"
+          }
+        ],
+        "visitsCount": 10,
+        "totalPrice": "$1,200.00",
+        "commission": "$72.00",
+        "totalOwner": "$1,272.00",
+        "totalCaregiver": "$1,128.00",
+        "distance": 5.2,
+        "status": "pending",
+        "createdAt": "2024-01-10T10:30:00.000Z",
+        "updatedAt": "2024-01-10T10:30:00.000Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 10,
+      "total": 25,
+      "totalPages": 3,
+      "hasNextPage": true,
+      "hasPrevPage": false
+    }
+  }
+}
+```
+
+> **Note**: Admin endpoints always return both `totalOwner` and `totalCaregiver` fields for complete financial visibility.
+
 ### Get Specific Reservation (Admin)
 
 **GET** `/api/reservations/admin/:id`
 
 Get details of a specific reservation (admin only).
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Reserva obtenida exitosamente",
+  "data": {
+    "reservation": {
+      "id": "507f1f77bcf86cd799439015",
+      "startDate": "2024-01-15",
+      "endDate": "2024-01-20",
+      "careLocation": "pet_home",
+      "address": {
+        "name": "Casa Principal",
+        "fullAddress": "Av. Corrientes 1234, Buenos Aires",
+        "floor": "3",
+        "apartment": "A",
+        "coords": {
+          "lat": -34.6037,
+          "lon": -58.3816
+        }
+      },
+      "user": {
+        "id": "507f1f77bcf86cd799439016",
+        "firstName": "Juan",
+        "lastName": "Pérez",
+        "email": "juan@email.com",
+        "phoneNumber": "+5491112345678"
+      },
+      "caregiver": {
+        "id": "507f1f77bcf86cd799439017",
+        "firstName": "María",
+        "lastName": "García",
+        "email": "maria@email.com",
+        "phoneNumber": "+5491187654321"
+      },
+      "pets": [
+        {
+          "id": "507f1f77bcf86cd799439012",
+          "name": "Luna",
+          "petType": {
+            "id": "507f1f77bcf86cd799439018",
+            "name": "Perro"
+          },
+          "characteristics": [
+            {
+              "id": "507f1f77bcf86cd799439019",
+              "name": "Temperamento",
+              "value": "Amigable"
+            }
+          ],
+          "comment": "Muy juguetona y sociable",
+          "avatar": "/api/pets/507f1f77bcf86cd799439012/avatar"
+        }
+      ],
+      "visitsCount": 10,
+      "totalPrice": "$1,200.00",
+      "commission": "$72.00",
+      "totalOwner": "$1,272.00",
+      "totalCaregiver": "$1,128.00",
+      "distance": 5.2,
+      "status": "pending",
+      "createdAt": "2024-01-10T10:30:00.000Z",
+      "updatedAt": "2024-01-10T10:30:00.000Z"
+    }
+  }
+}
+```
+
+> **Note**: Admin endpoints always return both `totalOwner` and `totalCaregiver` fields for complete financial visibility.
 
 ## Error Responses
 

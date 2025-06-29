@@ -233,7 +233,8 @@ const createReservation: RequestHandler = async (req, res, next) => {
     }
 
     const commission = totalPrice * 0.06;
-    const totalWithCommission = totalPrice + commission;
+    const totalOwner = totalPrice + commission;
+    const totalCaregiver = totalPrice - commission;
 
     // Create reservation
     const reservation = new Reservation({
@@ -247,7 +248,8 @@ const createReservation: RequestHandler = async (req, res, next) => {
       visitsCount,
       totalPrice,
       commission,
-      totalWithCommission,
+      totalOwner,
+      totalCaregiver,
       distance,
       status: RESERVATION_STATUS.PENDING,
     });
@@ -279,7 +281,7 @@ const createReservation: RequestHandler = async (req, res, next) => {
         careLocation: reservation.careLocation,
         totalPrice: formatCurrency(reservation.totalPrice),
         commission: formatCurrency(reservation.commission),
-        totalWithCommission: formatCurrency(reservation.totalWithCommission),
+        totalOwner: formatCurrency(reservation.totalOwner),
         distance: reservation.distance,
         status: reservation.status,
         createdAt: reservation.createdAt,
@@ -337,49 +339,69 @@ const getUserReservations: RequestHandler = async (req, res, next) => {
 
     const total = await Reservation.countDocuments(filters);
 
-    const formattedReservations = reservations.map((reservation) => ({
-      id: reservation._id,
-      startDate: reservation.startDate,
-      endDate: reservation.endDate,
-      careLocation: reservation.careLocation,
-      address: reservation.address,
-      user: {
-        id: (reservation.user as any)._id,
-        firstName: (reservation.user as any).firstName,
-        lastName: (reservation.user as any).lastName,
-        email: (reservation.user as any).email,
-        avatar: (reservation.user as any).avatar,
-        phoneNumber: (reservation.user as any).phoneNumber,
-      },
-      caregiver: {
-        id: (reservation.caregiver as any)._id,
-        firstName: (reservation.caregiver as any).firstName,
-        lastName: (reservation.caregiver as any).lastName,
-        email: (reservation.caregiver as any).email,
-        avatar: (reservation.caregiver as any).avatar,
-        phoneNumber: (reservation.caregiver as any).phoneNumber,
-      },
-      pets: reservation.pets.map((pet: any) => ({
-        id: pet._id,
-        name: pet.name,
-        petType: pet.petType,
-        characteristics: pet.characteristics.map((char: any) => ({
-          id: char.characteristic._id,
-          name: char.characteristic.name,
-          value: char.value,
+    const formattedReservations = reservations.map((reservation) => {
+      // Determine if current user is owner or caregiver
+      const isOwner = reservation.user._id.toString() === req.user?._id?.toString();
+      const isCaregiver = reservation.caregiver._id.toString() === req.user?._id?.toString();
+      
+      // Calculate the appropriate total based on user role
+      let totalField = {};
+      if (isOwner) {
+        totalField = { totalOwner: formatCurrency(reservation.totalOwner) };
+      } else if (isCaregiver) {
+        totalField = { totalCaregiver: formatCurrency(reservation.totalCaregiver) };
+      } else {
+        // For admin or other cases, show both
+        totalField = { 
+          totalOwner: formatCurrency(reservation.totalOwner),
+          totalCaregiver: formatCurrency(reservation.totalCaregiver)
+        };
+      }
+
+      return {
+        id: reservation._id,
+        startDate: reservation.startDate,
+        endDate: reservation.endDate,
+        careLocation: reservation.careLocation,
+        address: reservation.address,
+        user: {
+          id: (reservation.user as any)._id,
+          firstName: (reservation.user as any).firstName,
+          lastName: (reservation.user as any).lastName,
+          email: (reservation.user as any).email,
+          avatar: (reservation.user as any).avatar,
+          phoneNumber: (reservation.user as any).phoneNumber,
+        },
+        caregiver: {
+          id: (reservation.caregiver as any)._id,
+          firstName: (reservation.caregiver as any).firstName,
+          lastName: (reservation.caregiver as any).lastName,
+          email: (reservation.caregiver as any).email,
+          avatar: (reservation.caregiver as any).avatar,
+          phoneNumber: (reservation.caregiver as any).phoneNumber,
+        },
+        pets: reservation.pets.map((pet: any) => ({
+          id: pet._id,
+          name: pet.name,
+          petType: pet.petType,
+          characteristics: pet.characteristics.map((char: any) => ({
+            id: char.characteristic._id,
+            name: char.characteristic.name,
+            value: char.value,
+          })),
+          comment: pet.comment,
+          avatar: pet.avatar,
         })),
-        comment: pet.comment,
-        avatar: pet.avatar,
-      })),
-      visitsCount: reservation.visitsCount,
-      totalPrice: formatCurrency(reservation.totalPrice),
-      commission: formatCurrency(reservation.commission),
-      totalWithCommission: formatCurrency(reservation.totalWithCommission),
-      distance: reservation.distance,
-      status: reservation.status,
-      createdAt: reservation.createdAt,
-      updatedAt: reservation.updatedAt,
-    }));
+        visitsCount: reservation.visitsCount,
+        totalPrice: formatCurrency(reservation.totalPrice),
+        commission: formatCurrency(reservation.commission),
+        ...totalField,
+        distance: reservation.distance,
+        status: reservation.status,
+        createdAt: reservation.createdAt,
+        updatedAt: reservation.updatedAt,
+      };
+    });
 
     ResponseHelper.success(res, 'Reservas obtenidas exitosamente', {
       items: formattedReservations,
@@ -437,6 +459,20 @@ const getReservation: RequestHandler = async (req, res, next) => {
       return;
     }
 
+    // Calculate the appropriate total based on user role
+    let totalField = {};
+    if (isOwner) {
+      totalField = { totalOwner: formatCurrency(reservation.totalOwner) };
+    } else if (isCaregiver) {
+      totalField = { totalCaregiver: formatCurrency(reservation.totalCaregiver) };
+    } else {
+      // For admin, show both
+      totalField = { 
+        totalOwner: formatCurrency(reservation.totalOwner),
+        totalCaregiver: formatCurrency(reservation.totalCaregiver)
+      };
+    }
+
     ResponseHelper.success(res, 'Reserva obtenida exitosamente', {
       reservation: {
         id: reservation._id,
@@ -473,7 +509,7 @@ const getReservation: RequestHandler = async (req, res, next) => {
         visitsCount: reservation.visitsCount,
         totalPrice: formatCurrency(reservation.totalPrice),
         commission: formatCurrency(reservation.commission),
-        totalWithCommission: formatCurrency(reservation.totalWithCommission),
+        ...totalField,
         distance: reservation.distance,
         status: reservation.status,
         createdAt: reservation.createdAt,
@@ -708,7 +744,8 @@ const getAllReservations: RequestHandler = async (req, res, next) => {
       visitsCount: reservation.visitsCount,
       totalPrice: formatCurrency(reservation.totalPrice),
       commission: formatCurrency(reservation.commission),
-      totalWithCommission: formatCurrency(reservation.totalWithCommission),
+      totalOwner: formatCurrency(reservation.totalOwner),
+      totalCaregiver: formatCurrency(reservation.totalCaregiver),
       distance: reservation.distance,
       status: reservation.status,
       createdAt: reservation.createdAt,
@@ -795,7 +832,8 @@ const getReservationAdmin: RequestHandler = async (req, res, next) => {
         visitsCount: reservation.visitsCount,
         totalPrice: formatCurrency(reservation.totalPrice),
         commission: formatCurrency(reservation.commission),
-        totalWithCommission: formatCurrency(reservation.totalWithCommission),
+        totalOwner: formatCurrency(reservation.totalOwner),
+        totalCaregiver: formatCurrency(reservation.totalCaregiver),
         distance: reservation.distance,
         status: reservation.status,
         createdAt: reservation.createdAt,

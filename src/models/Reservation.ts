@@ -18,7 +18,8 @@ export interface IReservation extends Document {
   visitsCount?: number;
   totalPrice: number;
   commission: number;
-  totalWithCommission: number;
+  totalOwner: number;
+  totalCaregiver: number;
   distance?: number;
   status: ReservationStatus;
   createdAt: Date;
@@ -99,7 +100,11 @@ const reservationSchema = new Schema<IReservation>(
       type: Number,
       required: true,
     },
-    totalWithCommission: {
+    totalOwner: {
+      type: Number,
+      required: true,
+    },
+    totalCaregiver: {
       type: Number,
       required: true,
     },
