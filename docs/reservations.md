@@ -174,8 +174,12 @@ curl -X GET "http://localhost:3000/api/reservations?page=1&limit=5&role=owner" \
             },
             "characteristics": [
               {
-                "characteristic": "507f1f77bcf86cd799439019",
-                "value": "Amigable"
+                "characteristic": {
+                  "_id": "507f1f77bcf86cd799439019",
+                  "name": "Temperamento"
+                },
+                "value": "Amigable",
+                "_id": "507f1f77bcf86cd799439020"
               }
             ],
             "comment": "Muy juguetona y sociable",
@@ -258,8 +262,12 @@ Get details of a specific reservation.
           },
           "characteristics": [
             {
-              "characteristic": "507f1f77bcf86cd799439019",
-              "value": "Amigable"
+              "characteristic": {
+                "_id": "507f1f77bcf86cd799439019",
+                "name": "Temperamento"
+              },
+              "value": "Amigable",
+              "_id": "507f1f77bcf86cd799439020"
             }
           ],
           "comment": "Muy juguetona y sociable",

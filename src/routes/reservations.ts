@@ -320,10 +320,16 @@ const getUserReservations: RequestHandler = async (req, res, next) => {
       .populate({
         path: 'pets',
         select: 'name petType characteristics comment avatar',
-        populate: {
-          path: 'petType',
-          select: 'name'
-        }
+        populate: [
+          {
+            path: 'petType',
+            select: 'name'
+          },
+          {
+            path: 'characteristics.characteristic',
+            select: 'name'
+          }
+        ]
       })
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
@@ -377,10 +383,16 @@ const getReservation: RequestHandler = async (req, res, next) => {
       .populate({
         path: 'pets',
         select: 'name petType characteristics comment avatar',
-        populate: {
-          path: 'petType',
-          select: 'name'
-        }
+        populate: [
+          {
+            path: 'petType',
+            select: 'name'
+          },
+          {
+            path: 'characteristics.characteristic',
+            select: 'name'
+          }
+        ]
       });
 
     if (!reservation) {
@@ -594,10 +606,16 @@ const getAllReservations: RequestHandler = async (req, res, next) => {
       .populate({
         path: 'pets',
         select: 'name petType characteristics comment avatar',
-        populate: {
-          path: 'petType',
-          select: 'name'
-        }
+        populate: [
+          {
+            path: 'petType',
+            select: 'name'
+          },
+          {
+            path: 'characteristics.characteristic',
+            select: 'name'
+          }
+        ]
       })
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
@@ -651,10 +669,16 @@ const getReservationAdmin: RequestHandler = async (req, res, next) => {
       .populate({
         path: 'pets',
         select: 'name petType characteristics comment avatar',
-        populate: {
-          path: 'petType',
-          select: 'name'
-        }
+        populate: [
+          {
+            path: 'petType',
+            select: 'name'
+          },
+          {
+            path: 'characteristics.characteristic',
+            select: 'name'
+          }
+        ]
       });
 
     if (!reservation) {
