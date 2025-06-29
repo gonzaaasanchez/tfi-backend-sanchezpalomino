@@ -296,10 +296,19 @@ const getUserReservations: RequestHandler = async (req, res, next) => {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const status = req.query.status as string;
+    const role = req.query.role as string; // 'owner', 'caregiver', or 'all'
 
-    const filters: any = {
-      $or: [{ user: req.user?._id }, { caregiver: req.user?._id }],
-    };
+    const filters: any = {};
+
+    // Filter by role
+    if (role === 'owner') {
+      filters.user = req.user?._id;
+    } else if (role === 'caregiver') {
+      filters.caregiver = req.user?._id;
+    } else {
+      // Default: show both owner and caregiver reservations
+      filters.$or = [{ user: req.user?._id }, { caregiver: req.user?._id }];
+    }
 
     if (status) {
       filters.status = status;

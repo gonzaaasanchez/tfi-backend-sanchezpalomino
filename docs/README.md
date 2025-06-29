@@ -41,6 +41,13 @@ This directory contains the complete API documentation organized by service modu
 - Automatic price calculation with commission
 - Pagination and sorting
 
+### 📅 [Reservations](./reservations.md)
+- Create and manage pet care reservations
+- Filter reservations by role (owner/caregiver)
+- Accept and cancel reservations
+- Admin reservation management
+- Status tracking and updates
+
 ### 👨‍💼 [Admin Services](./admin.md)
 - Role management
 - Admin user management
