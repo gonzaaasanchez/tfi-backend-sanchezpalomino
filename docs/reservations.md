@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Reservations API allows users to create, manage, and view pet care reservations. Users can be either pet owners (creating reservations) or caregivers (accepting reservations).
+The Reservations API allows users to create, manage, and view pet care reservations. Users can be either pet owners (creating reservations) or caregivers (accepting/rejecting reservations).
 
 ## Authentication
 
@@ -96,6 +96,7 @@ Get reservations where the user is either the owner or caregiver.
 - `confirmed` - Confirmada
 - `started` - Iniciada
 - `finished` - Finalizada
+- `rejected` - Rechazada
 - `cancelled_owner` - Cancelada por propietario
 - `cancelled_caregiver` - Cancelada por cuidador
 
@@ -310,6 +311,42 @@ Caregiver accepts a pending reservation.
       "id": "507f1f77bcf86cd799439015",
       "status": "confirmed",
       "updatedAt": "2024-01-10T11:00:00.000Z"
+    }
+  }
+}
+```
+
+### Reject Reservation
+
+**PUT** `/api/reservations/:id/reject`
+
+Caregiver rejects a pending reservation.
+
+#### Request Body
+
+```json
+{
+  "reason": "No puedo cuidar ese tipo de mascota"
+}
+```
+
+#### Parameters
+
+| Parameter | Type   | Required | Description                    |
+| --------- | ------ | -------- | ------------------------------ |
+| `reason`  | string | No       | Optional reason for rejection  |
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Reserva rechazada exitosamente",
+  "data": {
+    "reservation": {
+      "id": "507f1f77bcf86cd799439015",
+      "status": "rejected",
+      "updatedAt": "2024-01-10T11:15:00.000Z"
     }
   }
 }
@@ -559,5 +596,5 @@ Get details of a specific reservation (admin only).
 
 - `reservations:create` - Create reservations
 - `reservations:read` - View reservations
-- `reservations:update` - Accept/cancel reservations
+- `reservations:update` - Accept/reject/cancel reservations
 - `reservations:getAll` - Admin access to all reservations

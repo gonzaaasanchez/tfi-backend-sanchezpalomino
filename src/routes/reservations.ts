@@ -521,7 +521,7 @@ const getReservation: RequestHandler = async (req, res, next) => {
   }
 };
 
-// PUT /reservations/:id/accept - Caregiver accepts reservation
+// PUT /reservations/:id/accept - Accept reservation
 const acceptReservation: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -570,6 +570,68 @@ const acceptReservation: RequestHandler = async (req, res, next) => {
     );
 
     ResponseHelper.success(res, 'Reserva aceptada exitosamente', {
+      reservation: {
+        id: reservation._id,
+        status: reservation.status,
+        updatedAt: reservation.updatedAt,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// PUT /reservations/:id/reject - Reject reservation
+const rejectReservation: RequestHandler = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { reason }: CancelReservationRequest = req.body;
+
+    const reservation = await Reservation.findById(id);
+    if (!reservation) {
+      ResponseHelper.notFound(res, 'Reserva no encontrada');
+      return;
+    }
+
+    // Check if user is the caregiver
+    if (reservation.caregiver.toString() !== req.user?._id?.toString()) {
+      ResponseHelper.forbidden(
+        res,
+        'Solo el cuidador puede rechazar esta reserva'
+      );
+      return;
+    }
+
+    // Check if reservation is pending
+    if (reservation.status !== RESERVATION_STATUS.PENDING) {
+      ResponseHelper.validationError(
+        res,
+        'Solo se pueden rechazar reservas pendientes'
+      );
+      return;
+    }
+
+    // Update status
+    const previousStatus = reservation.status;
+    reservation.status = RESERVATION_STATUS.REJECTED;
+    await reservation.save();
+
+    // Log the change
+    await logChanges(
+      'Reservation',
+      (reservation._id as any).toString(),
+      req.user?._id?.toString() || '',
+      req.user?.firstName || '',
+      [
+        {
+          field: 'status',
+          oldValue: previousStatus,
+          newValue: RESERVATION_STATUS.REJECTED,
+        },
+      ]
+    );
+
+    ResponseHelper.success(res, 'Reserva rechazada exitosamente', {
       reservation: {
         id: reservation._id,
         status: reservation.status,
@@ -873,6 +935,12 @@ router.put(
   authMiddleware,
   permissionMiddleware('reservations', 'update'),
   acceptReservation
+);
+router.put(
+  '/:id/reject',
+  authMiddleware,
+  permissionMiddleware('reservations', 'update'),
+  rejectReservation
 );
 router.put(
   '/:id/cancel',

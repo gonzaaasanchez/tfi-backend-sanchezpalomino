@@ -309,7 +309,7 @@ This document describes all the data models used in the TFI Backend API.
   status: {
     type: String,
     required: true,
-    enum: ['pending', 'confirmed', 'started', 'finished', 'cancelled_owner', 'cancelled_caregiver'],
+    enum: ['pending', 'confirmed', 'started', 'finished', 'rejected', 'cancelled_owner', 'cancelled_caregiver'],
     default: 'pending'
   }
 }
@@ -366,6 +366,7 @@ This document describes all the data models used in the TFI Backend API.
 - **confirmed**: Caregiver has accepted the reservation
 - **started**: Care period has begun
 - **finished**: Care period has ended
+- **rejected**: Caregiver has rejected the reservation
 - **cancelled_owner**: Cancelled by the pet owner
 - **cancelled_caregiver**: Cancelled by the caregiver
 

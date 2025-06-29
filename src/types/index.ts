@@ -27,6 +27,7 @@ export const RESERVATION_STATUS = {
   FINISHED: 'finished',
   CANCELLED_OWNER: 'cancelledOwner',
   CANCELLED_CAREGIVER: 'cancelledCaregiver',
+  REJECTED: 'rejected',
 } as const;
 
 export type ReservationStatus =
