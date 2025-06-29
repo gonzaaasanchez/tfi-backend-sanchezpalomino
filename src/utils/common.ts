@@ -70,4 +70,53 @@ export function calculateDistance(
 export async function getPetTypesFromPets(petIds: string[]): Promise<string[]> {
   const pets = await Pet.find({ _id: { $in: petIds } }).populate('petType');
   return pets.map((pet) => pet.petType._id.toString());
-} 
+}
+
+/**
+ * Converts MongoDB document _id to id for API responses
+ * @param obj - Object to sanitize
+ * @returns Object with _id converted to id
+ */
+export const sanitizeId = (obj: any): any => {
+  if (!obj || typeof obj !== 'object') {
+    return obj;
+  }
+
+  // Handle arrays
+  if (Array.isArray(obj)) {
+    return obj.map(item => sanitizeId(item));
+  }
+
+  // Handle objects
+  const sanitized: any = {};
+  
+  for (const [key, value] of Object.entries(obj)) {
+    if (key === '_id') {
+      sanitized.id = value;
+    } else if (typeof value === 'object' && value !== null) {
+      sanitized[key] = sanitizeId(value);
+    } else {
+      sanitized[key] = value;
+    }
+  }
+
+  return sanitized;
+};
+
+/**
+ * Sanitizes a Mongoose document or array of documents
+ * @param doc - Mongoose document or array
+ * @returns Sanitized object(s) with _id converted to id
+ */
+export const sanitizeMongooseDoc = (doc: any): any => {
+  if (!doc) return doc;
+  
+  // Handle arrays
+  if (Array.isArray(doc)) {
+    return doc.map(item => sanitizeId(item.toObject ? item.toObject() : item));
+  }
+  
+  // Handle single document
+  const obj = doc.toObject ? doc.toObject() : doc;
+  return sanitizeId(obj);
+}; 

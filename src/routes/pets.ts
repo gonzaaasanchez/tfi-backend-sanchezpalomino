@@ -8,6 +8,7 @@ import { logChanges } from '../utils/audit';
 import { getChanges } from '../utils/changeDetector';
 import { uploadImage, handleUploadError } from '../middleware/upload';
 import { ResponseHelper } from '../utils/response';
+import { sanitizeMongooseDoc } from '../utils/common';
 
 const router = Router();
 
@@ -116,30 +117,7 @@ const createPet: RequestHandler = async (req, res, next) => {
     ResponseHelper.success(
       res,
       'Mascota creada exitosamente',
-      {
-        id: pet._id,
-        name: pet.name,
-        comment: pet.comment,
-        avatar: pet.avatar,
-        petType: {
-          id: (pet.petType as any)._id,
-          name: (pet.petType as any).name,
-        },
-        characteristics: pet.characteristics.map((char) => ({
-          id: (char.characteristic as any)._id,
-          name: (char.characteristic as any).name,
-          value: char.value,
-        })),
-        owner: {
-          id: (pet.owner as any)._id,
-          name: `${(pet.owner as any).firstName} ${
-            (pet.owner as any).lastName
-          }`,
-          email: (pet.owner as any).email,
-        },
-        createdAt: pet.createdAt,
-        updatedAt: pet.updatedAt,
-      },
+      sanitizeMongooseDoc(pet),
       201
     );
   } catch (error) {
@@ -184,30 +162,7 @@ const getMyPets: RequestHandler = async (req, res, next) => {
     const totalPages = Math.ceil(totalPets / limit);
 
     ResponseHelper.success(res, 'Pets obtained successfully', {
-      items: pets.map((pet) => ({
-        id: pet._id,
-        name: pet.name,
-        comment: pet.comment,
-        avatar: pet.avatar,
-        petType: {
-          id: (pet.petType as any)._id,
-          name: (pet.petType as any).name,
-        },
-        characteristics: pet.characteristics.map((char) => ({
-          id: (char.characteristic as any)._id,
-          name: (char.characteristic as any).name,
-          value: char.value,
-        })),
-        owner: {
-          id: (pet.owner as any)._id,
-          name: `${(pet.owner as any).firstName} ${
-            (pet.owner as any).lastName
-          }`,
-          email: (pet.owner as any).email,
-        },
-        createdAt: pet.createdAt,
-        updatedAt: pet.updatedAt,
-      })),
+      items: pets.map((pet) => sanitizeMongooseDoc(pet)),
       pagination: {
         page,
         limit,
@@ -242,7 +197,11 @@ const getPet: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    ResponseHelper.success(res, 'Mascota obtenida exitosamente', pet);
+    ResponseHelper.success(
+      res,
+      'Mascota obtenida exitosamente',
+      sanitizeMongooseDoc(pet)
+    );
   } catch (error) {
     next(error);
   }
@@ -355,30 +314,7 @@ const updatePet: RequestHandler = async (req, res, next) => {
     ResponseHelper.success(
       res,
       'Mascota actualizada exitosamente',
-      {
-        id: updatedPet._id,
-        name: updatedPet.name,
-        comment: updatedPet.comment,
-        avatar: updatedPet.avatar,
-        petType: {
-          id: (updatedPet.petType as any)._id,
-          name: (updatedPet.petType as any).name,
-        },
-        characteristics: updatedPet.characteristics.map((char) => ({
-          id: (char.characteristic as any)._id,
-          name: (char.characteristic as any).name,
-          value: char.value,
-        })),
-        owner: {
-          id: (updatedPet.owner as any)._id,
-          name: `${(updatedPet.owner as any).firstName} ${
-            (updatedPet.owner as any).lastName
-          }`,
-          email: (updatedPet.owner as any).email,
-        },
-        createdAt: updatedPet.createdAt,
-        updatedAt: updatedPet.updatedAt,
-      }
+      sanitizeMongooseDoc(updatedPet)
     );
   } catch (error) {
     next(error);
@@ -464,30 +400,7 @@ const getAllPets: RequestHandler = async (req, res, next) => {
     const totalPages = Math.ceil(totalPets / limit);
 
     ResponseHelper.success(res, 'Mascotas obtenidas exitosamente', {
-      items: pets.map((pet) => ({
-        id: pet._id,
-        name: pet.name,
-        comment: pet.comment,
-        avatar: pet.avatar,
-        petType: {
-          id: (pet.petType as any)._id,
-          name: (pet.petType as any).name,
-        },
-        characteristics: pet.characteristics.map((char) => ({
-          id: (char.characteristic as any)._id,
-          name: (char.characteristic as any).name,
-          value: char.value,
-        })),
-        owner: {
-          id: (pet.owner as any)._id,
-          name: `${(pet.owner as any).firstName} ${
-            (pet.owner as any).lastName
-          }`,
-          email: (pet.owner as any).email,
-        },
-        createdAt: pet.createdAt,
-        updatedAt: pet.updatedAt,
-      })),
+      items: pets.map((pet) => sanitizeMongooseDoc(pet)),
       pagination: {
         page,
         limit,
@@ -515,7 +428,11 @@ const getPetAsAdmin: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    ResponseHelper.success(res, 'Mascota obtenida exitosamente', pet);
+    ResponseHelper.success(
+      res,
+      'Mascota obtenida exitosamente',
+      sanitizeMongooseDoc(pet)
+    );
   } catch (error) {
     next(error);
   }

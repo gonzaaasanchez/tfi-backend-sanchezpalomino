@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import { authMiddleware } from '../middleware/auth';
 import { permissionMiddleware } from '../middleware/permissions';
 import { ResponseHelper } from '../utils/response';
+import { sanitizeMongooseDoc } from '../utils/common';
 
 const router = Router();
 
@@ -18,15 +19,10 @@ const getEntityLogs: RequestHandler = async (req, res, next) => {
       .sort({ timestamp: -1 })
       .lean();
 
-    ResponseHelper.success(res, 'Logs obtenidos exitosamente', 
-      logs.map((log) => ({
-        id: log._id,
-        entityId: log.entityId,
-        userId: log.userId,
-        userName: log.userName,
-        changes: log.changes,
-        timestamp: log.timestamp,
-      }))
+    ResponseHelper.success(
+      res,
+      'Logs obtenidos exitosamente',
+      logs.map((log) => sanitizeMongooseDoc(log))
     );
   } catch (error) {
     next(error);
@@ -47,15 +43,10 @@ const getAllEntityLogs: RequestHandler = async (req, res, next) => {
       .limit(limit)
       .lean();
 
-    ResponseHelper.success(res, 'Logs obtenidos exitosamente', 
-      logs.map((log) => ({
-        id: log._id,
-        entityId: log.entityId,
-        userId: log.userId,
-        userName: log.userName,
-        changes: log.changes,
-        timestamp: log.timestamp,
-      }))
+    ResponseHelper.success(
+      res,
+      'Logs obtenidos exitosamente',
+      logs.map((log) => sanitizeMongooseDoc(log))
     );
   } catch (error) {
     next(error);

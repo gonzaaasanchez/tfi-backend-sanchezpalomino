@@ -107,17 +107,18 @@ With order:
           "email": "maria@gonzalez.com",
           "phoneNumber": "+5434112345678",
           "avatar": "/api/users/507f1f77bcf86cd799439014/avatar",
-          "addresses": [
-            {
-              "id": "507f1f77bcf86cd799439015",
-              "name": "Casa",
-              "fullAddress": "San Martín 1234, Rosario, Santa Fe",
-              "coords": {
-                "lat": -32.9468,
-                "lon": -60.6393
-              }
-            }
-          ]
+          "carerConfig": {
+            "homeCare": {
+              "enabled": true,
+              "dayPrice": 15000
+            },
+            "petHomeCare": {
+              "enabled": true,
+              "visitPrice": 5000
+            },
+            "petTypes": ["507f1f77bcf86cd799439016"],
+            "careAddress": "507f1f77bcf86cd799439015"
+          }
         },
         "totalPrice": "30.000,00",
         "commission": "1.800,00",
@@ -169,7 +170,7 @@ Each item in the `items` array contains:
 
 | Field                 | Type   | Description                                                                   |
 | --------------------- | ------ | ----------------------------------------------------------------------------- |
-| `caregiver`           | object | Caregiver data (id, name, email, phone, avatar, addresses)                    |
+| `caregiver`           | object | Caregiver data (id, name, email, phone, avatar, carerConfig)                  |
 | `totalPrice`          | string | Total caregiver fees (formatted with thousand separators)                     |
 | `commission`          | string | 6% commission (formatted with thousand separators)                            |
 | `totalWithCommission` | string | Total price + commission (formatted with thousand separators)                 |

@@ -1,12 +1,16 @@
 import { Router, RequestHandler } from 'express';
-import Reservation, { IReservation } from '../models/Reservation';
+import Reservation from '../models/Reservation';
 import User from '../models/User';
 import Pet from '../models/Pet';
 import { authMiddleware } from '../middleware/auth';
 import { permissionMiddleware } from '../middleware/permissions';
 import { ResponseHelper } from '../utils/response';
 import { logChanges } from '../utils/audit';
-import { formatCurrency, calculateDaysDifference } from '../utils/common';
+import {
+  formatCurrency,
+  calculateDaysDifference,
+  sanitizeMongooseDoc,
+} from '../utils/common';
 import {
   AddressWithId,
   CareLocation,
@@ -323,13 +327,13 @@ const getUserReservations: RequestHandler = async (req, res, next) => {
         populate: [
           {
             path: 'petType',
-            select: 'name'
+            select: 'name',
           },
           {
             path: 'characteristics.characteristic',
-            select: 'name'
-          }
-        ]
+            select: 'name',
+          },
+        ],
       })
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
@@ -337,35 +341,15 @@ const getUserReservations: RequestHandler = async (req, res, next) => {
 
     const total = await Reservation.countDocuments(filters);
 
-    const formattedReservations = reservations.map((reservation) => ({
-      id: reservation._id,
-      startDate: reservation.startDate,
-      endDate: reservation.endDate,
-      careLocation: reservation.careLocation,
-      address: reservation.address,
-      user: reservation.user,
-      caregiver: reservation.caregiver,
-      pets: reservation.pets.map((pet: any) => ({
-        id: pet._id,
-        name: pet.name,
-        petType: pet.petType,
-        characteristics: pet.characteristics.map((char: any) => ({
-          id: char.characteristic._id,
-          name: char.characteristic.name,
-          value: char.value,
-        })),
-        comment: pet.comment,
-        avatar: pet.avatar,
-      })),
-      visitsCount: reservation.visitsCount,
-      totalPrice: formatCurrency(reservation.totalPrice),
-      commission: formatCurrency(reservation.commission),
-      totalWithCommission: formatCurrency(reservation.totalWithCommission),
-      distance: reservation.distance,
-      status: reservation.status,
-      createdAt: reservation.createdAt,
-      updatedAt: reservation.updatedAt,
-    }));
+    const formattedReservations = reservations.map((reservation) => {
+      const sanitized = sanitizeMongooseDoc(reservation);
+      return {
+        ...sanitized,
+        totalPrice: formatCurrency(reservation.totalPrice),
+        commission: formatCurrency(reservation.commission),
+        totalWithCommission: formatCurrency(reservation.totalWithCommission),
+      };
+    });
 
     ResponseHelper.success(res, 'Reservas obtenidas exitosamente', {
       items: formattedReservations,
@@ -397,13 +381,13 @@ const getReservation: RequestHandler = async (req, res, next) => {
         populate: [
           {
             path: 'petType',
-            select: 'name'
+            select: 'name',
           },
           {
             path: 'characteristics.characteristic',
-            select: 'name'
-          }
-        ]
+            select: 'name',
+          },
+        ],
       });
 
     if (!reservation) {
@@ -425,33 +409,10 @@ const getReservation: RequestHandler = async (req, res, next) => {
 
     ResponseHelper.success(res, 'Reserva obtenida exitosamente', {
       reservation: {
-        id: reservation._id,
-        startDate: reservation.startDate,
-        endDate: reservation.endDate,
-        careLocation: reservation.careLocation,
-        address: reservation.address,
-        user: reservation.user,
-        caregiver: reservation.caregiver,
-        pets: reservation.pets.map((pet: any) => ({
-          id: pet._id,
-          name: pet.name,
-          petType: pet.petType,
-          characteristics: pet.characteristics.map((char: any) => ({
-            id: char.characteristic._id,
-            name: char.characteristic.name,
-            value: char.value,
-          })),
-          comment: pet.comment,
-          avatar: pet.avatar,
-        })),
-        visitsCount: reservation.visitsCount,
+        ...sanitizeMongooseDoc(reservation),
         totalPrice: formatCurrency(reservation.totalPrice),
         commission: formatCurrency(reservation.commission),
         totalWithCommission: formatCurrency(reservation.totalWithCommission),
-        distance: reservation.distance,
-        status: reservation.status,
-        createdAt: reservation.createdAt,
-        updatedAt: reservation.updatedAt,
       },
     });
   } catch (error) {
@@ -631,13 +592,13 @@ const getAllReservations: RequestHandler = async (req, res, next) => {
         populate: [
           {
             path: 'petType',
-            select: 'name'
+            select: 'name',
           },
           {
             path: 'characteristics.characteristic',
-            select: 'name'
-          }
-        ]
+            select: 'name',
+          },
+        ],
       })
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
@@ -645,35 +606,15 @@ const getAllReservations: RequestHandler = async (req, res, next) => {
 
     const total = await Reservation.countDocuments(filters);
 
-    const formattedReservations = reservations.map((reservation) => ({
-      id: reservation._id,
-      startDate: reservation.startDate,
-      endDate: reservation.endDate,
-      careLocation: reservation.careLocation,
-      address: reservation.address,
-      user: reservation.user,
-      caregiver: reservation.caregiver,
-      pets: reservation.pets.map((pet: any) => ({
-        id: pet._id,
-        name: pet.name,
-        petType: pet.petType,
-        characteristics: pet.characteristics.map((char: any) => ({
-          id: char.characteristic._id,
-          name: char.characteristic.name,
-          value: char.value,
-        })),
-        comment: pet.comment,
-        avatar: pet.avatar,
-      })),
-      visitsCount: reservation.visitsCount,
-      totalPrice: formatCurrency(reservation.totalPrice),
-      commission: formatCurrency(reservation.commission),
-      totalWithCommission: formatCurrency(reservation.totalWithCommission),
-      distance: reservation.distance,
-      status: reservation.status,
-      createdAt: reservation.createdAt,
-      updatedAt: reservation.updatedAt,
-    }));
+    const formattedReservations = reservations.map((reservation) => {
+      const sanitized = sanitizeMongooseDoc(reservation);
+      return {
+        ...sanitized,
+        totalPrice: formatCurrency(reservation.totalPrice),
+        commission: formatCurrency(reservation.commission),
+        totalWithCommission: formatCurrency(reservation.totalWithCommission),
+      };
+    });
 
     ResponseHelper.success(res, 'Reservas obtenidas exitosamente', {
       items: formattedReservations,
@@ -705,13 +646,13 @@ const getReservationAdmin: RequestHandler = async (req, res, next) => {
         populate: [
           {
             path: 'petType',
-            select: 'name'
+            select: 'name',
           },
           {
             path: 'characteristics.characteristic',
-            select: 'name'
-          }
-        ]
+            select: 'name',
+          },
+        ],
       });
 
     if (!reservation) {
@@ -721,33 +662,10 @@ const getReservationAdmin: RequestHandler = async (req, res, next) => {
 
     ResponseHelper.success(res, 'Reserva obtenida exitosamente', {
       reservation: {
-        id: reservation._id,
-        startDate: reservation.startDate,
-        endDate: reservation.endDate,
-        careLocation: reservation.careLocation,
-        address: reservation.address,
-        user: reservation.user,
-        caregiver: reservation.caregiver,
-        pets: reservation.pets.map((pet: any) => ({
-          id: pet._id,
-          name: pet.name,
-          petType: pet.petType,
-          characteristics: pet.characteristics.map((char: any) => ({
-            id: char.characteristic._id,
-            name: char.characteristic.name,
-            value: char.value,
-          })),
-          comment: pet.comment,
-          avatar: pet.avatar,
-        })),
-        visitsCount: reservation.visitsCount,
+        ...sanitizeMongooseDoc(reservation),
         totalPrice: formatCurrency(reservation.totalPrice),
         commission: formatCurrency(reservation.commission),
         totalWithCommission: formatCurrency(reservation.totalWithCommission),
-        distance: reservation.distance,
-        status: reservation.status,
-        createdAt: reservation.createdAt,
-        updatedAt: reservation.updatedAt,
       },
     });
   } catch (error) {

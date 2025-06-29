@@ -5,6 +5,7 @@ import { permissionMiddleware } from '../middleware/permissions';
 import { logChanges } from '../utils/audit';
 import { getChanges } from '../utils/changeDetector';
 import { ResponseHelper } from '../utils/response';
+import { sanitizeMongooseDoc } from '../utils/common';
 
 const router = Router();
 
@@ -48,12 +49,7 @@ const createPetCharacteristic: RequestHandler = async (req, res, next) => {
     ResponseHelper.success(
       res,
       'Característica de mascota creada exitosamente',
-      {
-        id: characteristic._id,
-        name: characteristic.name,
-        createdAt: characteristic.createdAt,
-        updatedAt: characteristic.updatedAt,
-      },
+      sanitizeMongooseDoc(characteristic),
       201
     );
   } catch (error) {
@@ -92,12 +88,9 @@ const getAllPetCharacteristics: RequestHandler = async (req, res, next) => {
       res,
       'Características de mascota obtenidas exitosamente',
       {
-        items: characteristics.map((characteristic) => ({
-          id: characteristic._id,
-          name: characteristic.name,
-          createdAt: characteristic.createdAt,
-          updatedAt: characteristic.updatedAt,
-        })),
+        items: characteristics.map((characteristic) =>
+          sanitizeMongooseDoc(characteristic)
+        ),
         pagination: {
           page,
           limit,
@@ -125,12 +118,7 @@ const getPetCharacteristic: RequestHandler = async (req, res, next) => {
     ResponseHelper.success(
       res,
       'Característica de mascota obtenida exitosamente',
-      {
-        id: characteristic._id,
-        name: characteristic.name,
-        createdAt: characteristic.createdAt,
-        updatedAt: characteristic.updatedAt,
-      }
+      sanitizeMongooseDoc(characteristic)
     );
   } catch (error) {
     next(error);
@@ -197,12 +185,7 @@ const updatePetCharacteristic: RequestHandler = async (req, res, next) => {
     ResponseHelper.success(
       res,
       'Característica de mascota actualizada exitosamente',
-      {
-        id: updatedCharacteristic._id,
-        name: updatedCharacteristic.name,
-        createdAt: updatedCharacteristic.createdAt,
-        updatedAt: updatedCharacteristic.updatedAt,
-      }
+      sanitizeMongooseDoc(updatedCharacteristic)
     );
   } catch (error) {
     next(error);

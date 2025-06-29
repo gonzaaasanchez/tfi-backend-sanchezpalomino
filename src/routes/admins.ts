@@ -7,6 +7,7 @@ import { permissionMiddleware } from '../middleware/permissions';
 import { logChanges } from '../utils/audit';
 import { getChanges } from '../utils/changeDetector';
 import { ResponseHelper } from '../utils/response';
+import { sanitizeMongooseDoc } from '../utils/common';
 
 const router = Router();
 
@@ -42,15 +43,7 @@ const loginAdmin: RequestHandler = async (req, res, next) => {
     });
 
     ResponseHelper.success(res, 'Login exitoso', {
-      admin: {
-        id: admin._id,
-        firstName: admin.firstName,
-        lastName: admin.lastName,
-        email: admin.email,
-        role: admin.role,
-        createdAt: admin.createdAt,
-        updatedAt: admin.updatedAt,
-      },
+      admin: sanitizeMongooseDoc(admin),
       token,
     });
   } catch (error) {
@@ -131,15 +124,7 @@ const createAdmin: RequestHandler = async (req, res, next) => {
       res,
       'Admin creado exitosamente',
       {
-        admin: {
-          id: admin._id,
-          firstName: admin.firstName,
-          lastName: admin.lastName,
-          email: admin.email,
-          role: admin.role,
-          createdAt: admin.createdAt,
-          updatedAt: admin.updatedAt,
-        },
+        admin: sanitizeMongooseDoc(admin),
       },
       201
     );
@@ -151,19 +136,8 @@ const createAdmin: RequestHandler = async (req, res, next) => {
 // GET /admins/me - Get authenticated admin profile
 const getProfile: RequestHandler = async (req, res, next) => {
   try {
-    // Populate role to include role information
-    await req.user.populate('role');
-
     ResponseHelper.success(res, 'Perfil obtenido exitosamente', {
-      admin: {
-        id: req.user._id,
-        firstName: req.user.firstName,
-        lastName: req.user.lastName,
-        email: req.user.email,
-        role: req.user.role,
-        createdAt: req.user.createdAt,
-        updatedAt: req.user.updatedAt,
-      },
+      admin: sanitizeMongooseDoc(req.user),
     });
   } catch (error) {
     next(error);
@@ -174,16 +148,10 @@ const getProfile: RequestHandler = async (req, res, next) => {
 const getAllAdmins: RequestHandler = async (req, res, next) => {
   try {
     const admins = await Admin.find().populate('role').select('-password');
-    ResponseHelper.success(res, 'Admins obtenidos exitosamente', 
-      admins.map((admin) => ({
-        id: admin._id,
-        firstName: admin.firstName,
-        lastName: admin.lastName,
-        email: admin.email,
-        role: admin.role,
-        createdAt: admin.createdAt,
-        updatedAt: admin.updatedAt,
-      }))
+    ResponseHelper.success(
+      res,
+      'Admins obtenidos exitosamente',
+      admins.map((admin) => sanitizeMongooseDoc(admin))
     );
   } catch (error) {
     next(error);
@@ -202,13 +170,7 @@ const getAdmin: RequestHandler = async (req, res, next) => {
     }
 
     ResponseHelper.success(res, 'Admin obtenido exitosamente', {
-      id: admin._id,
-      firstName: admin.firstName,
-      lastName: admin.lastName,
-      email: admin.email,
-      role: admin.role,
-      createdAt: admin.createdAt,
-      updatedAt: admin.updatedAt,
+      admin: sanitizeMongooseDoc(admin),
     });
   } catch (error) {
     next(error);
@@ -264,19 +226,9 @@ const updateAdmin: RequestHandler = async (req, res, next) => {
 
     await admin.populate('role');
 
-    ResponseHelper.success(
-      res,
-      'Admin actualizado exitosamente',
-      {
-        id: admin._id,
-        firstName: admin.firstName,
-        lastName: admin.lastName,
-        email: admin.email,
-        role: admin.role,
-        createdAt: admin.createdAt,
-        updatedAt: admin.updatedAt,
-      }
-    );
+    ResponseHelper.success(res, 'Admin actualizado exitosamente', {
+      admin: sanitizeMongooseDoc(admin),
+    });
   } catch (error) {
     next(error);
   }

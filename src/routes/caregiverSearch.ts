@@ -8,6 +8,7 @@ import {
   calculateDaysDifference,
   calculateDistance,
   getPetTypesFromPets,
+  sanitizeMongooseDoc,
 } from '../utils/common';
 import { CareLocation, CARE_LOCATION } from '../types';
 
@@ -32,7 +33,6 @@ interface CaregiverSearchResult {
     email: string;
     phoneNumber?: string;
     avatar?: string;
-    addresses: any[];
     carerConfig?: any;
   };
   totalPrice: string;
@@ -226,13 +226,7 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
       // Create result object
       const result: CaregiverSearchResult = {
         caregiver: {
-          id: (caregiver._id as any).toString(),
-          firstName: caregiver.firstName,
-          lastName: caregiver.lastName,
-          email: caregiver.email,
-          phoneNumber: caregiver.phoneNumber,
-          avatar: caregiver.avatar,
-          addresses: caregiver.addresses || [],
+          ...sanitizeMongooseDoc(caregiver),
           carerConfig: caregiver.carerConfig,
         },
         totalPrice: formatCurrency(totalPrice),
