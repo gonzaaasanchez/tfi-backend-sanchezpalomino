@@ -317,8 +317,14 @@ const getUserReservations: RequestHandler = async (req, res, next) => {
     const reservations = await Reservation.find(filters)
       .populate('user', 'firstName lastName email avatar')
       .populate('caregiver', 'firstName lastName email avatar')
-      .populate('pets', 'name petType')
-      .populate('pets.petType', 'name')
+      .populate({
+        path: 'pets',
+        select: 'name petType characteristics comment avatar',
+        populate: {
+          path: 'petType',
+          select: 'name'
+        }
+      })
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit);
@@ -330,6 +336,7 @@ const getUserReservations: RequestHandler = async (req, res, next) => {
       startDate: reservation.startDate,
       endDate: reservation.endDate,
       careLocation: reservation.careLocation,
+      address: reservation.address,
       user: reservation.user,
       caregiver: reservation.caregiver,
       pets: reservation.pets,
@@ -367,8 +374,14 @@ const getReservation: RequestHandler = async (req, res, next) => {
     const reservation = await Reservation.findById(id)
       .populate('user', 'firstName lastName email avatar phoneNumber')
       .populate('caregiver', 'firstName lastName email avatar phoneNumber')
-      .populate('pets', 'name petType characteristics')
-      .populate('pets.petType', 'name');
+      .populate({
+        path: 'pets',
+        select: 'name petType characteristics comment avatar',
+        populate: {
+          path: 'petType',
+          select: 'name'
+        }
+      });
 
     if (!reservation) {
       ResponseHelper.notFound(res, 'Reserva no encontrada');
@@ -578,8 +591,14 @@ const getAllReservations: RequestHandler = async (req, res, next) => {
     const reservations = await Reservation.find(filters)
       .populate('user', 'firstName lastName email')
       .populate('caregiver', 'firstName lastName email')
-      .populate('pets', 'name petType')
-      .populate('pets.petType', 'name')
+      .populate({
+        path: 'pets',
+        select: 'name petType characteristics comment avatar',
+        populate: {
+          path: 'petType',
+          select: 'name'
+        }
+      })
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit);
@@ -591,6 +610,7 @@ const getAllReservations: RequestHandler = async (req, res, next) => {
       startDate: reservation.startDate,
       endDate: reservation.endDate,
       careLocation: reservation.careLocation,
+      address: reservation.address,
       user: reservation.user,
       caregiver: reservation.caregiver,
       pets: reservation.pets,
@@ -628,8 +648,14 @@ const getReservationAdmin: RequestHandler = async (req, res, next) => {
     const reservation = await Reservation.findById(id)
       .populate('user', 'firstName lastName email phoneNumber')
       .populate('caregiver', 'firstName lastName email phoneNumber')
-      .populate('pets', 'name petType characteristics')
-      .populate('pets.petType', 'name');
+      .populate({
+        path: 'pets',
+        select: 'name petType characteristics comment avatar',
+        populate: {
+          path: 'petType',
+          select: 'name'
+        }
+      });
 
     if (!reservation) {
       ResponseHelper.notFound(res, 'Reserva no encontrada');

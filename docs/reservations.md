@@ -140,6 +140,16 @@ curl -X GET "http://localhost:3000/api/reservations?page=1&limit=5&role=owner" \
         "startDate": "2024-01-15",
         "endDate": "2024-01-20",
         "careLocation": "pet_home",
+        "address": {
+          "name": "Casa Principal",
+          "fullAddress": "Av. Corrientes 1234, Buenos Aires",
+          "floor": "3",
+          "apartment": "A",
+          "coords": {
+            "lat": -34.6037,
+            "lon": -58.3816
+          }
+        },
         "user": {
           "_id": "507f1f77bcf86cd799439016",
           "firstName": "Juan",
@@ -161,7 +171,15 @@ curl -X GET "http://localhost:3000/api/reservations?page=1&limit=5&role=owner" \
             "petType": {
               "_id": "507f1f77bcf86cd799439018",
               "name": "Perro"
-            }
+            },
+            "characteristics": [
+              {
+                "characteristic": "507f1f77bcf86cd799439019",
+                "value": "Amigable"
+              }
+            ],
+            "comment": "Muy juguetona y sociable",
+            "avatar": "/api/pets/507f1f77bcf86cd799439012/avatar"
           }
         ],
         "visitsCount": 10,
@@ -240,11 +258,12 @@ Get details of a specific reservation.
           },
           "characteristics": [
             {
-              "_id": "507f1f77bcf86cd799439019",
-              "name": "Amigable",
-              "description": "Muy sociable con otros perros"
+              "characteristic": "507f1f77bcf86cd799439019",
+              "value": "Amigable"
             }
-          ]
+          ],
+          "comment": "Muy juguetona y sociable",
+          "avatar": "/api/pets/507f1f77bcf86cd799439012/avatar"
         }
       ],
       "visitsCount": 10,
