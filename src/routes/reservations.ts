@@ -315,8 +315,8 @@ const getUserReservations: RequestHandler = async (req, res, next) => {
     }
 
     const reservations = await Reservation.find(filters)
-      .populate('user', 'firstName lastName email avatar')
-      .populate('caregiver', 'firstName lastName email avatar')
+      .populate('user', 'firstName lastName email avatar phoneNumber')
+      .populate('caregiver', 'firstName lastName email avatar phoneNumber')
       .populate({
         path: 'pets',
         select: 'name petType characteristics comment avatar',
@@ -343,8 +343,22 @@ const getUserReservations: RequestHandler = async (req, res, next) => {
       endDate: reservation.endDate,
       careLocation: reservation.careLocation,
       address: reservation.address,
-      user: reservation.user,
-      caregiver: reservation.caregiver,
+      user: {
+        id: (reservation.user as any)._id,
+        firstName: (reservation.user as any).firstName,
+        lastName: (reservation.user as any).lastName,
+        email: (reservation.user as any).email,
+        avatar: (reservation.user as any).avatar,
+        phoneNumber: (reservation.user as any).phoneNumber,
+      },
+      caregiver: {
+        id: (reservation.caregiver as any)._id,
+        firstName: (reservation.caregiver as any).firstName,
+        lastName: (reservation.caregiver as any).lastName,
+        email: (reservation.caregiver as any).email,
+        avatar: (reservation.caregiver as any).avatar,
+        phoneNumber: (reservation.caregiver as any).phoneNumber,
+      },
       pets: reservation.pets.map((pet: any) => ({
         id: pet._id,
         name: pet.name,
@@ -430,8 +444,20 @@ const getReservation: RequestHandler = async (req, res, next) => {
         endDate: reservation.endDate,
         careLocation: reservation.careLocation,
         address: reservation.address,
-        user: reservation.user,
-        caregiver: reservation.caregiver,
+        user: {
+          id: (reservation.user as any)._id,
+          firstName: (reservation.user as any).firstName,
+          lastName: (reservation.user as any).lastName,
+          email: (reservation.user as any).email,
+          phoneNumber: (reservation.user as any).phoneNumber,
+        },
+        caregiver: {
+          id: (reservation.caregiver as any)._id,
+          firstName: (reservation.caregiver as any).firstName,
+          lastName: (reservation.caregiver as any).lastName,
+          email: (reservation.caregiver as any).email,
+          phoneNumber: (reservation.caregiver as any).phoneNumber,
+        },
         pets: reservation.pets.map((pet: any) => ({
           id: pet._id,
           name: pet.name,
@@ -623,8 +649,8 @@ const getAllReservations: RequestHandler = async (req, res, next) => {
     }
 
     const reservations = await Reservation.find(filters)
-      .populate('user', 'firstName lastName email')
-      .populate('caregiver', 'firstName lastName email')
+      .populate('user', 'firstName lastName email avatar phoneNumber')
+      .populate('caregiver', 'firstName lastName email avatar phoneNumber')
       .populate({
         path: 'pets',
         select: 'name petType characteristics comment avatar',
@@ -651,8 +677,22 @@ const getAllReservations: RequestHandler = async (req, res, next) => {
       endDate: reservation.endDate,
       careLocation: reservation.careLocation,
       address: reservation.address,
-      user: reservation.user,
-      caregiver: reservation.caregiver,
+      user: {
+        id: (reservation.user as any)._id,
+        firstName: (reservation.user as any).firstName,
+        lastName: (reservation.user as any).lastName,
+        email: (reservation.user as any).email,
+        avatar: (reservation.user as any).avatar,
+        phoneNumber: (reservation.user as any).phoneNumber,
+      },
+      caregiver: {
+        id: (reservation.caregiver as any)._id,
+        firstName: (reservation.caregiver as any).firstName,
+        lastName: (reservation.caregiver as any).lastName,
+        email: (reservation.caregiver as any).email,
+        avatar: (reservation.caregiver as any).avatar,
+        phoneNumber: (reservation.caregiver as any).phoneNumber,
+      },
       pets: reservation.pets.map((pet: any) => ({
         id: pet._id,
         name: pet.name,
@@ -726,8 +766,20 @@ const getReservationAdmin: RequestHandler = async (req, res, next) => {
         endDate: reservation.endDate,
         careLocation: reservation.careLocation,
         address: reservation.address,
-        user: reservation.user,
-        caregiver: reservation.caregiver,
+        user: {
+          id: (reservation.user as any)._id,
+          firstName: (reservation.user as any).firstName,
+          lastName: (reservation.user as any).lastName,
+          email: (reservation.user as any).email,
+          phoneNumber: (reservation.user as any).phoneNumber,
+        },
+        caregiver: {
+          id: (reservation.caregiver as any)._id,
+          firstName: (reservation.caregiver as any).firstName,
+          lastName: (reservation.caregiver as any).lastName,
+          email: (reservation.caregiver as any).email,
+          phoneNumber: (reservation.caregiver as any).phoneNumber,
+        },
         pets: reservation.pets.map((pet: any) => ({
           id: pet._id,
           name: pet.name,
