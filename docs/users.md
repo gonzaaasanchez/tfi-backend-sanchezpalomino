@@ -14,14 +14,14 @@ Authorization: Bearer <token>
   "success": true,
   "message": "Perfil obtenido exitosamente",
   "data": {
-    "_id": "...",
+    "id": "...",
     "firstName": "John",
     "lastName": "Doe",
     "email": "john@example.com",
     "phoneNumber": "+1234567890",
     "avatar": "api/users/.../avatar",
     "role": {
-      "_id": "...",
+      "id": "...",
       "name": "user",
       "permissions": { ... }
     }
@@ -52,7 +52,7 @@ avatarFile: [file] (optional)
   "success": true,
   "message": "Perfil actualizado exitosamente",
   "data": {
-    "_id": "...",
+    "id": "...",
     "firstName": "John",
     "lastName": "Doe",
     "email": "john@example.com",
@@ -77,14 +77,14 @@ Authorization: Bearer <token>
   "success": true,
   "message": "Usuario obtenido exitosamente",
   "data": {
-    "_id": "...",
+    "id": "...",
     "firstName": "John",
     "lastName": "Doe",
     "email": "john@example.com",
     "phoneNumber": "+1234567890",
     "avatar": "api/users/.../avatar",
     "role": {
-      "_id": "...",
+      "id": "...",
       "name": "user",
       "permissions": { ... }
     }
@@ -116,7 +116,7 @@ avatarFile: [file] (optional)
   "success": true,
   "message": "Usuario actualizado exitosamente",
   "data": {
-    "_id": "...",
+    "id": "...",
     "firstName": "John",
     "lastName": "Doe",
     "email": "john@example.com",
@@ -215,7 +215,7 @@ Authorization: Bearer <token>
   "message": "Direcciones obtenidas exitosamente",
   "data": [
     {
-      "_id": "6858625883100127c2b2e8dc",
+      "id": "6858625883100127c2b2e8dc",
       "name": "Casa Principal",
       "fullAddress": "Av. Corrientes 1234, Buenos Aires, Argentina",
       "floor": "3",
@@ -226,7 +226,7 @@ Authorization: Bearer <token>
       }
     },
     {
-      "_id": "6858625883100127c2b2e8dd",
+      "id": "6858625883100127c2b2e8dd",
       "name": "Oficina",
       "fullAddress": "Av. Santa Fe 5678, Buenos Aires, Argentina",
       "floor": "2",
@@ -256,7 +256,7 @@ Authorization: Bearer <token>
   "success": true,
   "message": "Dirección obtenida exitosamente",
   "data": {
-    "_id": "6858625883100127c2b2e8dc",
+    "id": "6858625883100127c2b2e8dc",
     "name": "Casa Principal",
     "fullAddress": "Av. Corrientes 1234, Buenos Aires, Argentina",
     "floor": "3",
@@ -399,14 +399,14 @@ GET /users?page=1&limit=20&search=john&role=68560fca89402fc12be977e1
   "data": {
     "users": [
       {
-        "_id": "...",
+        "id": "...",
         "firstName": "John",
         "lastName": "Doe",
         "email": "john@example.com",
         "phoneNumber": "+1234567890",
         "avatar": "api/users/.../avatar",
         "role": {
-          "_id": "...",
+          "id": "...",
           "name": "user",
           "permissions": { ... }
         }

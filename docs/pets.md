@@ -32,32 +32,28 @@ avatarFile: [file] (optional)
   "success": true,
   "message": "Mascota creada exitosamente",
   "data": {
-    "_id": "...",
+    "id": "...",
     "name": "Luna",
     "comment": "Mi perrita favorita",
     "avatar": "/api/pets/.../avatar",
     "petType": {
-      "_id": "...",
+      "id": "...",
       "name": "Perro"
     },
     "characteristics": [
       {
-        "characteristic": {
-          "_id": "...",
-          "name": "Tamaño"
-        },
+        "id": "...",
+        "name": "Tamaño",
         "value": "grande"
       },
       {
-        "characteristic": {
-          "_id": "...",
-          "name": "Edad"
-        },
+        "id": "...",
+        "name": "Edad",
         "value": "5 años"
       }
     ],
     "owner": {
-      "_id": "...",
+      "id": "...",
       "firstName": "John",
       "lastName": "Doe"
     },
@@ -89,25 +85,25 @@ Authorization: Bearer <token>
   "data": {
     "pets": [
       {
-        "_id": "...",
+        "id": "...",
         "name": "Luna",
         "comment": "Mi perrita favorita",
         "avatar": "/api/pets/.../avatar",
         "petType": {
-          "_id": "...",
+          "id": "...",
           "name": "Perro"
         },
         "characteristics": [
           {
             "characteristic": {
-              "_id": "...",
+              "id": "...",
               "name": "Tamaño"
             },
             "value": "grande"
           }
         ],
         "owner": {
-          "_id": "...",
+          "id": "...",
           "firstName": "John",
           "lastName": "Doe"
         }
@@ -186,25 +182,25 @@ Authorization: Bearer <token>
   "data": {
     "pets": [
       {
-        "_id": "...",
+        "id": "...",
         "name": "Luna",
         "comment": "Mi perrita favorita",
         "avatar": "/api/pets/.../avatar",
         "petType": {
-          "_id": "...",
+          "id": "...",
           "name": "Perro"
         },
         "characteristics": [
           {
             "characteristic": {
-              "_id": "...",
+              "id": "...",
               "name": "Tamaño"
             },
             "value": "grande"
           }
         ],
         "owner": {
-          "_id": "...",
+          "id": "...",
           "firstName": "John",
           "lastName": "Doe"
         }

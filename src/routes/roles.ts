@@ -12,7 +12,17 @@ const router = Router();
 const getRoles: RequestHandler = async (req, res, next) => {
   try {
     const roles = await Role.find().select('-__v');
-    ResponseHelper.success(res, 'Roles obtenidos exitosamente', roles);
+    ResponseHelper.success(res, 'Roles obtenidos exitosamente', 
+      roles.map((role) => ({
+        id: role._id,
+        name: role.name,
+        description: role.description,
+        permissions: role.permissions,
+        isSystem: role.isSystem,
+        createdAt: role.createdAt,
+        updatedAt: role.updatedAt,
+      }))
+    );
   } catch (error) {
     next(error);
   }
@@ -27,7 +37,15 @@ const getRole: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    ResponseHelper.success(res, 'Rol obtenido exitosamente', role);
+    ResponseHelper.success(res, 'Rol obtenido exitosamente', {
+      id: role._id,
+      name: role.name,
+      description: role.description,
+      permissions: role.permissions,
+      isSystem: role.isSystem,
+      createdAt: role.createdAt,
+      updatedAt: role.updatedAt,
+    });
   } catch (error) {
     next(error);
   }
@@ -98,7 +116,15 @@ const createRole: RequestHandler = async (req, res, next) => {
       { field: 'description', oldValue: null, newValue: description },
     ]);
 
-    ResponseHelper.success(res, 'Rol creado exitosamente', savedRole, 201);
+    ResponseHelper.success(res, 'Rol creado exitosamente', {
+      id: savedRole._id,
+      name: savedRole.name,
+      description: savedRole.description,
+      permissions: savedRole.permissions,
+      isSystem: savedRole.isSystem,
+      createdAt: savedRole.createdAt,
+      updatedAt: savedRole.updatedAt,
+    }, 201);
   } catch (error) {
     next(error);
   }
@@ -141,7 +167,15 @@ const updateRole: RequestHandler = async (req, res, next) => {
       logChanges('Role', roleId, userId, userName, changes);
     }
 
-    ResponseHelper.success(res, 'Rol actualizado exitosamente', role.toJSON());
+    ResponseHelper.success(res, 'Rol actualizado exitosamente', {
+      id: role._id,
+      name: role.name,
+      description: role.description,
+      permissions: role.permissions,
+      isSystem: role.isSystem,
+      createdAt: role.createdAt,
+      updatedAt: role.updatedAt,
+    });
   } catch (error) {
     next(error);
   }

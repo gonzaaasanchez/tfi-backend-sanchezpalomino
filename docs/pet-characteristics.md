@@ -21,7 +21,7 @@ Authorization: Bearer <token>
   "success": true,
   "message": "Característica de mascota creada exitosamente",
   "data": {
-    "_id": "...",
+    "id": "...",
     "name": "Tamaño",
     "createdAt": "2024-01-01T00:00:00.000Z",
     "updatedAt": "2024-01-01T00:00:00.000Z"
@@ -50,7 +50,7 @@ Authorization: Bearer <token>
   "data": {
     "characteristics": [
       {
-        "_id": "...",
+        "id": "...",
         "name": "Tamaño",
         "createdAt": "2024-01-01T00:00:00.000Z",
         "updatedAt": "2024-01-01T00:00:00.000Z"

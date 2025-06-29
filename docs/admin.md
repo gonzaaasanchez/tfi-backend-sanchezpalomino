@@ -117,7 +117,7 @@ Authorization: Bearer <token>
   "data": {
     "logs": [
       {
-        "_id": "...",
+        "id": "...",
         "action": "CREATE",
         "entity": "Pet",
         "entityId": "...",

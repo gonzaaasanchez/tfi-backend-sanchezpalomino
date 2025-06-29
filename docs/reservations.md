@@ -58,7 +58,7 @@ Create a new pet care reservation.
   "message": "Reserva creada exitosamente",
   "data": {
     "reservation": {
-      "_id": "507f1f77bcf86cd799439015",
+      "id": "507f1f77bcf86cd799439015",
       "startDate": "2024-01-15",
       "endDate": "2024-01-20",
       "careLocation": "pet_home",
@@ -136,7 +136,7 @@ curl -X GET "http://localhost:3000/api/reservations?page=1&limit=5&role=owner" \
   "data": {
     "items": [
       {
-        "_id": "507f1f77bcf86cd799439015",
+        "id": "507f1f77bcf86cd799439015",
         "startDate": "2024-01-15",
         "endDate": "2024-01-20",
         "careLocation": "pet_home",
@@ -151,14 +151,14 @@ curl -X GET "http://localhost:3000/api/reservations?page=1&limit=5&role=owner" \
           }
         },
         "user": {
-          "_id": "507f1f77bcf86cd799439016",
+          "id": "507f1f77bcf86cd799439016",
           "firstName": "Juan",
           "lastName": "Pérez",
           "email": "juan@email.com",
           "avatar": "avatar.jpg"
         },
         "caregiver": {
-          "_id": "507f1f77bcf86cd799439017",
+          "id": "507f1f77bcf86cd799439017",
           "firstName": "María",
           "lastName": "García",
           "email": "maria@email.com",
@@ -166,20 +166,17 @@ curl -X GET "http://localhost:3000/api/reservations?page=1&limit=5&role=owner" \
         },
         "pets": [
           {
-            "_id": "507f1f77bcf86cd799439012",
+            "id": "507f1f77bcf86cd799439012",
             "name": "Luna",
             "petType": {
-              "_id": "507f1f77bcf86cd799439018",
+              "id": "507f1f77bcf86cd799439018",
               "name": "Perro"
             },
             "characteristics": [
               {
-                "characteristic": {
-                  "_id": "507f1f77bcf86cd799439019",
-                  "name": "Temperamento"
-                },
-                "value": "Amigable",
-                "_id": "507f1f77bcf86cd799439020"
+                "id": "507f1f77bcf86cd799439019",
+                "name": "Temperamento",
+                "value": "Amigable"
               }
             ],
             "comment": "Muy juguetona y sociable",
@@ -222,7 +219,7 @@ Get details of a specific reservation.
   "message": "Reserva obtenida exitosamente",
   "data": {
     "reservation": {
-      "_id": "507f1f77bcf86cd799439015",
+      "id": "507f1f77bcf86cd799439015",
       "startDate": "2024-01-15",
       "endDate": "2024-01-20",
       "careLocation": "pet_home",
@@ -237,7 +234,7 @@ Get details of a specific reservation.
         }
       },
       "user": {
-        "_id": "507f1f77bcf86cd799439016",
+        "id": "507f1f77bcf86cd799439016",
         "firstName": "Juan",
         "lastName": "Pérez",
         "email": "juan@email.com",
@@ -245,7 +242,7 @@ Get details of a specific reservation.
         "avatar": "avatar.jpg"
       },
       "caregiver": {
-        "_id": "507f1f77bcf86cd799439017",
+        "id": "507f1f77bcf86cd799439017",
         "firstName": "María",
         "lastName": "García",
         "email": "maria@email.com",
@@ -254,20 +251,17 @@ Get details of a specific reservation.
       },
       "pets": [
         {
-          "_id": "507f1f77bcf86cd799439012",
+          "id": "507f1f77bcf86cd799439012",
           "name": "Luna",
           "petType": {
-            "_id": "507f1f77bcf86cd799439018",
+            "id": "507f1f77bcf86cd799439018",
             "name": "Perro"
           },
           "characteristics": [
             {
-              "characteristic": {
-                "_id": "507f1f77bcf86cd799439019",
-                "name": "Temperamento"
-              },
-              "value": "Amigable",
-              "_id": "507f1f77bcf86cd799439020"
+              "id": "507f1f77bcf86cd799439019",
+              "name": "Temperamento",
+              "value": "Amigable"
             }
           ],
           "comment": "Muy juguetona y sociable",
@@ -301,7 +295,7 @@ Caregiver accepts a pending reservation.
   "message": "Reserva aceptada exitosamente",
   "data": {
     "reservation": {
-      "_id": "507f1f77bcf86cd799439015",
+      "id": "507f1f77bcf86cd799439015",
       "status": "confirmed",
       "updatedAt": "2024-01-10T11:00:00.000Z"
     }
@@ -331,7 +325,7 @@ Cancel a reservation (can be done by owner, caregiver, or admin).
   "message": "Reserva cancelada exitosamente",
   "data": {
     "reservation": {
-      "_id": "507f1f77bcf86cd799439015",
+      "id": "507f1f77bcf86cd799439015",
       "status": "cancelled_owner",
       "updatedAt": "2024-01-10T11:30:00.000Z"
     }

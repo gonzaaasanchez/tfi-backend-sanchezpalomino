@@ -31,6 +31,9 @@ const getMyProfile: RequestHandler = async (req, res, next) => {
 
     // Create a copy of the user object for the response
     const userResponse = user.toObject();
+    
+    userResponse.id = userResponse._id;
+    delete userResponse._id;
 
     // Add careAddressData if careAddress is configured
     addCareAddressData(userResponse);
@@ -102,6 +105,9 @@ const updateMyProfile: RequestHandler = async (req, res, next) => {
     // Convert to object and remove sensitive fields
     const userResponse = updatedUser.toObject();
     const { password, avatarBuffer, ...safeUserResponse } = userResponse;
+    
+    safeUserResponse.id = safeUserResponse._id;
+    delete safeUserResponse._id;
 
     // Add careAddressData if careAddress is configured
     addCareAddressData(safeUserResponse);
@@ -154,6 +160,9 @@ const getOneUser: RequestHandler = async (req, res, next) => {
     // Convert to object and remove sensitive fields
     const userResponse = user.toObject();
     const { password, avatarBuffer, ...safeUserResponse } = userResponse;
+    
+    safeUserResponse.id = safeUserResponse._id;
+    delete safeUserResponse._id;
 
     // Add careAddressData if careAddress is configured
     addCareAddressData(safeUserResponse);
@@ -207,6 +216,9 @@ const getAllUsers: RequestHandler = async (req, res, next) => {
     const safeUsers = users.map((user) => {
       const userObj = user.toObject();
       const { password, avatarBuffer, ...safeUser } = userObj;
+      
+      safeUser.id = safeUser._id;
+      delete safeUser._id;
       
       // Add careAddressData if careAddress is configured
       addCareAddressData(safeUser);
@@ -279,6 +291,9 @@ const updateUser: RequestHandler = async (req, res, next) => {
     // Convert to object and remove sensitive fields
     const userResponse = updatedUser.toObject();
     const { password, avatarBuffer, ...safeUserResponse } = userResponse;
+
+    safeUserResponse.id = safeUserResponse._id;
+    delete safeUserResponse._id;
 
     // Add careAddressData if careAddress is configured
     addCareAddressData(safeUserResponse);

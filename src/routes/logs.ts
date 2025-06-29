@@ -18,7 +18,16 @@ const getEntityLogs: RequestHandler = async (req, res, next) => {
       .sort({ timestamp: -1 })
       .lean();
 
-    ResponseHelper.success(res, 'Logs obtenidos exitosamente', logs);
+    ResponseHelper.success(res, 'Logs obtenidos exitosamente', 
+      logs.map((log) => ({
+        id: log._id,
+        entityId: log.entityId,
+        userId: log.userId,
+        userName: log.userName,
+        changes: log.changes,
+        timestamp: log.timestamp,
+      }))
+    );
   } catch (error) {
     next(error);
   }
@@ -38,7 +47,16 @@ const getAllEntityLogs: RequestHandler = async (req, res, next) => {
       .limit(limit)
       .lean();
 
-    ResponseHelper.success(res, 'Logs obtenidos exitosamente', logs);
+    ResponseHelper.success(res, 'Logs obtenidos exitosamente', 
+      logs.map((log) => ({
+        id: log._id,
+        entityId: log.entityId,
+        userId: log.userId,
+        userName: log.userName,
+        changes: log.changes,
+        timestamp: log.timestamp,
+      }))
+    );
   } catch (error) {
     next(error);
   }

@@ -21,7 +21,7 @@ Authorization: Bearer <token>
   "success": true,
   "message": "Tipo de mascota creado exitosamente",
   "data": {
-    "_id": "...",
+    "id": "...",
     "name": "Perro",
     "createdAt": "2024-01-01T00:00:00.000Z",
     "updatedAt": "2024-01-01T00:00:00.000Z"
@@ -50,7 +50,7 @@ Authorization: Bearer <token>
   "data": {
     "petTypes": [
       {
-        "_id": "...",
+        "id": "...",
         "name": "Perro",
         "createdAt": "2024-01-01T00:00:00.000Z",
         "updatedAt": "2024-01-01T00:00:00.000Z"
@@ -81,15 +81,15 @@ Authorization: Bearer <token>
   "message": "Tipos de mascota obtenidos exitosamente",
   "data": [
     {
-      "_id": "507f1f77bcf86cd799439011",
+      "id": "507f1f77bcf86cd799439011",
       "name": "Gato"
     },
     {
-      "_id": "507f1f77bcf86cd799439012",
+      "id": "507f1f77bcf86cd799439012",
       "name": "Perro"
     },
     {
-      "_id": "507f1f77bcf86cd799439013",
+      "id": "507f1f77bcf86cd799439013",
       "name": "Pájaro"
     }
   ]
@@ -113,7 +113,7 @@ Authorization: Bearer <token>
   "success": true,
   "message": "Tipo de mascota obtenido exitosamente",
   "data": {
-    "_id": "...",
+    "id": "...",
     "name": "Perro",
     "createdAt": "2024-01-01T00:00:00.000Z",
     "updatedAt": "2024-01-01T00:00:00.000Z"
@@ -145,7 +145,7 @@ Authorization: Bearer <token>
   "success": true,
   "message": "Tipo de mascota actualizado exitosamente",
   "data": {
-    "_id": "...",
+    "id": "...",
     "name": "Perro Doméstico",
     "createdAt": "2024-01-01T00:00:00.000Z",
     "updatedAt": "2024-01-01T00:00:00.000Z"

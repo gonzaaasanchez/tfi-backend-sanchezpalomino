@@ -44,7 +44,12 @@ const createPetType: RequestHandler = async (req, res, next) => {
     ResponseHelper.success(
       res,
       'Tipo de mascota creado exitosamente',
-      petType,
+      {
+        id: petType._id,
+        name: petType.name,
+        createdAt: petType.createdAt,
+        updatedAt: petType.updatedAt,
+      },
       201
     );
   } catch (error) {
@@ -78,7 +83,12 @@ const getAllPetTypes: RequestHandler = async (req, res, next) => {
     const totalPages = Math.ceil(totalPetTypes / limit);
 
     ResponseHelper.success(res, 'Tipos de mascota obtenidos exitosamente', {
-      items: petTypes,
+      items: petTypes.map((petType) => ({
+        id: petType._id,
+        name: petType.name,
+        createdAt: petType.createdAt,
+        updatedAt: petType.updatedAt,
+      })),
       pagination: {
         page,
         limit,
@@ -105,7 +115,12 @@ const getPetType: RequestHandler = async (req, res, next) => {
     ResponseHelper.success(
       res,
       'Tipo de mascota obtenido exitosamente',
-      petType
+      {
+        id: petType._id,
+        name: petType.name,
+        createdAt: petType.createdAt,
+        updatedAt: petType.updatedAt,
+      }
     );
   } catch (error) {
     next(error);
@@ -172,7 +187,12 @@ const updatePetType: RequestHandler = async (req, res, next) => {
     ResponseHelper.success(
       res,
       'Tipo de mascota actualizado exitosamente',
-      updatedPetType
+      {
+        id: updatedPetType._id,
+        name: updatedPetType.name,
+        createdAt: updatedPetType.createdAt,
+        updatedAt: updatedPetType.updatedAt,
+      }
     );
   } catch (error) {
     next(error);

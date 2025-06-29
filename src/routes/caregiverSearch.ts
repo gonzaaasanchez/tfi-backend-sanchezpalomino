@@ -26,7 +26,7 @@ interface SearchParams {
 
 interface CaregiverSearchResult {
   caregiver: {
-    _id: string;
+    id: string;
     firstName: string;
     lastName: string;
     email: string;
@@ -226,7 +226,7 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
       // Create result object
       const result: CaregiverSearchResult = {
         caregiver: {
-          _id: (caregiver._id as any).toString(),
+          id: (caregiver._id as any).toString(),
           firstName: caregiver.firstName,
           lastName: caregiver.lastName,
           email: caregiver.email,

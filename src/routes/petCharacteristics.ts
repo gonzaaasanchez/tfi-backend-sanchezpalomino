@@ -48,7 +48,12 @@ const createPetCharacteristic: RequestHandler = async (req, res, next) => {
     ResponseHelper.success(
       res,
       'Característica de mascota creada exitosamente',
-      characteristic,
+      {
+        id: characteristic._id,
+        name: characteristic.name,
+        createdAt: characteristic.createdAt,
+        updatedAt: characteristic.updatedAt,
+      },
       201
     );
   } catch (error) {
@@ -87,7 +92,12 @@ const getAllPetCharacteristics: RequestHandler = async (req, res, next) => {
       res,
       'Características de mascota obtenidas exitosamente',
       {
-        items: characteristics,
+        items: characteristics.map((characteristic) => ({
+          id: characteristic._id,
+          name: characteristic.name,
+          createdAt: characteristic.createdAt,
+          updatedAt: characteristic.updatedAt,
+        })),
         pagination: {
           page,
           limit,
@@ -115,7 +125,12 @@ const getPetCharacteristic: RequestHandler = async (req, res, next) => {
     ResponseHelper.success(
       res,
       'Característica de mascota obtenida exitosamente',
-      characteristic
+      {
+        id: characteristic._id,
+        name: characteristic.name,
+        createdAt: characteristic.createdAt,
+        updatedAt: characteristic.updatedAt,
+      }
     );
   } catch (error) {
     next(error);
@@ -182,7 +197,12 @@ const updatePetCharacteristic: RequestHandler = async (req, res, next) => {
     ResponseHelper.success(
       res,
       'Característica de mascota actualizada exitosamente',
-      updatedCharacteristic
+      {
+        id: updatedCharacteristic._id,
+        name: updatedCharacteristic.name,
+        createdAt: updatedCharacteristic.createdAt,
+        updatedAt: updatedCharacteristic.updatedAt,
+      }
     );
   } catch (error) {
     next(error);

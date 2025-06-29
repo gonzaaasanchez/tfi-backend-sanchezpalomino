@@ -273,7 +273,7 @@ const createReservation: RequestHandler = async (req, res, next) => {
 
     ResponseHelper.success(res, 'Reserva creada exitosamente', {
       reservation: {
-        _id: reservation._id,
+        id: reservation._id,
         startDate: reservation.startDate,
         endDate: reservation.endDate,
         careLocation: reservation.careLocation,
@@ -338,14 +338,25 @@ const getUserReservations: RequestHandler = async (req, res, next) => {
     const total = await Reservation.countDocuments(filters);
 
     const formattedReservations = reservations.map((reservation) => ({
-      _id: reservation._id,
+      id: reservation._id,
       startDate: reservation.startDate,
       endDate: reservation.endDate,
       careLocation: reservation.careLocation,
       address: reservation.address,
       user: reservation.user,
       caregiver: reservation.caregiver,
-      pets: reservation.pets,
+      pets: reservation.pets.map((pet: any) => ({
+        id: pet._id,
+        name: pet.name,
+        petType: pet.petType,
+        characteristics: pet.characteristics.map((char: any) => ({
+          id: char.characteristic._id,
+          name: char.characteristic.name,
+          value: char.value,
+        })),
+        comment: pet.comment,
+        avatar: pet.avatar,
+      })),
       visitsCount: reservation.visitsCount,
       totalPrice: formatCurrency(reservation.totalPrice),
       commission: formatCurrency(reservation.commission),
@@ -414,14 +425,25 @@ const getReservation: RequestHandler = async (req, res, next) => {
 
     ResponseHelper.success(res, 'Reserva obtenida exitosamente', {
       reservation: {
-        _id: reservation._id,
+        id: reservation._id,
         startDate: reservation.startDate,
         endDate: reservation.endDate,
         careLocation: reservation.careLocation,
         address: reservation.address,
         user: reservation.user,
         caregiver: reservation.caregiver,
-        pets: reservation.pets,
+        pets: reservation.pets.map((pet: any) => ({
+          id: pet._id,
+          name: pet.name,
+          petType: pet.petType,
+          characteristics: pet.characteristics.map((char: any) => ({
+            id: char.characteristic._id,
+            name: char.characteristic.name,
+            value: char.value,
+          })),
+          comment: pet.comment,
+          avatar: pet.avatar,
+        })),
         visitsCount: reservation.visitsCount,
         totalPrice: formatCurrency(reservation.totalPrice),
         commission: formatCurrency(reservation.commission),
@@ -487,7 +509,7 @@ const acceptReservation: RequestHandler = async (req, res, next) => {
 
     ResponseHelper.success(res, 'Reserva aceptada exitosamente', {
       reservation: {
-        _id: reservation._id,
+        id: reservation._id,
         status: reservation.status,
         updatedAt: reservation.updatedAt,
       },
@@ -563,7 +585,7 @@ const cancelReservation: RequestHandler = async (req, res, next) => {
 
     ResponseHelper.success(res, 'Reserva cancelada exitosamente', {
       reservation: {
-        _id: reservation._id,
+        id: reservation._id,
         status: reservation.status,
         updatedAt: reservation.updatedAt,
       },
@@ -624,14 +646,25 @@ const getAllReservations: RequestHandler = async (req, res, next) => {
     const total = await Reservation.countDocuments(filters);
 
     const formattedReservations = reservations.map((reservation) => ({
-      _id: reservation._id,
+      id: reservation._id,
       startDate: reservation.startDate,
       endDate: reservation.endDate,
       careLocation: reservation.careLocation,
       address: reservation.address,
       user: reservation.user,
       caregiver: reservation.caregiver,
-      pets: reservation.pets,
+      pets: reservation.pets.map((pet: any) => ({
+        id: pet._id,
+        name: pet.name,
+        petType: pet.petType,
+        characteristics: pet.characteristics.map((char: any) => ({
+          id: char.characteristic._id,
+          name: char.characteristic.name,
+          value: char.value,
+        })),
+        comment: pet.comment,
+        avatar: pet.avatar,
+      })),
       visitsCount: reservation.visitsCount,
       totalPrice: formatCurrency(reservation.totalPrice),
       commission: formatCurrency(reservation.commission),
@@ -688,14 +721,25 @@ const getReservationAdmin: RequestHandler = async (req, res, next) => {
 
     ResponseHelper.success(res, 'Reserva obtenida exitosamente', {
       reservation: {
-        _id: reservation._id,
+        id: reservation._id,
         startDate: reservation.startDate,
         endDate: reservation.endDate,
         careLocation: reservation.careLocation,
         address: reservation.address,
         user: reservation.user,
         caregiver: reservation.caregiver,
-        pets: reservation.pets,
+        pets: reservation.pets.map((pet: any) => ({
+          id: pet._id,
+          name: pet.name,
+          petType: pet.petType,
+          characteristics: pet.characteristics.map((char: any) => ({
+            id: char.characteristic._id,
+            name: char.characteristic.name,
+            value: char.value,
+          })),
+          comment: pet.comment,
+          avatar: pet.avatar,
+        })),
         visitsCount: reservation.visitsCount,
         totalPrice: formatCurrency(reservation.totalPrice),
         commission: formatCurrency(reservation.commission),

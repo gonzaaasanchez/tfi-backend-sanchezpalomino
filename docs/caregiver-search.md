@@ -101,7 +101,7 @@ With order:
     "items": [
       {
         "caregiver": {
-          "_id": "507f1f77bcf86cd799439014",
+          "id": "507f1f77bcf86cd799439014",
           "firstName": "María",
           "lastName": "González",
           "email": "maria@gonzalez.com",
@@ -109,7 +109,7 @@ With order:
           "avatar": "/api/users/507f1f77bcf86cd799439014/avatar",
           "addresses": [
             {
-              "_id": "507f1f77bcf86cd799439015",
+              "id": "507f1f77bcf86cd799439015",
               "name": "Casa",
               "fullAddress": "San Martín 1234, Rosario, Santa Fe",
               "coords": {

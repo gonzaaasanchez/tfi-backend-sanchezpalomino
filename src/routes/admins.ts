@@ -42,7 +42,15 @@ const loginAdmin: RequestHandler = async (req, res, next) => {
     });
 
     ResponseHelper.success(res, 'Login exitoso', {
-      admin: admin.toJSON(),
+      admin: {
+        id: admin._id,
+        firstName: admin.firstName,
+        lastName: admin.lastName,
+        email: admin.email,
+        role: admin.role,
+        createdAt: admin.createdAt,
+        updatedAt: admin.updatedAt,
+      },
       token,
     });
   } catch (error) {
@@ -123,7 +131,15 @@ const createAdmin: RequestHandler = async (req, res, next) => {
       res,
       'Admin creado exitosamente',
       {
-        admin: admin.toJSON(),
+        admin: {
+          id: admin._id,
+          firstName: admin.firstName,
+          lastName: admin.lastName,
+          email: admin.email,
+          role: admin.role,
+          createdAt: admin.createdAt,
+          updatedAt: admin.updatedAt,
+        },
       },
       201
     );
@@ -139,7 +155,15 @@ const getProfile: RequestHandler = async (req, res, next) => {
     await req.user.populate('role');
 
     ResponseHelper.success(res, 'Perfil obtenido exitosamente', {
-      admin: req.user.toJSON(),
+      admin: {
+        id: req.user._id,
+        firstName: req.user.firstName,
+        lastName: req.user.lastName,
+        email: req.user.email,
+        role: req.user.role,
+        createdAt: req.user.createdAt,
+        updatedAt: req.user.updatedAt,
+      },
     });
   } catch (error) {
     next(error);
@@ -150,7 +174,17 @@ const getProfile: RequestHandler = async (req, res, next) => {
 const getAllAdmins: RequestHandler = async (req, res, next) => {
   try {
     const admins = await Admin.find().populate('role').select('-password');
-    ResponseHelper.success(res, 'Admins obtenidos exitosamente', admins);
+    ResponseHelper.success(res, 'Admins obtenidos exitosamente', 
+      admins.map((admin) => ({
+        id: admin._id,
+        firstName: admin.firstName,
+        lastName: admin.lastName,
+        email: admin.email,
+        role: admin.role,
+        createdAt: admin.createdAt,
+        updatedAt: admin.updatedAt,
+      }))
+    );
   } catch (error) {
     next(error);
   }
@@ -167,7 +201,15 @@ const getAdmin: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    ResponseHelper.success(res, 'Admin obtenido exitosamente', admin);
+    ResponseHelper.success(res, 'Admin obtenido exitosamente', {
+      id: admin._id,
+      firstName: admin.firstName,
+      lastName: admin.lastName,
+      email: admin.email,
+      role: admin.role,
+      createdAt: admin.createdAt,
+      updatedAt: admin.updatedAt,
+    });
   } catch (error) {
     next(error);
   }
@@ -225,7 +267,15 @@ const updateAdmin: RequestHandler = async (req, res, next) => {
     ResponseHelper.success(
       res,
       'Admin actualizado exitosamente',
-      admin.toJSON()
+      {
+        id: admin._id,
+        firstName: admin.firstName,
+        lastName: admin.lastName,
+        email: admin.email,
+        role: admin.role,
+        createdAt: admin.createdAt,
+        updatedAt: admin.updatedAt,
+      }
     );
   } catch (error) {
     next(error);
