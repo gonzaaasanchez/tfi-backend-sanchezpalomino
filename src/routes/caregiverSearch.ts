@@ -40,6 +40,8 @@ interface CaregiverSearchResult {
   totalWithCommission: string;
   distance?: number;
   daysCount: number;
+  startDate: string;
+  endDate: string;
   careDetails: {
     visitsCount?: number;
     pricePerDay?: string;
@@ -234,6 +236,8 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
         totalWithCommission: formatCurrency(totalWithCommission),
         distance: calculatedDistance,
         daysCount,
+        startDate,
+        endDate,
         careDetails: {
           visitsCount,
           pricePerDay: pricePerDay ? formatCurrency(pricePerDay) : undefined,
