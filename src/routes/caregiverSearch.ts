@@ -37,7 +37,7 @@ interface CaregiverSearchResult {
   };
   totalPrice: string;
   commission: string;
-  totalWithCommission: string;
+  totalOwner: string;
   distance?: number;
   daysCount: number;
   careDetails: {
@@ -221,7 +221,7 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
 
       // Calculate commission (6%)
       const commission = totalPrice * 0.06;
-      const totalWithCommission = totalPrice + commission;
+      const totalOwner = totalPrice + commission;
 
       // Create result object
       const result: CaregiverSearchResult = {
@@ -237,7 +237,7 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
         },
         totalPrice: formatCurrency(totalPrice),
         commission: formatCurrency(commission),
-        totalWithCommission: formatCurrency(totalWithCommission),
+        totalOwner: formatCurrency(totalOwner),
         distance: calculatedDistance,
         daysCount,
         careDetails: {

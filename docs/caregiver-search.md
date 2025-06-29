@@ -121,7 +121,7 @@ With order:
         },
         "totalPrice": "30.000,00",
         "commission": "1.800,00",
-        "totalWithCommission": "31.800,00",
+        "totalOwner": "31.800,00",
         "distance": 2.5,
         "daysCount": 3,
         "careDetails": {
@@ -167,15 +167,15 @@ The response includes the following fields:
 
 Each item in the `items` array contains:
 
-| Field                 | Type   | Description                                                                   |
-| --------------------- | ------ | ----------------------------------------------------------------------------- |
-| `caregiver`           | object | Caregiver data (id, name, email, phone, avatar, addresses)                    |
-| `totalPrice`          | string | Total caregiver fees (formatted with thousand separators)                     |
-| `commission`          | string | 6% commission (formatted with thousand separators)                            |
-| `totalWithCommission` | string | Total price + commission (formatted with thousand separators)                 |
-| `distance`            | number | Calculated distance in km (if maxDistance was specified)                      |
-| `daysCount`           | number | Total number of days for the care period (including both start and end dates) |
-| `careDetails`         | object | Calculation details (visitsCount, pricePerVisit)                              |
+| Field         | Type   | Description                                                                   |
+| ------------- | ------ | ----------------------------------------------------------------------------- |
+| `caregiver`   | object | Caregiver data (id, name, email, phone, avatar, addresses)                    |
+| `totalPrice`  | string | Total caregiver fees (formatted with thousand separators)                     |
+| `commission`  | string | 6% commission (formatted with thousand separators)                            |
+| `totalOwner`  | string | Total price + commission (formatted with thousand separators)                 |
+| `distance`    | number | Calculated distance in km (if maxDistance was specified)                      |
+| `daysCount`   | number | Total number of days for the care period (including both start and end dates) |
+| `careDetails` | object | Calculation details (visitsCount, pricePerVisit)                              |
 
 ### Price Formatting
 
@@ -208,7 +208,7 @@ totalPrice = pricePerDay × daysCount
 
 ```
 commission = totalPrice × 0.06
-totalWithCommission = totalPrice + commission
+totalOwner = totalPrice + commission
 ```
 
 #### Day Calculation
