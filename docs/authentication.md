@@ -1,16 +1,18 @@
-# Authentication Routes
+# Authentication API Documentation
 
-## POST `/auth/register`
+## Endpoints
+
+### POST /auth/register
 Register a new user.
 
-**Body:**
+**Request Body:**
 ```json
 {
-  "firstName": "John",
-  "lastName": "Doe",
-  "email": "john@example.com",
-  "password": "123456",
-  "phoneNumber": "+1234567890"
+  "firstName": "string",
+  "lastName": "string", 
+  "email": "string",
+  "password": "string",
+  "phoneNumber": "string"
 }
 ```
 
@@ -18,29 +20,31 @@ Register a new user.
 ```json
 {
   "success": true,
-  "message": "User registered successfully",
+  "message": "Usuario registrado exitosamente",
   "data": {
     "user": {
-      "_id": "...",
-      "firstName": "John",
-      "lastName": "Doe",
-      "email": "john@example.com",
-      "phoneNumber": "+1234567890",
-      "createdAt": "2024-01-01T00:00:00.000Z",
-      "updatedAt": "2024-01-01T00:00:00.000Z"
+      "id": "string",
+      "firstName": "string",
+      "lastName": "string",
+      "email": "string",
+      "phoneNumber": "string",
+      "role": {
+        "id": "string",
+        "name": "string"
+      }
     }
   }
 }
 ```
 
-## POST `/auth/login`
-User login.
+### POST /auth/login
+Login with email and password.
 
-**Body:**
+**Request Body:**
 ```json
 {
-  "email": "john@example.com",
-  "password": "123456"
+  "email": "string",
+  "password": "string"
 }
 ```
 
@@ -48,15 +52,103 @@ User login.
 ```json
 {
   "success": true,
-  "message": "Login successful",
+  "message": "Login exitoso",
   "data": {
     "user": {
-      "_id": "...",
-      "firstName": "John",
-      "lastName": "Doe",
-      "email": "john@example.com"
+      "id": "string",
+      "firstName": "string",
+      "lastName": "string",
+      "email": "string",
+      "phoneNumber": "string",
+      "role": {
+        "id": "string",
+        "name": "string"
+      }
     },
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    "token": "string"
   }
 }
-``` 
+```
+
+### GET /auth/me
+Get authenticated user profile.
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Perfil obtenido exitosamente",
+  "data": {
+    "user": {
+      "id": "string",
+      "firstName": "string",
+      "lastName": "string",
+      "email": "string",
+      "phoneNumber": "string",
+      "role": {
+        "id": "string",
+        "name": "string"
+      }
+    }
+  }
+}
+```
+
+### POST /auth/forgot-password
+Request password reset code via email.
+
+**Request Body:**
+```json
+{
+  "email": "string"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Si el email existe, recibirás un código de recuperación"
+}
+```
+
+**Notes:**
+- Always returns success message for security (doesn't reveal if email exists)
+- Sends a 6-digit code to the user's email
+- Code expires in 15 minutes
+- Previous unused codes for the same user are invalidated
+
+### POST /auth/reset-password
+Reset password using the code received via email.
+
+**Request Body:**
+```json
+{
+  "email": "string",
+  "code": "string",
+  "newPassword": "string"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Contraseña actualizada exitosamente"
+}
+```
+
+**Password Requirements:**
+- Minimum 6 characters
+- Must be different from current password
+
+**Notes:**
+- Code must be valid and not expired
+- Code can only be used once
+- New password must meet strength requirements
+
