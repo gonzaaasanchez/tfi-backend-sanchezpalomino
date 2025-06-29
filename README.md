@@ -5,6 +5,7 @@ Backend API developed with Node.js, TypeScript, Express and MongoDB.
 ## 🚀 Features
 
 - **JWT Authentication**: Complete registration and login system
+- **Password Recovery System**: Email-based password reset with Resend
 - **Centralized error handling**: Consistent error responses
 - **Permission middleware**: Structure ready for access control
 - **Data validation**: Automatic validations with Mongoose
@@ -17,12 +18,16 @@ Backend API developed with Node.js, TypeScript, Express and MongoDB.
 - **Audit Logging**: Track all changes in the system
 - **Pagination & Filtering**: Advanced search and pagination for all entities
 - **Image Management**: Pet avatars with proper content type handling
+- **Email System**: Professional email templates with HTML formatting
+- **Caregiver Search**: Advanced search functionality for pet caregivers
+- **Reservation System**: Complete booking and reservation management
 
 ## 📋 Prerequisites
 
 - Node.js (v16 or higher)
 - MongoDB (local or Atlas)
 - npm or yarn
+- Resend account (for email functionality)
 
 ## 🛠️ Installation
 
@@ -49,6 +54,13 @@ MONGODB_URI=mongodb://localhost:27017/tfi-backend
 JWT_SECRET=your-super-secure-secret-key
 JWT_EXPIRES_IN=24h
 NODE_ENV=development
+
+# Email Configuration (Resend)
+RESEND_API_KEY=your-resend-api-key
+FROM_EMAIL=onboarding@resend.dev
+
+# Optional: Custom domain (must be verified in Resend)
+# FROM_EMAIL=soporte@yourdomain.com
 ```
 
 4. **Run in development**
@@ -67,16 +79,20 @@ src/
 │   ├── Admin.ts         # Admin model
 │   ├── PetType.ts       # Pet type model
 │   ├── PetCharacteristic.ts # Pet characteristic model
-│   └── Pet.ts           # Pet model
+│   ├── Pet.ts           # Pet model
+│   ├── Reservation.ts   # Reservation model
+│   └── PasswordReset.ts # Password reset model
 ├── routes/              # Route controllers
-│   ├── auth.ts          # Authentication routes
+│   ├── auth.ts          # Authentication routes (including password reset)
 │   ├── users.ts         # User routes (including unified profile updates)
 │   ├── roles.ts         # Role routes
 │   ├── admins.ts        # Admin routes
 │   ├── logs.ts          # Audit logs routes
 │   ├── petTypes.ts      # Pet types routes
 │   ├── petCharacteristics.ts # Pet characteristics routes
-│   └── pets.ts          # Pet routes (user and admin services)
+│   ├── pets.ts          # Pet routes (user and admin services)
+│   ├── caregiverSearch.ts # Caregiver search routes
+│   └── reservations.ts  # Reservation routes
 ├── middleware/          # Middlewares
 │   ├── auth.ts          # JWT authentication
 │   ├── permissions.ts   # Permission control
@@ -87,7 +103,10 @@ src/
     ├── audit.ts         # Audit logging
     ├── auditLogger.ts   # Audit logger
     ├── changeDetector.ts # Change detection
-    └── response.ts      # Response helper
+    ├── response.ts      # Response helper
+    ├── email.ts         # Email functionality with Resend
+    ├── passwordReset.ts # Password reset utilities
+    └── userHelpers.ts   # User data helpers
 ```
 
 ## 📚 API Documentation
@@ -96,11 +115,14 @@ The complete API documentation is organized by service modules in the [`docs/`](
 
 - **[📖 Documentation Index](./docs/README.md)** - Overview and general information
 - **[📊 Data Models](./docs/models.md)** - Database schemas and relationships
-- **[🔐 Authentication](./docs/authentication.md)** - User registration and login
+- **[🔐 Authentication](./docs/authentication.md)** - User registration, login, and password reset
 - **[👥 Users](./docs/users.md)** - User profile and management
 - **[🐕 Pet Types](./docs/pet-types.md)** - Pet type management
 - **[🏷️ Pet Characteristics](./docs/pet-characteristics.md)** - Pet characteristic management
 - **[🐾 Pets](./docs/pets.md)** - Pet management and services
+- **[🔍 Caregiver Search](./docs/caregiver-search.md)** - Advanced search functionality
+- **[📅 Reservations](./docs/reservations.md)** - Booking and reservation system
+- **[📧 Email System](./docs/emails.md)** - Email functionality and configuration
 - **[👨‍💼 Admin Services](./docs/admin.md)** - Administrative functions
 
 ## 🛡️ Security
@@ -111,14 +133,26 @@ The complete API documentation is organized by service modules in the [`docs/`](
 - **CORS**: Configured to allow cross-origin requests
 - **Validation**: Automatic validations with Mongoose
 - **File upload**: Multer with file type and size validation
+- **Password Reset**: Secure token-based recovery with expiration
+- **Email Security**: Domain verification and rate limiting
 
 ## 📝 Available Scripts
 
 - `npm run dev`: Run server in development mode with hot reload
-- `npm test`: Run tests (pending implementation)
+- `npm run build`: Build the project for production
+- `npm run start`: Run the built project
+- `npm run updateAllRoles`: Update all roles and permissions
+- `npm run createUsers`: Create sample users
+- `npm run createPets`: Create sample pets
+- `npm run createPetCharacteristics`: Create pet characteristics
+- `npm run fillCareAddress`: Fill care address data
 
 ## 📝 Next Steps
 
+- [x] Implement password recovery system
+- [x] Add email functionality with Resend
+- [x] Implement caregiver search
+- [x] Add reservation system
 - [ ] Implement complete permission system
 - [ ] Add unit tests
 - [ ] Implement refresh tokens
