@@ -59,6 +59,10 @@ export interface IRole extends Document {
       update: boolean;
       admin: boolean;
     };
+    reviews: {
+      create: boolean;
+      read: boolean;
+    };
   };
   isSystem: boolean;
   createdAt: Date;
@@ -131,6 +135,10 @@ const RoleSchema = new Schema<IRole>(
         read: { type: Boolean, default: false },
         update: { type: Boolean, default: false },
         admin: { type: Boolean, default: false },
+      },
+      reviews: {
+        create: { type: Boolean, default: false },
+        read: { type: Boolean, default: false },
       },
     },
     isSystem: {

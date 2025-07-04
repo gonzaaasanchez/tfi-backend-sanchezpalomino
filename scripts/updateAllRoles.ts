@@ -38,6 +38,10 @@ const rolePermissions = {
       update: true,
       admin: true,
     },
+    reviews: {
+      create: true,
+      read: true,
+    },
   },
   // User: can only manage their own pets and view types/characteristics
   user: {
@@ -70,6 +74,10 @@ const rolePermissions = {
       read: true,
       update: true,
       admin: false,
+    },
+    reviews: {
+      create: true,
+      read: true,
     },
   },
 };
@@ -141,6 +149,7 @@ async function updateAllRoles() {
       role.permissions.pets = newPermissions.pets;
       role.permissions.caregiverSearch = newPermissions.caregiverSearch;
       role.permissions.reservations = newPermissions.reservations;
+      role.permissions.reviews = newPermissions.reviews;
 
       await role.save();
       updatedCount++;
