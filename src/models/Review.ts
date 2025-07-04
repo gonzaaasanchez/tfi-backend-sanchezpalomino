@@ -66,20 +66,17 @@ reviewSchema.pre('save', function (next) {
 // Static method to get average rating of a user as caregiver
 reviewSchema.statics.getAverageRatingAsCaregiver = async function (userId: string) {
   const result = await this.aggregate([
-    { 
-      $match: { 
-        reviewedUser: new mongoose.Types.ObjectId(userId),
-        // Join with reservations to check if the reviewed user was the caregiver
-        $lookup: {
-          from: 'reservations',
-          localField: 'reservation',
-          foreignField: '_id',
-          as: 'reservationData'
-        }
-      } 
+    {
+      $lookup: {
+        from: 'reservations',
+        localField: 'reservation',
+        foreignField: '_id',
+        as: 'reservationData'
+      }
     },
     {
       $match: {
+        reviewedUser: new mongoose.Types.ObjectId(userId),
         'reservationData.caregiver': new mongoose.Types.ObjectId(userId)
       }
     },
@@ -103,20 +100,17 @@ reviewSchema.statics.getAverageRatingAsCaregiver = async function (userId: strin
 // Static method to get average rating of a user as user (owner)
 reviewSchema.statics.getAverageRatingAsUser = async function (userId: string) {
   const result = await this.aggregate([
-    { 
-      $match: { 
-        reviewedUser: new mongoose.Types.ObjectId(userId),
-        // Join with reservations to check if the reviewed user was the user (owner)
-        $lookup: {
-          from: 'reservations',
-          localField: 'reservation',
-          foreignField: '_id',
-          as: 'reservationData'
-        }
-      } 
+    {
+      $lookup: {
+        from: 'reservations',
+        localField: 'reservation',
+        foreignField: '_id',
+        as: 'reservationData'
+      }
     },
     {
       $match: {
+        reviewedUser: new mongoose.Types.ObjectId(userId),
         'reservationData.user': new mongoose.Types.ObjectId(userId)
       }
     },
