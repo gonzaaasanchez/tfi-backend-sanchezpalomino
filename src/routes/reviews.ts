@@ -45,7 +45,7 @@ const createReview: RequestHandler = async (req, res, next) => {
     if (!isOwner && !isCaregiver) {
       ResponseHelper.forbidden(
         res,
-        'No tienes permisos para crear una review de esta reserva'
+        'No tienes permisos para crear una reseña de esta reserva'
       );
       return;
     }
@@ -54,7 +54,7 @@ const createReview: RequestHandler = async (req, res, next) => {
     if (reservation.status !== RESERVATION_STATUS.FINISHED) {
       ResponseHelper.validationError(
         res,
-        'Solo se pueden crear reviews para reservas finalizadas'
+        'Solo se pueden crear reseñas para reservas finalizadas'
       );
       return;
     }
@@ -72,7 +72,7 @@ const createReview: RequestHandler = async (req, res, next) => {
     if (existingReview) {
       ResponseHelper.validationError(
         res,
-        'Ya has creado una review para esta reserva'
+        'Ya has creado una reseña para esta reserva'
       );
       return;
     }
@@ -108,7 +108,7 @@ const createReview: RequestHandler = async (req, res, next) => {
       ]
     );
 
-    ResponseHelper.success(res, 'Review creada exitosamente', {
+    ResponseHelper.success(res, 'Reseña creada exitosamente', {
       review: {
         id: review._id,
         rating: review.rating,
@@ -142,7 +142,7 @@ const getReservationReviews: RequestHandler = async (req, res, next) => {
     if (!isOwner && !isCaregiver && !isAdmin) {
       ResponseHelper.forbidden(
         res,
-        'No tienes permisos para ver las reviews de esta reserva'
+        'No tienes permisos para ver las reseñas de esta reserva'
       );
       return;
     }
@@ -182,7 +182,7 @@ const getReservationReviews: RequestHandler = async (req, res, next) => {
       createdAt: review.createdAt,
     }));
 
-    ResponseHelper.success(res, 'Reviews obtenidas exitosamente', {
+    ResponseHelper.success(res, 'Reseñas obtenidas exitosamente', {
       reservation: {
         id: reservation._id,
         startDate: reservation.startDate,
@@ -224,7 +224,7 @@ const getUserReviews: RequestHandler = async (req, res, next) => {
     if (!isOwnProfile && !isAdmin) {
       ResponseHelper.forbidden(
         res,
-        'No tienes permisos para ver las reviews de este usuario'
+        'No tienes permisos para ver las reseñas de este usuario'
       );
       return;
     }
@@ -389,7 +389,7 @@ const getUserReviews: RequestHandler = async (req, res, next) => {
       responseData.reviews = { given: givenReviews, received: receivedReviews };
     }
 
-    ResponseHelper.success(res, 'Reviews obtenidas exitosamente', responseData);
+    ResponseHelper.success(res, 'Reseñas obtenidas exitosamente', responseData);
   } catch (error) {
     next(error);
   }
