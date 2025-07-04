@@ -3,6 +3,7 @@ import User from '../models/User';
 import { authMiddleware } from '../middleware/auth';
 import { permissionMiddleware } from '../middleware/permissions';
 import { ResponseHelper } from '../utils/response';
+import { addAverageReviewsToUser } from '../utils/userHelpers';
 import {
   formatCurrency,
   calculateDaysDifference,
@@ -22,6 +23,7 @@ interface SearchParams {
   userAddressId?: string;
   maxDistance?: number;
   maxPrice?: number;
+  reviewsFrom?: number; // Filter by minimum average rating as caregiver (1-5)
 }
 
 interface CaregiverSearchResult {
@@ -32,6 +34,12 @@ interface CaregiverSearchResult {
     email: string;
     phoneNumber?: string;
     avatar?: string;
+    reviews?: {
+      averageRatingAsUser: number;
+      totalReviewsAsUser: number;
+      averageRatingAsCaregiver: number;
+      totalReviewsAsCaregiver: number;
+    };
     addresses: any[];
     carerConfig?: any;
   };
@@ -59,6 +67,7 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
       userAddressId,
       maxDistance,
       maxPrice,
+      reviewsFrom,
     }: SearchParams = req.body;
 
     // Sorting parameters from query params
@@ -125,6 +134,15 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
         );
         return;
       }
+    }
+
+    // Validate reviewsFrom parameter
+    if (reviewsFrom !== undefined && (reviewsFrom < 1 || reviewsFrom > 5)) {
+      ResponseHelper.validationError(
+        res,
+        'El parámetro reviewsFrom debe estar entre 1 y 5'
+      );
+      return;
     }
 
     // Calculate number of days
@@ -223,15 +241,34 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
       const commission = totalPrice * 0.06;
       const totalOwner = totalPrice + commission;
 
+      // Prepare caregiver data for reviews
+      const caregiverData = {
+        id: (caregiver._id as any).toString(),
+        firstName: caregiver.firstName,
+        lastName: caregiver.lastName,
+        email: caregiver.email,
+        phoneNumber: caregiver.phoneNumber,
+        avatar: caregiver.avatar,
+      };
+
+      // Add reviews to caregiver
+      const caregiverWithReviews = await addAverageReviewsToUser(caregiverData);
+
+      // Filter by minimum average rating if specified
+      if (reviewsFrom !== undefined) {
+        const averageRatingAsCaregiver = caregiverWithReviews.reviews?.averageRatingAsCaregiver || 0;
+        const totalReviewsAsCaregiver = caregiverWithReviews.reviews?.totalReviewsAsCaregiver || 0;
+        
+        // Skip if average is below required AND has reviews (if no reviews, include anyway)
+        if (averageRatingAsCaregiver < reviewsFrom && totalReviewsAsCaregiver > 0) {
+          continue; // Skip this caregiver
+        }
+      }
+
       // Create result object
       const result: CaregiverSearchResult = {
         caregiver: {
-          id: (caregiver._id as any).toString(),
-          firstName: caregiver.firstName,
-          lastName: caregiver.lastName,
-          email: caregiver.email,
-          phoneNumber: caregiver.phoneNumber,
-          avatar: caregiver.avatar,
+          ...caregiverWithReviews,
           addresses: caregiver.addresses || [],
           carerConfig: caregiver.carerConfig,
         },
@@ -304,6 +341,7 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
         userAddressId,
         maxDistance,
         maxPrice,
+        reviewsFrom,
         daysCount,
       },
     });

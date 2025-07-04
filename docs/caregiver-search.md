@@ -48,7 +48,8 @@ Requires authentication via JWT token in the header `Authorization: Bearer <toke
   "visitsPerDay": 2,
   "userAddressId": "507f1f77bcf86cd799439013",
   "maxDistance": 10,
-  "maxPrice": 50000
+  "maxPrice": 50000,
+  "reviewsFrom": 4.5
 }
 ```
 
@@ -69,6 +70,7 @@ Requires authentication via JWT token in the header `Authorization: Bearer <toke
 | `userAddressId` | string | User's address ID        | Required for distance calculation   |
 | `maxDistance`   | number | Maximum distance in km   | Works for any care type             |
 | `maxPrice`      | number | Maximum price to pay     | Optional                            |
+| `reviewsFrom`   | number | Minimum average rating as caregiver (1-5) | Optional                            |
 
 ### Sorting Options
 
@@ -89,6 +91,20 @@ With order:
 - `{"sortBy": "distance", "sortOrder": "asc"}` → Closest first
 - `{"sortBy": "distance", "sortOrder": "desc"}` → Farthest first
 
+### Filtering by Reviews
+
+The `reviewsFrom` parameter allows filtering caregivers by their average rating as caregivers:
+
+- **`reviewsFrom: 4.5`**: Only caregivers with average rating ≥ 4.5 as caregivers
+- **`reviewsFrom: 3.0`**: Only caregivers with average rating ≥ 3.0 as caregivers
+- **Special case**: Caregivers with 0 total reviews are always included (new caregivers)
+
+**Examples:**
+
+- `{"reviewsFrom": 4.5}` → Only highly rated caregivers (≥4.5) or new caregivers
+- `{"reviewsFrom": 3.0}` → Only caregivers with good rating (≥3.0) or new caregivers
+- No `reviewsFrom` → All caregivers (no rating filter)
+
 ## Response
 
 ### Successful Response (200)
@@ -107,6 +123,12 @@ With order:
           "email": "maria@gonzalez.com",
           "phoneNumber": "+5434112345678",
           "avatar": "/api/users/507f1f77bcf86cd799439014/avatar",
+          "reviews": {
+            "averageRatingAsUser": 4.2,
+            "totalReviewsAsUser": 8,
+            "averageRatingAsCaregiver": 4.8,
+            "totalReviewsAsCaregiver": 25
+          },
           "addresses": [
             {
               "id": "507f1f77bcf86cd799439015",
@@ -147,6 +169,7 @@ With order:
       "userAddressId": "507f1f77bcf86cd799439013",
       "maxDistance": 10,
       "maxPrice": 50000,
+      "reviewsFrom": 4.5,
       "daysCount": 3
     }
   }
