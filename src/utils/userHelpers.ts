@@ -27,10 +27,12 @@ export const addAverageReviewsToUser = async (userData: any) => {
 
   const userWithReviews = {
     ...userData,
-    averageRatingAsUser: userReviewsAsUser.averageRating,
-    totalReviewsAsUser: userReviewsAsUser.totalReviews,
-    averageRatingAsCaregiver: userReviewsAsCaregiver.averageRating,
-    totalReviewsAsCaregiver: userReviewsAsCaregiver.totalReviews,
+    reviews: {
+      averageRatingAsUser: userReviewsAsUser.averageRating,
+      totalReviewsAsUser: userReviewsAsUser.totalReviews,
+      averageRatingAsCaregiver: userReviewsAsCaregiver.averageRating,
+      totalReviewsAsCaregiver: userReviewsAsCaregiver.totalReviews,
+    },
   };
 
   return userWithReviews;
