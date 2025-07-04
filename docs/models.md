@@ -370,6 +370,48 @@ This document describes all the data models used in the TFI Backend API.
 - **cancelled_owner**: Cancelled by the pet owner
 - **cancelled_caregiver**: Cancelled by the caregiver
 
+## ⭐ Review Model
+
+### Schema
+
+```typescript
+{
+  reservation: { type: mongoose.Schema.Types.ObjectId, ref: 'Reservation', required: true },
+  reviewer: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  reviewedUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  rating: { type: Number, required: true, min: 1, max: 5 },
+  comment: { type: String, maxlength: 500 }
+}
+```
+
+### Example Document
+
+```json
+{
+  "_id": "507f1f77bcf86cd799439030",
+  "reservation": "507f1f77bcf86cd799439020",
+  "reviewer": "507f1f77bcf86cd799439011",
+  "reviewedUser": "507f1f77bcf86cd799439021",
+  "rating": 5,
+  "comment": "Excelente servicio, muy responsable con mi mascota",
+  "createdAt": "2024-01-21T10:00:00.000Z",
+  "updatedAt": "2024-01-21T10:00:00.000Z"
+}
+```
+
+### Review Rules
+
+- **One review per user per reservation**: Each user (owner or caregiver) can only write one review per reservation
+- **Reservation must be finished**: Reviews can only be created for reservations with status "finished"
+- **Rating range**: Must be between 1 and 5 stars
+- **Comment optional**: Comments are optional but limited to 500 characters
+- **Self-review prevention**: A user cannot review themselves
+
+### Review Types
+
+- **Owner Review**: When the pet owner reviews the caregiver
+- **Caregiver Review**: When the caregiver reviews the pet owner
+
 ## 🔗 Relationships
 
 ### User ↔ Role
@@ -411,6 +453,21 @@ This document describes all the data models used in the TFI Backend API.
 
 - **Reservation** can have many **Pets** (array of pet IDs)
 - **Pet** can be part of many **Reservations**
+
+### Review ↔ Reservation
+
+- **Review** belongs to one **Reservation** (required)
+- **Reservation** can have up to two **Reviews** (one from owner, one from caregiver)
+
+### Review ↔ User (Reviewer)
+
+- **Review** has one **User** as reviewer (who writes the review)
+- **User** can write many **Reviews**
+
+### Review ↔ User (Reviewed)
+
+- **Review** has one **User** as reviewed (who receives the review)
+- **User** can receive many **Reviews**
 
 ## 📝 Notes
 

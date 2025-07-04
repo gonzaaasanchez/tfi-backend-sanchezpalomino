@@ -48,6 +48,13 @@ This directory contains the complete API documentation organized by service modu
 - Admin reservation management
 - Status tracking and updates
 
+### ⭐ [Reviews](./reviews.md)
+- Create reviews for completed reservations
+- Get reviews by reservation or user
+- Filter reviews by type (given/received)
+- Rating and comment management
+- Review statistics and summaries
+
 ### 👨‍💼 [Admin Services](./admin.md)
 - Role management
 - Admin user management
