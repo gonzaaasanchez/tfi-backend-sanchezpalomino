@@ -591,10 +591,3 @@ Get details of a specific reservation (admin only).
   "error": "FORBIDDEN"
 }
 ```
-
-## Permissions
-
-- `reservations:create` - Create reservations
-- `reservations:read` - View reservations
-- `reservations:update` - Accept/reject/cancel reservations
-- `reservations:getAll` - Admin access to all reservations

@@ -63,10 +63,26 @@ reviewSchema.pre('save', function (next) {
   next();
 });
 
-// Static method to get average rating of a user
-reviewSchema.statics.getAverageRating = async function (userId: string) {
+// Static method to get average rating of a user as caregiver
+reviewSchema.statics.getAverageRatingAsCaregiver = async function (userId: string) {
   const result = await this.aggregate([
-    { $match: { reviewedUser: new mongoose.Types.ObjectId(userId) } },
+    { 
+      $match: { 
+        reviewedUser: new mongoose.Types.ObjectId(userId),
+        // Join with reservations to check if the reviewed user was the caregiver
+        $lookup: {
+          from: 'reservations',
+          localField: 'reservation',
+          foreignField: '_id',
+          as: 'reservationData'
+        }
+      } 
+    },
+    {
+      $match: {
+        'reservationData.caregiver': new mongoose.Types.ObjectId(userId)
+      }
+    },
     {
       $group: {
         _id: null,
@@ -78,7 +94,44 @@ reviewSchema.statics.getAverageRating = async function (userId: string) {
 
   return result.length > 0
     ? {
-        averageRating: Math.round(result[0].averageRating * 10) / 10, // Round to 1 decimal
+        averageRating: Math.round(result[0].averageRating * 10) / 10,
+        totalReviews: result[0].totalReviews,
+      }
+    : { averageRating: 0, totalReviews: 0 };
+};
+
+// Static method to get average rating of a user as user (owner)
+reviewSchema.statics.getAverageRatingAsUser = async function (userId: string) {
+  const result = await this.aggregate([
+    { 
+      $match: { 
+        reviewedUser: new mongoose.Types.ObjectId(userId),
+        // Join with reservations to check if the reviewed user was the user (owner)
+        $lookup: {
+          from: 'reservations',
+          localField: 'reservation',
+          foreignField: '_id',
+          as: 'reservationData'
+        }
+      } 
+    },
+    {
+      $match: {
+        'reservationData.user': new mongoose.Types.ObjectId(userId)
+      }
+    },
+    {
+      $group: {
+        _id: null,
+        averageRating: { $avg: '$rating' },
+        totalReviews: { $sum: 1 },
+      },
+    },
+  ]);
+
+  return result.length > 0
+    ? {
+        averageRating: Math.round(result[0].averageRating * 10) / 10,
         totalReviews: result[0].totalReviews,
       }
     : { averageRating: 0, totalReviews: 0 };

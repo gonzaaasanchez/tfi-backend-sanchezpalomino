@@ -7,6 +7,7 @@ import { permissionMiddleware } from '../middleware/permissions';
 import { ResponseHelper } from '../utils/response';
 import { logChanges } from '../utils/audit';
 import { formatCurrency, calculateDaysDifference } from '../utils/common';
+import { addAverageReviewsToUser } from '../utils/userHelpers';
 import {
   AddressWithId,
   CareLocation,
@@ -325,13 +326,13 @@ const getUserReservations: RequestHandler = async (req, res, next) => {
         populate: [
           {
             path: 'petType',
-            select: 'name'
+            select: 'name',
           },
           {
             path: 'characteristics.characteristic',
-            select: 'name'
-          }
-        ]
+            select: 'name',
+          },
+        ],
       })
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
@@ -339,69 +340,85 @@ const getUserReservations: RequestHandler = async (req, res, next) => {
 
     const total = await Reservation.countDocuments(filters);
 
-    const formattedReservations = reservations.map((reservation) => {
-      // Determine if current user is owner or caregiver
-      const isOwner = reservation.user._id.toString() === req.user?._id?.toString();
-      const isCaregiver = reservation.caregiver._id.toString() === req.user?._id?.toString();
-      
-      // Calculate the appropriate total based on user role
-      let totalField = {};
-      if (isOwner) {
-        totalField = { totalOwner: formatCurrency(reservation.totalOwner) };
-      } else if (isCaregiver) {
-        totalField = { totalCaregiver: formatCurrency(reservation.totalCaregiver) };
-      } else {
-        // For admin or other cases, show both
-        totalField = { 
-          totalOwner: formatCurrency(reservation.totalOwner),
-          totalCaregiver: formatCurrency(reservation.totalCaregiver)
-        };
-      }
+    const formattedReservations = await Promise.all(
+      reservations.map(async (reservation) => {
+        // Determine if current user is owner or caregiver
+        const isOwner =
+          reservation.user._id.toString() === req.user?._id?.toString();
+        const isCaregiver =
+          reservation.caregiver._id.toString() === req.user?._id?.toString();
 
-      return {
-        id: reservation._id,
-        startDate: reservation.startDate,
-        endDate: reservation.endDate,
-        careLocation: reservation.careLocation,
-        address: reservation.address,
-        user: {
+        // Calculate the appropriate total based on user role
+        let totalField = {};
+        if (isOwner) {
+          totalField = { totalOwner: formatCurrency(reservation.totalOwner) };
+        } else if (isCaregiver) {
+          totalField = {
+            totalCaregiver: formatCurrency(reservation.totalCaregiver),
+          };
+        } else {
+          // For admin or other cases, show both
+          totalField = {
+            totalOwner: formatCurrency(reservation.totalOwner),
+            totalCaregiver: formatCurrency(reservation.totalCaregiver),
+          };
+        }
+
+        // Prepare user and caregiver data
+        const userData = {
           id: (reservation.user as any)._id,
           firstName: (reservation.user as any).firstName,
           lastName: (reservation.user as any).lastName,
           email: (reservation.user as any).email,
           avatar: (reservation.user as any).avatar,
           phoneNumber: (reservation.user as any).phoneNumber,
-        },
-        caregiver: {
+        };
+
+        const caregiverData = {
           id: (reservation.caregiver as any)._id,
           firstName: (reservation.caregiver as any).firstName,
           lastName: (reservation.caregiver as any).lastName,
           email: (reservation.caregiver as any).email,
           avatar: (reservation.caregiver as any).avatar,
           phoneNumber: (reservation.caregiver as any).phoneNumber,
-        },
-        pets: reservation.pets.map((pet: any) => ({
-          id: pet._id,
-          name: pet.name,
-          petType: pet.petType,
-          characteristics: pet.characteristics.map((char: any) => ({
-            id: char.characteristic._id,
-            name: char.characteristic.name,
-            value: char.value,
+        };
+
+        // Add average reviews to users
+        const userWithReviews = await addAverageReviewsToUser(userData);
+        const caregiverWithReviews =
+          await addAverageReviewsToUser(caregiverData);
+
+        return {
+          id: reservation._id,
+          startDate: reservation.startDate,
+          endDate: reservation.endDate,
+          careLocation: reservation.careLocation,
+          address: reservation.address,
+          user: userWithReviews,
+          caregiver: caregiverWithReviews,
+          pets: reservation.pets.map((pet: any) => ({
+            id: pet._id,
+            name: pet.name,
+            petType: pet.petType,
+            characteristics: pet.characteristics.map((char: any) => ({
+              id: char.characteristic._id,
+              name: char.characteristic.name,
+              value: char.value,
+            })),
+            comment: pet.comment,
+            avatar: pet.avatar,
           })),
-          comment: pet.comment,
-          avatar: pet.avatar,
-        })),
-        visitsCount: reservation.visitsCount,
-        totalPrice: formatCurrency(reservation.totalPrice),
-        commission: formatCurrency(reservation.commission),
-        ...totalField,
-        distance: reservation.distance,
-        status: reservation.status,
-        createdAt: reservation.createdAt,
-        updatedAt: reservation.updatedAt,
-      };
-    });
+          visitsCount: reservation.visitsCount,
+          totalPrice: formatCurrency(reservation.totalPrice),
+          commission: formatCurrency(reservation.commission),
+          ...totalField,
+          distance: reservation.distance,
+          status: reservation.status,
+          createdAt: reservation.createdAt,
+          updatedAt: reservation.updatedAt,
+        };
+      })
+    );
 
     ResponseHelper.success(res, 'Reservas obtenidas exitosamente', {
       items: formattedReservations,
@@ -433,13 +450,13 @@ const getReservation: RequestHandler = async (req, res, next) => {
         populate: [
           {
             path: 'petType',
-            select: 'name'
+            select: 'name',
           },
           {
             path: 'characteristics.characteristic',
-            select: 'name'
-          }
-        ]
+            select: 'name',
+          },
+        ],
       });
 
     if (!reservation) {
@@ -464,14 +481,37 @@ const getReservation: RequestHandler = async (req, res, next) => {
     if (isOwner) {
       totalField = { totalOwner: formatCurrency(reservation.totalOwner) };
     } else if (isCaregiver) {
-      totalField = { totalCaregiver: formatCurrency(reservation.totalCaregiver) };
+      totalField = {
+        totalCaregiver: formatCurrency(reservation.totalCaregiver),
+      };
     } else {
       // For admin, show both
-      totalField = { 
+      totalField = {
         totalOwner: formatCurrency(reservation.totalOwner),
-        totalCaregiver: formatCurrency(reservation.totalCaregiver)
+        totalCaregiver: formatCurrency(reservation.totalCaregiver),
       };
     }
+
+    // Prepare user and caregiver data
+    const userData = {
+      id: (reservation.user as any)._id,
+      firstName: (reservation.user as any).firstName,
+      lastName: (reservation.user as any).lastName,
+      email: (reservation.user as any).email,
+      phoneNumber: (reservation.user as any).phoneNumber,
+    };
+
+    const caregiverData = {
+      id: (reservation.caregiver as any)._id,
+      firstName: (reservation.caregiver as any).firstName,
+      lastName: (reservation.caregiver as any).lastName,
+      email: (reservation.caregiver as any).email,
+      phoneNumber: (reservation.caregiver as any).phoneNumber,
+    };
+
+    // Add average reviews to users
+    const userWithReviews = await addAverageReviewsToUser(userData);
+    const caregiverWithReviews = await addAverageReviewsToUser(caregiverData);
 
     ResponseHelper.success(res, 'Reserva obtenida exitosamente', {
       reservation: {
@@ -480,20 +520,8 @@ const getReservation: RequestHandler = async (req, res, next) => {
         endDate: reservation.endDate,
         careLocation: reservation.careLocation,
         address: reservation.address,
-        user: {
-          id: (reservation.user as any)._id,
-          firstName: (reservation.user as any).firstName,
-          lastName: (reservation.user as any).lastName,
-          email: (reservation.user as any).email,
-          phoneNumber: (reservation.user as any).phoneNumber,
-        },
-        caregiver: {
-          id: (reservation.caregiver as any)._id,
-          firstName: (reservation.caregiver as any).firstName,
-          lastName: (reservation.caregiver as any).lastName,
-          email: (reservation.caregiver as any).email,
-          phoneNumber: (reservation.caregiver as any).phoneNumber,
-        },
+        user: userWithReviews,
+        caregiver: caregiverWithReviews,
         pets: reservation.pets.map((pet: any) => ({
           id: pet._id,
           name: pet.name,
@@ -755,13 +783,13 @@ const getAllReservations: RequestHandler = async (req, res, next) => {
         populate: [
           {
             path: 'petType',
-            select: 'name'
+            select: 'name',
           },
           {
             path: 'characteristics.characteristic',
-            select: 'name'
-          }
-        ]
+            select: 'name',
+          },
+        ],
       })
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
@@ -844,13 +872,13 @@ const getReservationAdmin: RequestHandler = async (req, res, next) => {
         populate: [
           {
             path: 'petType',
-            select: 'name'
+            select: 'name',
           },
           {
             path: 'characteristics.characteristic',
-            select: 'name'
-          }
-        ]
+            select: 'name',
+          },
+        ],
       });
 
     if (!reservation) {

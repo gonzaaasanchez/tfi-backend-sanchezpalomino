@@ -40,6 +40,12 @@ This document describes all the data models used in the TFI Backend API.
 }
 ```
 
+**Optional fields in API responses (not stored in database):**
+- `averageRatingAsUser`: Average rating as user (1-5, rounded to 1 decimal) - only present in certain contexts
+- `totalReviewsAsUser`: Total number of reviews received as user - only present in certain contexts
+- `averageRatingAsCaregiver`: Average rating as caregiver (1-5, rounded to 1 decimal) - only present in certain contexts
+- `totalReviewsAsCaregiver`: Total number of reviews received as caregiver - only present in certain contexts
+
 ### Example Document
 
 ```json
