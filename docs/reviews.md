@@ -111,7 +111,7 @@ Authorization: Bearer <jwt_token>
 
 ### GET /reservations/:id/reviews
 
-Get all reviews for a specific reservation.
+Get reviews for a specific reservation. Returns both owner and caregiver reviews in a combined object.
 
 #### Request
 
@@ -129,15 +129,15 @@ Authorization: Bearer <jwt_token>
 ```json
 {
   "success": true,
-  "message": "Reviews obtenidas exitosamente",
+  "message": "Reseñas obtenidas exitosamente",
   "data": {
     "reservation": {
       "id": "507f1f77bcf86cd799439020",
       "startDate": "2024-01-15T00:00:00.000Z",
       "endDate": "2024-01-20T00:00:00.000Z"
     },
-    "reviews": [
-      {
+    "reviews": {
+      "owner": {
         "id": "507f1f77bcf86cd799439030",
         "reviewer": {
           "id": "507f1f77bcf86cd799439011",
@@ -156,11 +156,57 @@ Authorization: Bearer <jwt_token>
         "rating": 5,
         "comment": "Excelente servicio, muy responsable",
         "createdAt": "2024-01-21T10:00:00.000Z"
+      },
+      "caregiver": {
+        "id": "507f1f77bcf86cd799439031",
+        "reviewer": {
+          "id": "507f1f77bcf86cd799439021",
+          "firstName": "María",
+          "lastName": "García",
+          "email": "maria@example.com",
+          "avatar": "avatar_url"
+        },
+        "reviewedUser": {
+          "id": "507f1f77bcf86cd799439011",
+          "firstName": "Juan",
+          "lastName": "Pérez",
+          "email": "juan@example.com",
+          "avatar": "avatar_url"
+        },
+        "rating": 4,
+        "comment": "Muy buen dueño, mascota bien cuidada",
+        "createdAt": "2024-01-22T10:00:00.000Z"
       }
-    ],
+    },
     "summary": {
       "hasOwnerReview": true,
-      "hasCaregiverReview": false
+      "hasCaregiverReview": true
+    }
+  }
+}
+```
+
+**Example with missing reviews:**
+```json
+{
+  "success": true,
+  "message": "Reseñas obtenidas exitosamente",
+  "data": {
+    "reservation": { ... },
+    "reviews": {
+      "owner": null,
+      "caregiver": {
+        "id": "507f1f77bcf86cd799439031",
+        "reviewer": { ... },
+        "reviewedUser": { ... },
+        "rating": 4,
+        "comment": "Muy buen dueño",
+        "createdAt": "2024-01-22T10:00:00.000Z"
+      }
+    },
+    "summary": {
+      "hasOwnerReview": false,
+      "hasCaregiverReview": true
     }
   }
 }
@@ -170,7 +216,7 @@ Authorization: Bearer <jwt_token>
 ```json
 {
   "success": false,
-  "message": "No tienes permisos para ver las reviews de esta reserva"
+  "message": "No tienes permisos para ver las reseñas de esta reserva"
 }
 ```
 
@@ -178,6 +224,9 @@ Authorization: Bearer <jwt_token>
 
 - User must be the owner, caregiver, or admin of the reservation
 - Maximum 2 reviews per reservation (one from owner, one from caregiver)
+- Reviews are returned as separate objects: `owner` and `caregiver`
+- If a review doesn't exist, the corresponding field will be `null`
+- Each user can only write one review per reservation
 
 ---
 

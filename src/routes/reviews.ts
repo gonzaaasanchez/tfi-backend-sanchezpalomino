@@ -1,5 +1,5 @@
 import { Router, RequestHandler } from 'express';
-import Review, { IReview } from '../models/Review';
+import Review from '../models/Review';
 import Reservation from '../models/Reservation';
 import User from '../models/User';
 import { authMiddleware } from '../middleware/auth';
@@ -161,7 +161,15 @@ const getReservationReviews: RequestHandler = async (req, res, next) => {
       (review) => review.reviewer.toString() === reservation.caregiver.toString()
     );
 
-    const formattedReviews = reviews.map((review) => ({
+    // Separate reviews by type (owner and caregiver)
+    const ownerReview = reviews.find(
+      (review) => review.reviewer.toString() === reservation.user.toString()
+    );
+    const caregiverReview = reviews.find(
+      (review) => review.reviewer.toString() === reservation.caregiver.toString()
+    );
+
+    const formatReview = (review: any) => ({
       id: review._id,
       reviewer: {
         id: (review.reviewer as any)._id,
@@ -180,7 +188,12 @@ const getReservationReviews: RequestHandler = async (req, res, next) => {
       rating: review.rating,
       comment: review.comment,
       createdAt: review.createdAt,
-    }));
+    });
+
+    const combinedReviews = {
+      owner: ownerReview ? formatReview(ownerReview) : null,
+      caregiver: caregiverReview ? formatReview(caregiverReview) : null,
+    };
 
     ResponseHelper.success(res, 'Reseñas obtenidas exitosamente', {
       reservation: {
@@ -188,7 +201,7 @@ const getReservationReviews: RequestHandler = async (req, res, next) => {
         startDate: reservation.startDate,
         endDate: reservation.endDate,
       },
-      reviews: formattedReviews,
+      reviews: combinedReviews,
       summary: {
         hasOwnerReview,
         hasCaregiverReview,
