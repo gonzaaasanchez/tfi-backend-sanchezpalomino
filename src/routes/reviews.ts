@@ -1,4 +1,5 @@
 import { Router, RequestHandler } from 'express';
+import mongoose from 'mongoose';
 import Review from '../models/Review';
 import Reservation from '../models/Reservation';
 import User from '../models/User';
@@ -125,7 +126,7 @@ const createReview: RequestHandler = async (req, res, next) => {
 const getReservationReviews: RequestHandler = async (req, res, next) => {
   try {
     const { id: reservationId } = req.params;
-
+    
     // Find reservation and validate it exists
     const reservation = await Reservation.findById(reservationId);
     if (!reservation) {
@@ -155,18 +156,18 @@ const getReservationReviews: RequestHandler = async (req, res, next) => {
 
     // Check if owner and caregiver have reviewed
     const hasOwnerReview = reviews.some(
-      (review) => review.reviewer.toString() === reservation.user.toString()
+      (review) => (review.reviewer as any)._id?.toString() === reservation.user.toString() || review.reviewer.toString() === reservation.user.toString()
     );
     const hasCaregiverReview = reviews.some(
-      (review) => review.reviewer.toString() === reservation.caregiver.toString()
+      (review) => (review.reviewer as any)._id?.toString() === reservation.caregiver.toString() || review.reviewer.toString() === reservation.caregiver.toString()
     );
 
     // Separate reviews by type (owner and caregiver)
     const ownerReview = reviews.find(
-      (review) => review.reviewer.toString() === reservation.user.toString()
+      (review) => (review.reviewer as any)._id?.toString() === reservation.user.toString() || review.reviewer.toString() === reservation.user.toString()
     );
     const caregiverReview = reviews.find(
-      (review) => review.reviewer.toString() === reservation.caregiver.toString()
+      (review) => (review.reviewer as any)._id?.toString() === reservation.caregiver.toString() || review.reviewer.toString() === reservation.caregiver.toString()
     );
 
     const formatReview = (review: any) => ({
