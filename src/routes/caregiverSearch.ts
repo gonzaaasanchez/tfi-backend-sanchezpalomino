@@ -169,15 +169,13 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
       filters['carerConfig.petTypes'] = { $in: petTypeIds };
     }
 
-    // Get caregivers that meet basic criteria
-    const caregivers = await User.find(filters)
-      .populate('carerConfig.petTypes', 'name')
-      .skip((page - 1) * limit)
-      .limit(limit);
+    // Get ALL caregivers that meet basic criteria (no pagination yet)
+    const allCaregivers = await User.find(filters)
+      .populate('carerConfig.petTypes', 'name');
 
-    const results: CaregiverSearchResult[] = [];
+    const allResults: CaregiverSearchResult[] = [];
 
-    for (const caregiver of caregivers) {
+    for (const caregiver of allCaregivers) {
       // Calculate price based on care type
       let totalPrice = 0;
       let pricePerDay: number | undefined;
@@ -286,11 +284,11 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
         },
       };
 
-      results.push(result);
+      allResults.push(result);
     }
 
-    // Sort results according to sorting parameters
-    results.sort((a, b) => {
+    // Sort ALL results according to sorting parameters
+    allResults.sort((a, b) => {
       const sortField = sortBy;
       const order = sortOrder;
 
@@ -319,8 +317,13 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
       }
     });
 
-    // Get total for pagination
-    const totalCaregivers = await User.countDocuments(filters);
+    // Apply pagination to sorted results
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const results = allResults.slice(startIndex, endIndex);
+
+    // Get total for pagination (use actual filtered results count)
+    const totalCaregivers = allResults.length;
 
     ResponseHelper.success(res, 'Búsqueda completada exitosamente', {
       items: results,
