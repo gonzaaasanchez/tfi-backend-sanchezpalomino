@@ -1,8 +1,10 @@
 import { Router, RequestHandler } from 'express';
-import mongoose from 'mongoose';
+
 import { authMiddleware } from '../middleware/auth';
 import { permissionMiddleware } from '../middleware/permissions';
 import { ResponseHelper } from '../utils/response';
+// Import audit functions to ensure log models are registered
+import { getEntityLogs as getAuditEntityLogs } from '../utils/auditLogger';
 
 const router = Router();
 
@@ -11,20 +13,20 @@ const getEntityLogs: RequestHandler = async (req, res, next) => {
   try {
     const { entityType, entityId } = req.params;
 
-    // Get log model
-    const LogModel = mongoose.model(`${entityType}Log`);
+    // Use the audit logger function to get logs (this ensures models are registered)
+    const logs = await getAuditEntityLogs(entityType, { entityId });
 
-    const logs = await LogModel.find({ entityId })
-      .sort({ timestamp: -1 })
-      .lean();
-
-    ResponseHelper.success(res, 'Logs obtenidos exitosamente', 
-      logs.map((log) => ({
+    ResponseHelper.success(
+      res,
+      'Logs obtenidos exitosamente',
+      logs.logs.map((log) => ({
         id: log._id,
         entityId: log.entityId,
         userId: log.userId,
         userName: log.userName,
-        changes: log.changes,
+        field: log.field,
+        oldValue: log.oldValue,
+        newValue: log.newValue,
         timestamp: log.timestamp,
       }))
     );
@@ -39,21 +41,20 @@ const getAllEntityLogs: RequestHandler = async (req, res, next) => {
     const { entityType } = req.params;
     const limit = parseInt(req.query.limit as string) || 50;
 
-    // Get log model
-    const LogModel = mongoose.model(`${entityType}Log`);
+    // Use the audit logger function to get logs (this ensures models are registered)
+    const logs = await getAuditEntityLogs(entityType, { limit });
 
-    const logs = await LogModel.find()
-      .sort({ timestamp: -1 })
-      .limit(limit)
-      .lean();
-
-    ResponseHelper.success(res, 'Logs obtenidos exitosamente', 
-      logs.map((log) => ({
+    ResponseHelper.success(
+      res,
+      'Logs obtenidos exitosamente',
+      logs.logs.map((log) => ({
         id: log._id,
         entityId: log.entityId,
         userId: log.userId,
         userName: log.userName,
-        changes: log.changes,
+        field: log.field,
+        oldValue: log.oldValue,
+        newValue: log.newValue,
         timestamp: log.timestamp,
       }))
     );
