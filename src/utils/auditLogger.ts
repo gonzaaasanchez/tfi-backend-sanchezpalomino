@@ -58,18 +58,18 @@ function getLogModel(entityName: string): mongoose.Model<IAuditLog> {
 /**
  * Logs a change in the database
  * @param entityName - Entity name
+ * @param entityId - ID of the modified entity
  * @param userId - ID of the user who made the change
  * @param userName - User name
- * @param entityId - ID of the modified entity
  * @param field - Field that was modified
  * @param oldValue - Previous value
  * @param newValue - New value
  */
 export async function logChange(
   entityName: string,
+  entityId: string,
   userId: string,
   userName: string,
-  entityId: string,
   field: string,
   oldValue: any,
   newValue: any
@@ -95,16 +95,16 @@ export async function logChange(
 /**
  * Logs multiple changes at once
  * @param entityName - Entity name
+ * @param entityId - ID of the modified entity
  * @param userId - ID of the user who made the change
  * @param userName - User name
- * @param entityId - ID of the modified entity
  * @param changes - Array of changes [{field, oldValue, newValue}]
  */
 export async function logChanges(
   entityName: string,
+  entityId: string,
   userId: string,
   userName: string,
-  entityId: string,
   changes: Array<{ field: string; oldValue: any; newValue: any }>
 ): Promise<void> {
   try {
