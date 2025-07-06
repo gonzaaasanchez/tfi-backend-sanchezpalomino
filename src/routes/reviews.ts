@@ -6,7 +6,8 @@ import User from '../models/User';
 import { authMiddleware } from '../middleware/auth';
 import { permissionMiddleware } from '../middleware/permissions';
 import { ResponseHelper } from '../utils/response';
-import { logChanges } from '../utils/audit';
+import { logChanges } from '../utils/auditLogger';
+import { getChanges } from '../utils/changeDetector';
 import { RESERVATION_STATUS } from '../types';
 
 const router = Router();

@@ -4,7 +4,7 @@ import Role from '../models/Role';
 import { hashPassword, verifyPassword, generateToken } from '../utils/auth';
 import { authMiddleware } from '../middleware/auth';
 import { permissionMiddleware } from '../middleware/permissions';
-import { logChanges } from '../utils/audit';
+import { logChanges } from '../utils/auditLogger';
 import { getChanges } from '../utils/changeDetector';
 import { ResponseHelper } from '../utils/response';
 

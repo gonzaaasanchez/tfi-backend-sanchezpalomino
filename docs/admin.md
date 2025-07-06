@@ -141,4 +141,34 @@ Authorization: Bearer <token>
     }
   }
 }
-``` 
+```
+
+## 🔧 **Audit System**
+
+The audit system uses `auditLogger.ts` to record all database changes. Each entity has its own log collection:
+
+- **Users**: `userlogs`
+- **Admins**: `adminlogs`
+- **Roles**: `rolelogs`
+- **Pets**: `petlogs`
+- **Pet Types**: `pettypelogs`
+- **Pet Characteristics**: `petcharacteristiclogs`
+- **Reservations**: `reservationlogs`
+- **Reviews**: `reviewlogs`
+
+### 📊 **Log Structure**
+
+Each log entry contains:
+- `userId`: ID of the user who made the change
+- `userName`: Full name of the user
+- `entityId`: ID of the modified entity
+- `field`: Field that changed
+- `oldValue`: Previous value
+- `newValue`: New value
+- `timestamp`: Date and time of the change
+
+### 🛡️ **Security**
+
+- Logs are **immutable** - they cannot be modified
+- Only users with `logs.read` and `logs.getAll` permissions can access
+- Superadmin have automatic full access 

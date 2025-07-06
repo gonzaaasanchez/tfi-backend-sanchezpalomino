@@ -4,7 +4,7 @@ import Role from '../models/Role';
 import PasswordReset from '../models/PasswordReset';
 import { hashPassword, verifyPassword, generateToken } from '../utils/auth';
 import { authMiddleware } from '../middleware/auth';
-import { logChanges } from '../utils/audit';
+import { logChanges } from '../utils/auditLogger';
 import { ResponseHelper } from '../utils/response';
 import { addCareAddressData } from '../utils/userHelpers';
 import { sendEmail, generatePasswordResetEmail } from '../utils/email';

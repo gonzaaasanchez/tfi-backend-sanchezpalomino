@@ -2,7 +2,7 @@ import { Router, RequestHandler } from 'express';
 import User from '../models/User';
 import { authMiddleware } from '../middleware/auth';
 import { permissionMiddleware } from '../middleware/permissions';
-import { logChanges } from '../utils/audit';
+import { logChanges } from '../utils/auditLogger';
 import { getChanges } from '../utils/changeDetector';
 import { uploadImage, handleUploadError } from '../middleware/upload';
 import { ResponseHelper } from '../utils/response';

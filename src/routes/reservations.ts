@@ -5,7 +5,8 @@ import Pet from '../models/Pet';
 import { authMiddleware } from '../middleware/auth';
 import { permissionMiddleware } from '../middleware/permissions';
 import { ResponseHelper } from '../utils/response';
-import { logChanges } from '../utils/audit';
+import { logChanges } from '../utils/auditLogger';
+import { getChanges } from '../utils/changeDetector';
 import { formatCurrency, calculateDaysDifference } from '../utils/common';
 import { addAverageReviewsToUser } from '../utils/userHelpers';
 import {
