@@ -2,7 +2,7 @@ import { Router, RequestHandler } from 'express';
 import PetType from '../models/PetType';
 import { authMiddleware } from '../middleware/auth';
 import { permissionMiddleware } from '../middleware/permissions';
-import { logChanges } from '../utils/audit';
+import { logChanges } from '../utils/auditLogger';
 import { getChanges } from '../utils/changeDetector';
 import { ResponseHelper } from '../utils/response';
 
