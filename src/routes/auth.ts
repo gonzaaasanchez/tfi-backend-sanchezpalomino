@@ -60,6 +60,12 @@ const register: RequestHandler = async (req, res, next) => {
     // Populate role for response
     await user.populate('role');
 
+    // Generate token for immediate authentication
+    const token = generateToken({
+      userId: user._id?.toString() || '',
+      email: user.email,
+    });
+
     // Creation log
     logChanges('User', user._id?.toString() || '', 'system', 'Sistema', [
       { field: 'firstName', oldValue: null, newValue: firstName },
@@ -73,6 +79,7 @@ const register: RequestHandler = async (req, res, next) => {
       'Usuario registrado exitosamente',
       {
         user: user.toJSON(),
+        token,
       },
       201
     );
