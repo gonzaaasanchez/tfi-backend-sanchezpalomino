@@ -1,5 +1,78 @@
 # Admin Routes
 
+## Admin Authentication
+
+### POST `/admins/login`
+Login for administrators.
+
+**Request Body:**
+```json
+{
+  "email": "string",
+  "password": "string"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Login exitoso",
+  "data": {
+    "admin": {
+      "id": "string",
+      "firstName": "string",
+      "lastName": "string",
+      "email": "string",
+      "role": {
+        "id": "string",
+        "name": "string",
+        "permissions": {}
+      },
+      "createdAt": "string",
+      "updatedAt": "string"
+    },
+    "token": "string"
+  }
+}
+```
+
+**Notes:**
+- Uses separate authentication from regular users
+- Token includes `type: 'admin'` for admin-specific middleware
+- Only admins can access admin endpoints
+
+### GET `/admins/me`
+Get authenticated admin profile.
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Perfil obtenido exitosamente",
+  "data": {
+    "admin": {
+      "id": "string",
+      "firstName": "string",
+      "lastName": "string",
+      "email": "string",
+      "role": {
+        "id": "string",
+        "name": "string",
+        "permissions": {}
+      },
+      "createdAt": "string",
+      "updatedAt": "string"
+    }
+  }
+}
+```
+
 ## Roles Management
 
 ### GET `/roles`

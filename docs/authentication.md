@@ -1,6 +1,15 @@
 # Authentication API Documentation
 
-## Endpoints
+## Overview
+
+This API has **two separate authentication systems**:
+
+1. **User Authentication** (`/auth/*`) - For regular users (caregivers, pet owners)
+2. **Admin Authentication** (`/admins/login`) - For administrators only
+
+**Important:** Admins must use `/admins/login`, not `/auth/login`. See [Admin Routes](../docs/admin.md) for admin-specific endpoints.
+
+## User Authentication Endpoints
 
 ### POST /auth/register
 Register a new user.
