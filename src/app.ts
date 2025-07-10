@@ -14,6 +14,7 @@ import petCharacteristicsRoutes from './routes/petCharacteristics';
 import petsRoutes from './routes/pets';
 import caregiverSearchRoutes from './routes/caregiverSearch';
 import reservationsRoutes from './routes/reservations';
+import paymentsRoutes from './routes/payments';
 import reviewsRoutes from './routes/reviews';
 import { errorHandler } from './middleware/errorHandler';
 
@@ -41,6 +42,7 @@ app.use('/api/pet-characteristics', petCharacteristicsRoutes);
 app.use('/api/pets', petsRoutes);
 app.use('/api/caregiver-search', caregiverSearchRoutes);
 app.use('/api/reservations', reservationsRoutes);
+app.use('/api/payments', paymentsRoutes);
 app.use('/api', reviewsRoutes);
 
 // Test route

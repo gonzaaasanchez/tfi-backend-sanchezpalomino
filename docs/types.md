@@ -49,7 +49,7 @@ Constants for reservation status values to ensure consistency across the applica
 
 ```typescript
 export const RESERVATION_STATUS = {
-  PENDING: 'pending',
+  WAITING_ACCEPTANCE: 'waiting_acceptance',
   CONFIRMED: 'confirmed',
   STARTED: 'started',
   FINISHED: 'finished',
@@ -131,8 +131,8 @@ if (careLocation === CARE_LOCATION.PET_HOME) {
   // Handle pet home care
 }
 
-if (reservation.status === RESERVATION_STATUS.PENDING) {
-  // Handle pending reservation
+if (reservation.status === RESERVATION_STATUS.WAITING_ACCEPTANCE) {
+  // Handle waiting acceptance reservation
 }
 ```
 
@@ -163,7 +163,7 @@ const addresses: AddressWithId[] = [
 const reservationAddress: AddressWithoutId = address;
 
 // Use constants for status
-const reservationStatus: ReservationStatus = RESERVATION_STATUS.PENDING;
+const reservationStatus: ReservationStatus = RESERVATION_STATUS.WAITING_ACCEPTANCE;
 
 // Use constants for care location
 const careLocation: CareLocation = CARE_LOCATION.PET_HOME;

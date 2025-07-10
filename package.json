@@ -11,7 +11,8 @@
     "createUsers": "ts-node scripts/createUsers.ts",
     "createPets": "ts-node scripts/createPets.ts",
     "createPetCharacteristics": "ts-node scripts/createPetCharacteristics.ts",
-    "fillCareAddress": "ts-node scripts/fillCareAddress.ts"
+    "fillCareAddress": "ts-node scripts/fillCareAddress.ts",
+    "testPayments": "ts-node scripts/testPayments.ts"
   },
   "keywords": [],
   "author": "",
@@ -23,6 +24,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
     "@types/multer": "^1.4.13",
+    "@types/stripe": "^8.0.416",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
@@ -33,7 +35,8 @@
     "mongoose": "^8.15.2",
     "morgan": "^1.10.0",
     "multer": "^2.0.1",
-    "resend": "^4.6.0"
+    "resend": "^4.6.0",
+    "stripe": "^18.3.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",

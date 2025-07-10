@@ -238,7 +238,7 @@ const createReservation: RequestHandler = async (req, res, next) => {
     const totalOwner = totalPrice + commission;
     const totalCaregiver = totalPrice - commission;
 
-    // Create reservation
+    // Create reservation with payment pending status
     const reservation = new Reservation({
       startDate,
       endDate,
@@ -253,7 +253,7 @@ const createReservation: RequestHandler = async (req, res, next) => {
       totalOwner,
       totalCaregiver,
       distance,
-      status: RESERVATION_STATUS.PENDING,
+      status: RESERVATION_STATUS.PAYMENT_PENDING,
     });
 
     await reservation.save();
@@ -268,14 +268,14 @@ const createReservation: RequestHandler = async (req, res, next) => {
         {
           field: 'status',
           oldValue: null,
-          newValue: RESERVATION_STATUS.PENDING,
+          newValue: RESERVATION_STATUS.PAYMENT_PENDING,
         },
         { field: 'careLocation', oldValue: null, newValue: careLocation },
         { field: 'totalPrice', oldValue: null, newValue: totalPrice },
       ]
     );
 
-    ResponseHelper.success(res, 'Reserva creada exitosamente', {
+    ResponseHelper.success(res, 'Reserva creada exitosamente. Pago pendiente.', {
       reservation: {
         id: reservation._id,
         startDate: reservation.startDate,
@@ -570,11 +570,11 @@ const acceptReservation: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Check if reservation is pending
-    if (reservation.status !== RESERVATION_STATUS.PENDING) {
+    // Check if reservation is waiting acceptance
+    if (reservation.status !== RESERVATION_STATUS.WAITING_ACCEPTANCE) {
       ResponseHelper.validationError(
         res,
-        'Solo se pueden aceptar reservas pendientes'
+        'Solo se pueden aceptar reservas en espera de aceptación'
       );
       return;
     }
@@ -592,7 +592,7 @@ const acceptReservation: RequestHandler = async (req, res, next) => {
       [
         {
           field: 'status',
-          oldValue: RESERVATION_STATUS.PENDING,
+          oldValue: RESERVATION_STATUS.WAITING_ACCEPTANCE,
           newValue: RESERVATION_STATUS.CONFIRMED,
         },
       ]
@@ -631,11 +631,11 @@ const rejectReservation: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Check if reservation is pending
-    if (reservation.status !== RESERVATION_STATUS.PENDING) {
+    // Check if reservation is waiting acceptance
+    if (reservation.status !== RESERVATION_STATUS.WAITING_ACCEPTANCE) {
       ResponseHelper.validationError(
         res,
-        'Solo se pueden rechazar reservas pendientes'
+        'Solo se pueden rechazar reservas en espera de aceptación'
       );
       return;
     }

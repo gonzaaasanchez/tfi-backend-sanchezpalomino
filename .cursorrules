@@ -58,6 +58,7 @@
 - Mensajes de API: Español (para usuarios finales)
 - Comentarios de código: Inglés (para desarrolladores)
 - Variables y funciones: Inglés (convención de programación)
+- Documentación (archivos en /docs): Inglés (para desarrolladores)
 
 ## Flujo de Trabajo
 1. Entender el problema antes de codificar

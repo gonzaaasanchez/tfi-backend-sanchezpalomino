@@ -66,7 +66,7 @@ Create a new pet care reservation.
       "commission": "$72.00",
       "totalOwner": "$1,272.00",
       "distance": 5.2,
-      "status": "pending",
+      "status": "waiting_acceptance",
       "createdAt": "2024-01-10T10:30:00.000Z"
     }
   }
@@ -92,7 +92,9 @@ Get reservations where the user is either the owner or caregiver.
 
 #### Status Values
 
-- `pending` - Pendiente
+- `payment_pending` - Pendiente de pago
+- `payment_rejected` - Pago rechazado
+- `waiting_acceptance` - Esperando aceptación del cuidador
 - `confirmed` - Confirmada
 - `started` - Iniciada
 - `finished` - Finalizada
@@ -121,8 +123,8 @@ curl -X GET "http://localhost:3000/api/reservations?role=owner" \
 curl -X GET "http://localhost:3000/api/reservations?role=caregiver" \
   -H "Authorization: Bearer <token>"
 
-# Pending reservations where you are the owner
-curl -X GET "http://localhost:3000/api/reservations?role=owner&status=pending" \
+# Waiting acceptance reservations where you are the owner
+curl -X GET "http://localhost:3000/api/reservations?role=owner&status=waiting_acceptance" \
   -H "Authorization: Bearer <token>"
 
 # With pagination
@@ -191,7 +193,7 @@ curl -X GET "http://localhost:3000/api/reservations?page=1&limit=5&role=owner" \
         "commission": "$72.00",
         "totalOwner": "$1,272.00",
         "distance": 5.2,
-        "status": "pending",
+        "status": "waiting_acceptance",
         "createdAt": "2024-01-10T10:30:00.000Z",
         "updatedAt": "2024-01-10T10:30:00.000Z"
       }
@@ -281,7 +283,7 @@ Get details of a specific reservation.
       "commission": "$72.00",
       "totalOwner": "$1,272.00",
       "distance": 5.2,
-      "status": "pending",
+      "status": "waiting_acceptance",
       "createdAt": "2024-01-10T10:30:00.000Z",
       "updatedAt": "2024-01-10T10:30:00.000Z"
     }
@@ -298,7 +300,7 @@ Get details of a specific reservation.
 
 **PUT** `/api/reservations/:id/accept`
 
-Caregiver accepts a pending reservation.
+Caregiver accepts a waiting acceptance reservation.
 
 #### Response
 
@@ -320,7 +322,7 @@ Caregiver accepts a pending reservation.
 
 **PUT** `/api/reservations/:id/reject`
 
-Caregiver rejects a pending reservation.
+Caregiver rejects a waiting acceptance reservation.
 
 #### Request Body
 
@@ -464,7 +466,7 @@ Get all reservations in the system (admin only).
         "totalOwner": "$1,272.00",
         "totalCaregiver": "$1,128.00",
         "distance": 5.2,
-        "status": "pending",
+        "status": "waiting_acceptance",
         "createdAt": "2024-01-10T10:30:00.000Z",
         "updatedAt": "2024-01-10T10:30:00.000Z"
       }
@@ -550,7 +552,7 @@ Get details of a specific reservation (admin only).
       "totalOwner": "$1,272.00",
       "totalCaregiver": "$1,128.00",
       "distance": 5.2,
-      "status": "pending",
+      "status": "waiting_acceptance",
       "createdAt": "2024-01-10T10:30:00.000Z",
       "updatedAt": "2024-01-10T10:30:00.000Z"
     }

@@ -21,7 +21,9 @@ export type AddressWithoutId = Address;
 
 // Reservation status constants
 export const RESERVATION_STATUS = {
-  PENDING: 'pending',
+  PAYMENT_PENDING: 'payment_pending',
+  PAYMENT_REJECTED: 'payment_rejected',
+  WAITING_ACCEPTANCE: 'waiting_acceptance',
   CONFIRMED: 'confirmed',
   STARTED: 'started',
   FINISHED: 'finished',
