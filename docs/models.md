@@ -2,6 +2,39 @@
 
 This document describes all the data models used in the TFI Backend API.
 
+## 🔐 PasswordReset Model
+
+### Schema
+
+```typescript
+{
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  code: { type: String, required: true },
+  expiresAt: { type: Date, required: true },
+  used: { type: Boolean, default: false }
+}
+```
+
+### Example Document
+
+```json
+{
+  "_id": "507f1f77bcf86cd799439019",
+  "userId": "507f1f77bcf86cd799439011",
+  "code": "ABC123",
+  "expiresAt": "2024-01-02T00:00:00.000Z",
+  "used": false,
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z"
+}
+```
+
+### Features
+
+- **Automatic expiration**: Documents are automatically deleted after `expiresAt` date
+- **One-time use**: `used` field prevents code reuse
+- **Indexed queries**: Optimized for fast lookups by userId and used status
+
 ## 👤 User Model
 
 ### Schema
@@ -12,8 +45,9 @@ This document describes all the data models used in the TFI Backend API.
   lastName: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  phoneNumber: { type: String, required: true },
-  avatar: { type: Buffer },
+  phoneNumber: { type: String, required: false },
+  avatar: { type: String },
+  avatarBuffer: { type: Buffer },
   avatarContentType: { type: String },
   role: { type: mongoose.Schema.Types.ObjectId, ref: 'Role', required: true },
   carerConfig: {
@@ -25,7 +59,8 @@ This document describes all the data models used in the TFI Backend API.
       enabled: { type: Boolean, default: false },
       visitPrice: { type: Number, default: 0 }
     },
-    petTypes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PetType' }]
+    petTypes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PetType' }],
+    careAddress: { type: mongoose.Schema.Types.ObjectId }
   },
   addresses: [{
     name: { type: String, required: true },
@@ -56,6 +91,8 @@ This document describes all the data models used in the TFI Backend API.
   "lastName": "Doe",
   "email": "john@example.com",
   "phoneNumber": "+1234567890",
+  "avatar": "john-avatar.jpg",
+  "avatarContentType": "image/jpeg",
   "role": "507f1f77bcf86cd799439012",
   "carerConfig": {
     "homeCare": {
@@ -66,7 +103,8 @@ This document describes all the data models used in the TFI Backend API.
       "enabled": false,
       "visitPrice": 0
     },
-    "petTypes": []
+    "petTypes": [],
+    "careAddress": "507f1f77bcf86cd799439011"
   },
   "addresses": [
     {
@@ -92,15 +130,69 @@ This document describes all the data models used in the TFI Backend API.
 ```typescript
 {
   name: { type: String, required: true, unique: true },
+  description: { type: String, required: true },
   permissions: {
-    users: [{ type: String }],
-    pets: [{ type: String }],
-    petTypes: [{ type: String }],
-    petCharacteristics: [{ type: String }],
-    roles: [{ type: String }],
-    admins: [{ type: String }],
-    logs: [{ type: String }]
-  }
+    users: {
+      create: { type: Boolean, default: false },
+      read: { type: Boolean, default: false },
+      update: { type: Boolean, default: false },
+      delete: { type: Boolean, default: false },
+      getAll: { type: Boolean, default: false }
+    },
+    roles: {
+      create: { type: Boolean, default: false },
+      read: { type: Boolean, default: false },
+      update: { type: Boolean, default: false },
+      delete: { type: Boolean, default: false },
+      getAll: { type: Boolean, default: false }
+    },
+    admins: {
+      create: { type: Boolean, default: false },
+      read: { type: Boolean, default: false },
+      update: { type: Boolean, default: false },
+      delete: { type: Boolean, default: false },
+      getAll: { type: Boolean, default: false }
+    },
+    logs: {
+      read: { type: Boolean, default: false },
+      getAll: { type: Boolean, default: false }
+    },
+    petTypes: {
+      create: { type: Boolean, default: false },
+      read: { type: Boolean, default: false },
+      update: { type: Boolean, default: false },
+      delete: { type: Boolean, default: false },
+      getAll: { type: Boolean, default: false }
+    },
+    petCharacteristics: {
+      create: { type: Boolean, default: false },
+      read: { type: Boolean, default: false },
+      update: { type: Boolean, default: false },
+      delete: { type: Boolean, default: false },
+      getAll: { type: Boolean, default: false }
+    },
+    pets: {
+      create: { type: Boolean, default: false },
+      read: { type: Boolean, default: false },
+      update: { type: Boolean, default: false },
+      delete: { type: Boolean, default: false },
+      getAll: { type: Boolean, default: false }
+    },
+    caregiverSearch: {
+      read: { type: Boolean, default: false }
+    },
+    reservations: {
+      create: { type: Boolean, default: false },
+      read: { type: Boolean, default: false },
+      update: { type: Boolean, default: false },
+      admin: { type: Boolean, default: false }
+    },
+    reviews: {
+      create: { type: Boolean, default: false },
+      read: { type: Boolean, default: false }
+    }
+  },
+  isSystem: { type: Boolean, default: false }
 }
 ```
 
@@ -110,15 +202,69 @@ This document describes all the data models used in the TFI Backend API.
 {
   "_id": "507f1f77bcf86cd799439012",
   "name": "user",
+  "description": "Usuario regular del sistema",
   "permissions": {
-    "users": ["read", "update"],
-    "pets": ["read", "create", "update", "delete"],
-    "petTypes": ["read"],
-    "petCharacteristics": ["read"],
-    "roles": [],
-    "admins": [],
-    "logs": []
+    "users": {
+      "create": false,
+      "read": true,
+      "update": true,
+      "delete": false,
+      "getAll": false
+    },
+    "pets": {
+      "create": true,
+      "read": true,
+      "update": true,
+      "delete": true,
+      "getAll": false
+    },
+    "petTypes": {
+      "create": false,
+      "read": true,
+      "update": false,
+      "delete": false,
+      "getAll": true
+    },
+    "petCharacteristics": {
+      "create": false,
+      "read": true,
+      "update": false,
+      "delete": false,
+      "getAll": true
+    },
+    "roles": {
+      "create": false,
+      "read": false,
+      "update": false,
+      "delete": false,
+      "getAll": false
+    },
+    "admins": {
+      "create": false,
+      "read": false,
+      "update": false,
+      "delete": false,
+      "getAll": false
+    },
+    "logs": {
+      "read": false,
+      "getAll": false
+    },
+    "caregiverSearch": {
+      "read": true
+    },
+    "reservations": {
+      "create": true,
+      "read": true,
+      "update": true,
+      "admin": false
+    },
+    "reviews": {
+      "create": true,
+      "read": true
+    }
   },
+  "isSystem": true,
   "createdAt": "2024-01-01T00:00:00.000Z",
   "updatedAt": "2024-01-01T00:00:00.000Z"
 }
@@ -134,7 +280,7 @@ This document describes all the data models used in the TFI Backend API.
   lastName: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  role: { type: String, required: true, default: 'admin' }
+  role: { type: mongoose.Schema.Types.ObjectId, ref: 'Role', required: true }
 }
 ```
 
@@ -146,7 +292,7 @@ This document describes all the data models used in the TFI Backend API.
   "firstName": "Admin",
   "lastName": "User",
   "email": "admin@example.com",
-  "role": "admin",
+  "role": "507f1f77bcf86cd799439012",
   "createdAt": "2024-01-01T00:00:00.000Z",
   "updatedAt": "2024-01-01T00:00:00.000Z"
 }
@@ -202,7 +348,8 @@ This document describes all the data models used in the TFI Backend API.
 {
   name: { type: String, required: true },
   comment: { type: String },
-  avatar: { type: Buffer },
+  avatar: { type: String },
+  avatarBuffer: { type: Buffer },
   avatarContentType: { type: String },
   petType: { type: mongoose.Schema.Types.ObjectId, ref: 'PetType', required: true },
   characteristics: [{
@@ -220,6 +367,8 @@ This document describes all the data models used in the TFI Backend API.
   "_id": "507f1f77bcf86cd799439016",
   "name": "Luna",
   "comment": "Mi perrita favorita",
+  "avatar": "luna-avatar.jpg",
+  "avatarContentType": "image/jpeg",
   "petType": "507f1f77bcf86cd799439014",
   "characteristics": [
     {

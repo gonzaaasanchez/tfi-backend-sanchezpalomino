@@ -1,86 +1,172 @@
-# Authentication API Documentation
+# Authentication Routes
 
-## Overview
+## User Authentication
 
-This API has **two separate authentication systems**:
-
-1. **User Authentication** (`/auth/*`) - For regular users (caregivers, pet owners)
-2. **Admin Authentication** (`/admins/login`) - For administrators only
-
-**Important:** Admins must use `/admins/login`, not `/auth/login`. See [Admin Routes](../docs/admin.md) for admin-specific endpoints.
-
-## User Authentication Endpoints
-
-### POST /auth/register
+### POST `/auth/register`
 Register a new user.
 
+**Validations:**
+- All fields are required
+- Email must be unique
+- Password must meet strength requirements
+- Phone number must be valid format
+
 **Request Body:**
-```json
+```typescript
 {
-  "firstName": "string",
-  "lastName": "string", 
-  "email": "string",
-  "password": "string",
-  "phoneNumber": "string"
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  phoneNumber: string;
 }
 ```
 
 **Response:**
+```typescript
+{
+  success: boolean;
+  message: string;
+  data: {
+    user: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      phoneNumber: string;
+      role: {
+        id: string;
+        name: string;
+      };
+    };
+  };
+}
+```
+
+**Example Request:**
+```json
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john@example.com",
+  "password": "123456",
+  "phoneNumber": "+1234567890"
+}
+```
+
+**Success Response:**
 ```json
 {
   "success": true,
   "message": "Usuario registrado exitosamente",
   "data": {
     "user": {
-      "id": "string",
-      "firstName": "string",
-      "lastName": "string",
-      "email": "string",
-      "phoneNumber": "string",
+      "id": "507f1f77bcf86cd799439011",
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "john@example.com",
+      "phoneNumber": "+1234567890",
       "role": {
-        "id": "string",
-        "name": "string"
+        "id": "507f1f77bcf86cd799439012",
+        "name": "user"
       }
     }
   }
 }
 ```
 
-### POST /auth/login
-Login with email and password.
-
-**Request Body:**
+**Error Response:**
 ```json
 {
-  "email": "string",
-  "password": "string"
+  "success": false,
+  "message": "El email ya está registrado",
+  "data": null
+}
+```
+
+### POST `/auth/login`
+Login with email and password.
+
+**Validations:**
+- Email and password are required
+- Email must exist in database
+- Password must match stored hash
+
+**Request Body:**
+```typescript
+{
+  email: string;
+  password: string;
 }
 ```
 
 **Response:**
+```typescript
+{
+  success: boolean;
+  message: string;
+  data: {
+    user: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      phoneNumber: string;
+      role: {
+        id: string;
+        name: string;
+      };
+    };
+    token: string;
+  };
+}
+```
+
+**Example Request:**
+```json
+{
+  "email": "john@example.com",
+  "password": "123456"
+}
+```
+
+**Success Response:**
 ```json
 {
   "success": true,
   "message": "Login exitoso",
   "data": {
     "user": {
-      "id": "string",
-      "firstName": "string",
-      "lastName": "string",
-      "email": "string",
-      "phoneNumber": "string",
+      "id": "507f1f77bcf86cd799439011",
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "john@example.com",
+      "phoneNumber": "+1234567890",
       "role": {
-        "id": "string",
-        "name": "string"
+        "id": "507f1f77bcf86cd799439012",
+        "name": "user"
       }
     },
-    "token": "string"
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
 }
 ```
 
-### GET /auth/me
+**Error Response:**
+```json
+{
+  "success": false,
+  "message": "Credenciales inválidas",
+  "data": null
+}
+```
+
+### GET `/auth/me`
 Get authenticated user profile.
+
+**Validations:**
+- Valid JWT token required
+- User must exist in database
 
 **Headers:**
 ```
@@ -88,41 +174,92 @@ Authorization: Bearer <token>
 ```
 
 **Response:**
+```typescript
+{
+  success: boolean;
+  message: string;
+  data: {
+    user: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      phoneNumber: string;
+      role: {
+        id: string;
+        name: string;
+      };
+    };
+  };
+}
+```
+
+**Success Response:**
 ```json
 {
   "success": true,
   "message": "Perfil obtenido exitosamente",
   "data": {
     "user": {
-      "id": "string",
-      "firstName": "string",
-      "lastName": "string",
-      "email": "string",
-      "phoneNumber": "string",
+      "id": "507f1f77bcf86cd799439011",
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "john@example.com",
+      "phoneNumber": "+1234567890",
       "role": {
-        "id": "string",
-        "name": "string"
+        "id": "507f1f77bcf86cd799439012",
+        "name": "user"
       }
     }
   }
 }
 ```
 
-### POST /auth/forgot-password
-Request password reset code via email.
-
-**Request Body:**
+**Error Response:**
 ```json
 {
-  "email": "string"
+  "success": false,
+  "message": "No autorizado",
+  "data": null
+}
+```
+
+### POST `/auth/forgot-password`
+Request password reset code via email.
+
+**Validations:**
+- Email is required
+- Email must be valid format
+
+**Request Body:**
+```typescript
+{
+  email: string;
 }
 ```
 
 **Response:**
+```typescript
+{
+  success: boolean;
+  message: string;
+  data: null;
+}
+```
+
+**Example Request:**
+```json
+{
+  "email": "john@example.com"
+}
+```
+
+**Success Response:**
 ```json
 {
   "success": true,
-  "message": "Si el email existe, recibirás un código de recuperación"
+  "message": "Si el email existe, recibirás un código de recuperación",
+  "data": null
 }
 ```
 
@@ -132,23 +269,57 @@ Request password reset code via email.
 - Code expires in 15 minutes
 - Previous unused codes for the same user are invalidated
 
-### POST /auth/reset-password
+### POST `/auth/reset-password`
 Reset password using the code received via email.
 
+**Validations:**
+- Email, code, and newPassword are required
+- Code must be valid and not expired
+- New password must meet strength requirements
+- New password must be different from current password
+
 **Request Body:**
-```json
+```typescript
 {
-  "email": "string",
-  "code": "string",
-  "newPassword": "string"
+  email: string;
+  code: string;
+  newPassword: string;
 }
 ```
 
 **Response:**
+```typescript
+{
+  success: boolean;
+  message: string;
+  data: null;
+}
+```
+
+**Example Request:**
+```json
+{
+  "email": "john@example.com",
+  "code": "123456",
+  "newPassword": "newpassword123"
+}
+```
+
+**Success Response:**
 ```json
 {
   "success": true,
-  "message": "Contraseña actualizada exitosamente"
+  "message": "Contraseña actualizada exitosamente",
+  "data": null
+}
+```
+
+**Error Response:**
+```json
+{
+  "success": false,
+  "message": "Código inválido o expirado",
+  "data": null
 }
 ```
 
@@ -160,4 +331,6 @@ Reset password using the code received via email.
 - Code must be valid and not expired
 - Code can only be used once
 - New password must meet strength requirements
+
+
 
