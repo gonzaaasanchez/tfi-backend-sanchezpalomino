@@ -1,49 +1,94 @@
 # Admin Routes
 
-## Admin Authentication
+## Authentication
 
 ### POST `/admins/login`
 Login for administrators.
 
+**Validations:**
+- Email and password are required
+- Email must exist in database
+- Password must match stored hash
+
 **Request Body:**
-```json
+```typescript
 {
-  "email": "string",
-  "password": "string"
+  email: string;
+  password: string;
 }
 ```
 
 **Response:**
+```typescript
+{
+  success: boolean;
+  message: string;
+  data: {
+    admin: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      role: {
+        id: string;
+        name: string;
+        permissions: object;
+      };
+      createdAt: string;
+      updatedAt: string;
+    };
+    token: string;
+  };
+}
+```
+
+**Example Request:**
+```json
+{
+  "email": "admin@example.com",
+  "password": "123456"
+}
+```
+
+**Success Response:**
 ```json
 {
   "success": true,
   "message": "Login exitoso",
   "data": {
     "admin": {
-      "id": "string",
-      "firstName": "string",
-      "lastName": "string",
-      "email": "string",
+      "id": "507f1f77bcf86cd799439011",
+      "firstName": "Admin",
+      "lastName": "User",
+      "email": "admin@example.com",
       "role": {
-        "id": "string",
-        "name": "string",
+        "id": "507f1f77bcf86cd799439012",
+        "name": "admin",
         "permissions": {}
       },
-      "createdAt": "string",
-      "updatedAt": "string"
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
     },
-    "token": "string"
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
 }
 ```
 
-**Notes:**
-- Uses separate authentication from regular users
-- Token includes `type: 'admin'` for admin-specific middleware
-- Only admins can access admin endpoints
+**Error Response:**
+```json
+{
+  "success": false,
+  "message": "Credenciales inválidas",
+  "data": null
+}
+```
 
 ### GET `/admins/me`
 Get authenticated admin profile.
+
+**Validations:**
+- Valid JWT token required
+- Admin must exist in database
 
 **Headers:**
 ```
@@ -51,47 +96,516 @@ Authorization: Bearer <token>
 ```
 
 **Response:**
+```typescript
+{
+  success: boolean;
+  message: string;
+  data: {
+    admin: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      role: {
+        id: string;
+        name: string;
+        permissions: object;
+      };
+      createdAt: string;
+      updatedAt: string;
+    };
+  };
+}
+```
+
+**Success Response:**
 ```json
 {
   "success": true,
   "message": "Perfil obtenido exitosamente",
   "data": {
     "admin": {
-      "id": "string",
-      "firstName": "string",
-      "lastName": "string",
-      "email": "string",
+      "id": "507f1f77bcf86cd799439011",
+      "firstName": "Admin",
+      "lastName": "User",
+      "email": "admin@example.com",
       "role": {
-        "id": "string",
-        "name": "string",
+        "id": "507f1f77bcf86cd799439012",
+        "name": "admin",
         "permissions": {}
       },
-      "createdAt": "string",
-      "updatedAt": "string"
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
     }
   }
 }
 ```
 
-## Roles Management
+**Error Response:**
+```json
+{
+  "success": false,
+  "message": "No autorizado",
+  "data": null
+}
+```
 
-### GET `/roles`
-Get all roles (admin only).
+## Admin Management
+
+### GET `/admins`
+Get all administrators (admin only).
+
+**Validations:**
+- Valid JWT token required
+- Admin permissions required
 
 **Headers:**
 ```
 Authorization: Bearer <token>
+```
+
+**Response:**
+```typescript
+{
+  success: boolean;
+  message: string;
+  data: Array<{
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    role: {
+      id: string;
+      name: string;
+      permissions: object;
+    };
+    createdAt: string;
+    updatedAt: string;
+  }>;
+}
+```
+
+**Success Response:**
+```json
+{
+  "success": true,
+  "message": "Admins obtenidos exitosamente",
+  "data": [
+    {
+      "id": "507f1f77bcf86cd799439011",
+      "firstName": "Admin",
+      "lastName": "User",
+      "email": "admin@example.com",
+      "role": {
+        "id": "507f1f77bcf86cd799439012",
+        "name": "admin",
+        "permissions": {}
+      },
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    }
+  ]
+}
+```
+
+**Error Response:**
+```json
+{
+  "success": false,
+  "message": "No autorizado",
+  "data": null
+}
+```
+
+### POST `/admins`
+Create a new administrator (admin only).
+
+**Validations:**
+- Valid JWT token required
+- Admin permissions required
+- All fields are required
+- Password must be at least 6 characters
+- Email must be unique
+- Role must exist and not be system role
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```typescript
+{
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  roleId: string;
+}
+```
+
+**Response:**
+```typescript
+{
+  success: boolean;
+  message: string;
+  data: {
+    admin: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      role: {
+        id: string;
+        name: string;
+        permissions: object;
+      };
+      createdAt: string;
+      updatedAt: string;
+    };
+  };
+}
+```
+
+**Example Request:**
+```json
+{
+  "firstName": "New",
+  "lastName": "Admin",
+  "email": "new@example.com",
+  "password": "123456",
+  "roleId": "507f1f77bcf86cd799439012"
+}
+```
+
+**Success Response:**
+```json
+{
+  "success": true,
+  "message": "Admin creado exitosamente",
+  "data": {
+    "admin": {
+      "id": "507f1f77bcf86cd799439013",
+      "firstName": "New",
+      "lastName": "Admin",
+      "email": "new@example.com",
+      "role": {
+        "id": "507f1f77bcf86cd799439012",
+        "name": "admin",
+        "permissions": {}
+      },
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    }
+  }
+}
+```
+
+**Error Response:**
+```json
+{
+  "success": false,
+  "message": "El email ya está registrado",
+  "data": null
+}
+```
+
+### GET `/admins/:id`
+Get a specific administrator (admin only).
+
+**Validations:**
+- Valid JWT token required
+- Admin permissions required
+- Admin ID must exist
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```typescript
+{
+  success: boolean;
+  message: string;
+  data: {
+    admin: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      role: {
+        id: string;
+        name: string;
+        permissions: object;
+      };
+      createdAt: string;
+      updatedAt: string;
+    };
+  };
+}
+```
+
+**Success Response:**
+```json
+{
+  "success": true,
+  "message": "Admin obtenido exitosamente",
+  "data": {
+    "admin": {
+      "id": "507f1f77bcf86cd799439011",
+      "firstName": "Admin",
+      "lastName": "User",
+      "email": "admin@example.com",
+      "role": {
+        "id": "507f1f77bcf86cd799439012",
+        "name": "admin",
+        "permissions": {}
+      },
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    }
+  }
+}
+```
+
+**Error Response:**
+```json
+{
+  "success": false,
+  "message": "Admin no encontrado",
+  "data": null
+}
+```
+
+### PUT `/admins/:id`
+Update an administrator (admin only).
+
+**Validations:**
+- Valid JWT token required
+- Admin permissions required
+- Admin ID must exist
+- Role must exist and not be system role
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```typescript
+{
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  roleId?: string;
+}
+```
+
+**Response:**
+```typescript
+{
+  success: boolean;
+  message: string;
+  data: {
+    admin: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      role: {
+        id: string;
+        name: string;
+        permissions: object;
+      };
+      createdAt: string;
+      updatedAt: string;
+    };
+  };
+}
+```
+
+**Example Request:**
+```json
+{
+  "firstName": "Admin",
+  "lastName": "Updated",
+  "email": "admin@example.com",
+  "roleId": "507f1f77bcf86cd799439012"
+}
+```
+
+**Success Response:**
+```json
+{
+  "success": true,
+  "message": "Admin actualizado exitosamente",
+  "data": {
+    "admin": {
+      "id": "507f1f77bcf86cd799439011",
+      "firstName": "Admin",
+      "lastName": "Updated",
+      "email": "admin@example.com",
+      "role": {
+        "id": "507f1f77bcf86cd799439012",
+        "name": "admin",
+        "permissions": {}
+      },
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    }
+  }
+}
+```
+
+**Error Response:**
+```json
+{
+  "success": false,
+  "message": "Admin no encontrado",
+  "data": null
+}
+```
+
+### DELETE `/admins/:id`
+Delete an administrator (admin only).
+
+**Validations:**
+- Valid JWT token required
+- Admin permissions required
+- Admin ID must exist
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```typescript
+{
+  success: boolean;
+  message: string;
+  data: null;
+}
+```
+
+**Success Response:**
+```json
+{
+  "success": true,
+  "message": "Admin eliminado exitosamente",
+  "data": null
+}
+```
+
+**Error Response:**
+```json
+{
+  "success": false,
+  "message": "Admin no encontrado",
+  "data": null
+}
+```
+
+## Role Management
+
+### GET `/roles`
+Get all roles (admin only).
+
+**Validations:**
+- Valid JWT token required
+- Admin permissions required
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```typescript
+{
+  success: boolean;
+  message: string;
+  data: Array<{
+    id: string;
+    name: string;
+    permissions: object;
+    isSystem: boolean;
+    createdAt: string;
+    updatedAt: string;
+  }>;
+}
+```
+
+**Success Response:**
+```json
+{
+  "success": true,
+  "message": "Roles obtenidos exitosamente",
+  "data": [
+    {
+      "id": "507f1f77bcf86cd799439012",
+      "name": "admin",
+      "permissions": {
+        "users": ["read", "update", "delete"],
+        "pets": ["read", "create", "update", "delete"]
+      },
+      "isSystem": true,
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    }
+  ]
+}
+```
+
+**Error Response:**
+```json
+{
+  "success": false,
+  "message": "No autorizado",
+  "data": null
+}
 ```
 
 ### POST `/roles`
 Create a new role (admin only).
 
+**Validations:**
+- Valid JWT token required
+- Admin permissions required
+- Name is required
+- Permissions object is required
+
 **Headers:**
 ```
 Authorization: Bearer <token>
 ```
 
-**Body:**
+**Request Body:**
+```typescript
+{
+  name: string;
+  permissions: object;
+}
+```
+
+**Response:**
+```typescript
+{
+  success: boolean;
+  message: string;
+  data: {
+    id: string;
+    name: string;
+    permissions: object;
+    isSystem: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
+}
+```
+
+**Example Request:**
 ```json
 {
   "name": "moderator",
@@ -102,87 +616,200 @@ Authorization: Bearer <token>
 }
 ```
 
+**Success Response:**
+```json
+{
+  "success": true,
+  "message": "Rol creado exitosamente",
+  "data": {
+    "id": "507f1f77bcf86cd799439013",
+    "name": "moderator",
+    "permissions": {
+      "users": ["read", "update"],
+      "pets": ["read", "create", "update", "delete"]
+    },
+    "isSystem": false,
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  }
+}
+```
+
+**Error Response:**
+```json
+{
+  "success": false,
+  "message": "El nombre del rol es requerido",
+  "data": null
+}
+```
+
 ### PUT `/roles/:id`
 Update a role (admin only).
+
+**Validations:**
+- Valid JWT token required
+- Admin permissions required
+- Role ID must exist
 
 **Headers:**
 ```
 Authorization: Bearer <token>
+```
+
+**Request Body:**
+```typescript
+{
+  name?: string;
+  permissions?: object;
+}
+```
+
+**Response:**
+```typescript
+{
+  success: boolean;
+  message: string;
+  data: {
+    id: string;
+    name: string;
+    permissions: object;
+    isSystem: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
+}
+```
+
+**Example Request:**
+```json
+{
+  "name": "moderator_updated",
+  "permissions": {
+    "users": ["read", "update", "delete"],
+    "pets": ["read", "create", "update", "delete"]
+  }
+}
+```
+
+**Success Response:**
+```json
+{
+  "success": true,
+  "message": "Rol actualizado exitosamente",
+  "data": {
+    "id": "507f1f77bcf86cd799439013",
+    "name": "moderator_updated",
+    "permissions": {
+      "users": ["read", "update", "delete"],
+      "pets": ["read", "create", "update", "delete"]
+    },
+    "isSystem": false,
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  }
+}
+```
+
+**Error Response:**
+```json
+{
+  "success": false,
+  "message": "Rol no encontrado",
+  "data": null
+}
 ```
 
 ### DELETE `/roles/:id`
 Delete a role (admin only).
 
-**Headers:**
-```
-Authorization: Bearer <token>
-```
-
-## Admins Management
-
-### GET `/admins`
-Get all admins (admin only).
+**Validations:**
+- Valid JWT token required
+- Admin permissions required
+- Role ID must exist
+- Cannot delete system roles
 
 **Headers:**
 ```
 Authorization: Bearer <token>
 ```
 
-### POST `/admins`
-Create a new admin (admin only).
-
-**Headers:**
-```
-Authorization: Bearer <token>
-```
-
-**Body:**
-```json
+**Response:**
+```typescript
 {
-  "firstName": "Admin",
-  "lastName": "User",
-  "email": "admin@example.com",
-  "password": "123456",
-  "role": "admin"
+  success: boolean;
+  message: string;
+  data: null;
 }
 ```
 
-### PUT `/admins/:id`
-Update an admin (admin only).
-
-**Headers:**
+**Success Response:**
+```json
+{
+  "success": true,
+  "message": "Rol eliminado exitosamente",
+  "data": null
+}
 ```
-Authorization: Bearer <token>
-```
 
-### DELETE `/admins/:id`
-Delete an admin (admin only).
-
-**Headers:**
-```
-Authorization: Bearer <token>
+**Error Response:**
+```json
+{
+  "success": false,
+  "message": "No se puede eliminar un rol del sistema",
+  "data": null
+}
 ```
 
 ## Audit Logs
 
-### GET `/logs`
-Get audit logs (admin only).
+### GET `/logs/:entityType/:entityId`
+Get audit logs for a specific entity (admin only).
+
+**Validations:**
+- Valid JWT token required
+- Admin permissions required
+- Entity type and ID must be valid
 
 **Headers:**
 ```
 Authorization: Bearer <token>
 ```
 
-**Query Parameters:**
-- `page`: Page number (default: 1)
-- `limit`: Items per page (default: 10)
-- `action`: Filter by action type
-- `entity`: Filter by entity type
-- `userId`: Filter by user ID
-- `startDate`: Filter by start date
-- `endDate`: Filter by end date
+**Parameters:**
+- `entityType`: Type of entity (e.g., "User", "Pet", "Reservation")
+- `entityId`: ID of the specific entity
 
 **Response:**
+```typescript
+{
+  success: boolean;
+  message: string;
+  data: {
+    logs: Array<{
+      id: string;
+      action: string;
+      entity: string;
+      entityId: string;
+      userId: string;
+      userEmail: string;
+      changes: {
+        before: object | null;
+        after: object | null;
+      };
+      timestamp: string;
+    }>;
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  };
+}
+```
+
+**Success Response:**
 ```json
 {
   "success": true,
@@ -190,17 +817,17 @@ Authorization: Bearer <token>
   "data": {
     "logs": [
       {
-        "id": "...",
+        "id": "507f1f77bcf86cd799439014",
         "action": "CREATE",
         "entity": "Pet",
-        "entityId": "...",
-        "userId": "...",
+        "entityId": "507f1f77bcf86cd799439015",
+        "userId": "507f1f77bcf86cd799439016",
         "userEmail": "john@example.com",
         "changes": {
           "before": null,
           "after": {
             "name": "Luna",
-            "petType": "..."
+            "petType": "507f1f77bcf86cd799439017"
           }
         },
         "timestamp": "2024-01-01T00:00:00.000Z"
@@ -216,32 +843,11 @@ Authorization: Bearer <token>
 }
 ```
 
-## 🔧 **Audit System**
-
-The audit system uses `auditLogger.ts` to record all database changes. Each entity has its own log collection:
-
-- **Users**: `userlogs`
-- **Admins**: `adminlogs`
-- **Roles**: `rolelogs`
-- **Pets**: `petlogs`
-- **Pet Types**: `pettypelogs`
-- **Pet Characteristics**: `petcharacteristiclogs`
-- **Reservations**: `reservationlogs`
-- **Reviews**: `reviewlogs`
-
-### 📊 **Log Structure**
-
-Each log entry contains:
-- `userId`: ID of the user who made the change
-- `userName`: Full name of the user
-- `entityId`: ID of the modified entity
-- `field`: Field that changed
-- `oldValue`: Previous value
-- `newValue`: New value
-- `timestamp`: Date and time of the change
-
-### 🛡️ **Security**
-
-- Logs are **immutable** - they cannot be modified
-- Only users with `logs.read` and `logs.getAll` permissions can access
-- Superadmin have automatic full access 
+**Error Response:**
+```json
+{
+  "success": false,
+  "message": "No autorizado",
+  "data": null
+}
+``` 

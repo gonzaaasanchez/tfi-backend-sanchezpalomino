@@ -49,12 +49,15 @@ Constants for reservation status values to ensure consistency across the applica
 
 ```typescript
 export const RESERVATION_STATUS = {
+  PAYMENT_PENDING: 'payment_pending',
+  PAYMENT_REJECTED: 'payment_rejected',
   WAITING_ACCEPTANCE: 'waiting_acceptance',
   CONFIRMED: 'confirmed',
   STARTED: 'started',
   FINISHED: 'finished',
   CANCELLED_OWNER: 'cancelledOwner',
   CANCELLED_CAREGIVER: 'cancelledCaregiver',
+  REJECTED: 'rejected',
 } as const;
 
 export type ReservationStatus =
