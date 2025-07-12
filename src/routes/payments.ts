@@ -71,8 +71,8 @@ const createPaymentIntentHandler: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Validate that the amount matches the reservation total
-    if (Math.abs(amount - reservation.totalPrice) > 0.01) {
+    // Validate that the amount matches the reservation total (including commission)
+    if (Math.abs(amount - reservation.totalOwner) > 0.01) {
       ResponseHelper.validationError(
         res,
         'El monto no coincide con el precio total de la reserva'
@@ -129,9 +129,10 @@ const stripeWebhookHandler: RequestHandler = async (req, res, next) => {
       case 'payment_intent.payment_failed':
         await handlePaymentFailure(event);
         break;
-
       default:
         console.log(`Unhandled event type: ${event.type}`);
+        await handlePaymentFailure(event);
+        break;
     }
 
     res.json({ received: true });
