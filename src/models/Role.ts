@@ -63,6 +63,17 @@ export interface IRole extends Document {
       create: boolean;
       read: boolean;
     };
+    posts: {
+      create: boolean;
+      read: boolean;
+      delete: boolean;
+      getAll: boolean;
+    };
+    comments: {
+      create: boolean;
+      getAll: boolean;
+      delete: boolean;
+    };
   };
   isSystem: boolean;
   createdAt: Date;
@@ -139,6 +150,17 @@ const RoleSchema = new Schema<IRole>(
       reviews: {
         create: { type: Boolean, default: false },
         read: { type: Boolean, default: false },
+      },
+      posts: {
+        create: { type: Boolean, default: false },
+        read: { type: Boolean, default: false },
+        delete: { type: Boolean, default: false },
+        getAll: { type: Boolean, default: false },
+      },
+      comments: {
+        create: { type: Boolean, default: false },
+        getAll: { type: Boolean, default: false },
+        delete: { type: Boolean, default: false },
       },
     },
     isSystem: {

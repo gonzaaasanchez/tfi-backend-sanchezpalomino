@@ -15,6 +15,8 @@ import petsRoutes from './routes/pets';
 import caregiverSearchRoutes from './routes/caregiverSearch';
 import reservationsRoutes from './routes/reservations';
 import reviewsRoutes from './routes/reviews';
+import postsRoutes from './routes/posts';
+import commentsRoutes from './routes/comments';
 import { errorHandler } from './middleware/errorHandler';
 
 // Load environment variables
@@ -42,6 +44,8 @@ app.use('/api/pets', petsRoutes);
 app.use('/api/caregiver-search', caregiverSearchRoutes);
 app.use('/api/reservations', reservationsRoutes);
 app.use('/api', reviewsRoutes);
+app.use('/api/posts', postsRoutes);
+app.use('/api/comments', commentsRoutes);
 
 // Test route
 app.get('/', (req, res) => {

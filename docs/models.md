@@ -625,10 +625,156 @@ This document describes all the data models used in the TFI Backend API.
 - **Review** has one **User** as reviewed (who receives the review)
 - **User** can receive many **Reviews**
 
+## 📝 Post Model
+
+### Schema
+
+```typescript
+{
+  title: { type: String, required: true, minlength: 3, maxlength: 100 },
+  description: { type: String, required: true, minlength: 10, maxlength: 1000 },
+  image: { type: String, required: true },
+  imageBuffer: { type: Buffer },
+  imageContentType: { type: String },
+  author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  commentsCount: { type: Number, default: 0, min: 0 }
+}
+```
+
+### Example Document
+
+```json
+{
+  "_id": "507f1f77bcf86cd799439040",
+  "title": "Mi mascota feliz",
+  "description": "Compartiendo un momento especial con mi mascota en el parque. ¡Fue un día increíble!",
+  "image": "/api/posts/507f1f77bcf86cd799439040/image",
+  "imageContentType": "image/jpeg",
+  "commentsCount": 3,
+  "author": "507f1f77bcf86cd799439011",
+  "createdAt": "2024-01-01T12:00:00.000Z",
+  "updatedAt": "2024-01-01T12:00:00.000Z"
+}
+```
+
+### Features
+
+- **Image storage**: Images are stored as Buffer in the database
+- **Author relationship**: Each post belongs to one user
+- **Content validation**: Title and description have length restrictions
+- **Automatic timestamps**: Includes createdAt and updatedAt
+
+## 💬 Comment Model
+
+### Schema
+
+```typescript
+{
+  comment: { type: String, required: true, minlength: 1, maxlength: 500 },
+  author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  post: { type: mongoose.Schema.Types.ObjectId, ref: 'Post', required: true }
+}
+```
+
+### Example Document
+
+```json
+{
+  "_id": "507f1f77bcf86cd799439050",
+  "comment": "¡Qué linda mascota! Me encanta la foto.",
+  "author": "507f1f77bcf86cd799439011",
+  "post": "507f1f77bcf86cd799439040",
+  "createdAt": "2024-01-01T13:00:00.000Z",
+  "updatedAt": "2024-01-01T13:00:00.000Z"
+}
+```
+
+### Features
+
+- **Content validation**: Comments have length restrictions (1-500 characters)
+- **Author relationship**: Each comment belongs to one user
+- **Post relationship**: Each comment belongs to one post
+- **Multiple comments**: Users can comment multiple times on the same post
+- **Automatic timestamps**: Includes createdAt and updatedAt
+
+## 🔗 Relationships
+
+### User ↔ Role
+
+- **User** has one **Role** (required)
+- **Role** can have many **Users**
+
+### User ↔ Pet
+
+- **User** can have many **Pets** (owner relationship)
+- **Pet** belongs to one **User** (owner)
+
+### Pet ↔ PetType
+
+- **Pet** has one **PetType** (required)
+- **PetType** can have many **Pets**
+
+### Pet ↔ PetCharacteristic
+
+- **Pet** can have many **PetCharacteristics** (through characteristics array)
+- **PetCharacteristic** can be used by many **Pets**
+
+### Audit Log ↔ User
+
+- **Audit Log** references one **User** (who performed the action)
+- **User** can have many **Audit Logs**
+
+### Reservation ↔ User (Owner)
+
+- **Reservation** has one **User** as owner (required)
+- **User** can have many **Reservations** as owner
+
+### Reservation ↔ User (Caregiver)
+
+- **Reservation** has one **User** as caregiver (required)
+- **User** can have many **Reservations** as caregiver
+
+### Reservation ↔ Pet
+
+- **Reservation** can have many **Pets** (array of pet IDs)
+- **Pet** can be part of many **Reservations**
+
+### Review ↔ Reservation
+
+- **Review** belongs to one **Reservation** (required)
+- **Reservation** can have up to two **Reviews** (one from owner, one from caregiver)
+
+### Review ↔ User (Reviewer)
+
+- **Review** has one **User** as reviewer (who writes the review)
+- **User** can write many **Reviews**
+
+### Review ↔ User (Reviewed)
+
+- **Review** has one **User** as reviewed (who receives the review)
+- **User** can receive many **Reviews**
+
+### User ↔ Post
+
+- **User** can have many **Posts** (author relationship)
+- **Post** belongs to one **User** (author)
+
+### Post ↔ Comment
+
+- **Post** can have many **Comments**
+- **Comment** belongs to one **Post**
+
+### User ↔ Comment
+
+- **User** can have many **Comments** (author relationship)
+- **Comment** belongs to one **User** (author)
+
 ## 📝 Notes
 
 - All models include automatic `createdAt` and `updatedAt` timestamps
 - Passwords are hashed using bcrypt before storage
 - Avatar images are stored as Buffer in the database
+- Post images are stored as Buffer in the database
 - ObjectId references are used for relationships between collections
 - Audit logs track all CRUD operations on main entities
+- Comments are consumed independently from posts (not included in post responses)

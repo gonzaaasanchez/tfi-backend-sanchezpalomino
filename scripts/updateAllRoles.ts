@@ -42,6 +42,17 @@ const rolePermissions = {
       create: true,
       read: true,
     },
+    posts: {
+      create: true,
+      read: true,
+      delete: true,
+      getAll: true,
+    },
+    comments: {
+      create: true,
+      getAll: true,
+      delete: true,
+    },
   },
   // User: can only manage their own pets and view types/characteristics
   user: {
@@ -78,6 +89,17 @@ const rolePermissions = {
     reviews: {
       create: true,
       read: true,
+    },
+    posts: {
+      create: true,
+      read: true,
+      delete: true,
+      getAll: true,
+    },
+    comments: {
+      create: true,
+      getAll: true,
+      delete: true,
     },
   },
 };
@@ -127,6 +149,16 @@ async function updateAllRoles() {
           role.permissions.reservations?.create || 'undefined'
         }`
       );
+      console.log(
+        `     Posts.create: ${
+          role.permissions.posts?.create || 'undefined'
+        }`
+      );
+      console.log(
+        `     Comments.create: ${
+          role.permissions.comments?.create || 'undefined'
+        }`
+      );
 
       // Determine which permissions to assign
       let newPermissions;
@@ -150,6 +182,8 @@ async function updateAllRoles() {
       role.permissions.caregiverSearch = newPermissions.caregiverSearch;
       role.permissions.reservations = newPermissions.reservations;
       role.permissions.reviews = newPermissions.reviews;
+      role.permissions.posts = newPermissions.posts;
+      role.permissions.comments = newPermissions.comments;
 
       await role.save();
       updatedCount++;
@@ -190,6 +224,22 @@ async function updateAllRoles() {
         } ${role.permissions.reservations?.admin ? '(Admin)' : ''}`
       );
 
+      if (role.permissions.posts?.create) {
+        console.log(
+          `   Posts: Create, read, delete ${
+            role.permissions.posts.getAll ? '(all)' : '(feed only)'
+          }`
+        );
+      } else if (role.permissions.posts?.read) {
+        console.log(
+          `   Posts: Read only ${
+            role.permissions.posts.getAll ? '(all)' : '(feed only)'
+          }`
+        );
+      } else {
+        console.log(`   Posts: No access`);
+      }
+
       if (role.permissions.pets.create) {
         console.log(
           `   Pets: Create, read, update, delete ${
@@ -204,6 +254,22 @@ async function updateAllRoles() {
         );
       } else {
         console.log(`   Pets: No access`);
+      }
+
+      if (role.permissions.comments?.create) {
+        console.log(
+          `   Comments: Create, read, delete ${
+            role.permissions.comments.getAll ? '(all)' : '(feed only)'
+          }`
+        );
+      } else if (role.permissions.comments?.getAll) {
+        console.log(
+          `   Comments: Read only ${
+            role.permissions.comments.getAll ? '(all)' : '(feed only)'
+          }`
+        );
+      } else {
+        console.log(`   Comments: No access`);
       }
     }
   } catch (error) {
