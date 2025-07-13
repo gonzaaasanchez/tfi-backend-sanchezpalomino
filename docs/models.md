@@ -637,7 +637,8 @@ This document describes all the data models used in the TFI Backend API.
   imageBuffer: { type: Buffer },
   imageContentType: { type: String },
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  commentsCount: { type: Number, default: 0, min: 0 }
+  commentsCount: { type: Number, default: 0, min: 0 },
+  likesCount: { type: Number, default: 0, min: 0 }
 }
 ```
 
@@ -651,6 +652,7 @@ This document describes all the data models used in the TFI Backend API.
   "image": "/api/posts/507f1f77bcf86cd799439040/image",
   "imageContentType": "image/jpeg",
   "commentsCount": 3,
+  "likesCount": 5,
   "author": "507f1f77bcf86cd799439011",
   "createdAt": "2024-01-01T12:00:00.000Z",
   "updatedAt": "2024-01-01T12:00:00.000Z"
@@ -662,6 +664,7 @@ This document describes all the data models used in the TFI Backend API.
 - **Image storage**: Images are stored as Buffer in the database
 - **Author relationship**: Each post belongs to one user
 - **Content validation**: Title and description have length restrictions
+- **Automatic counters**: commentsCount and likesCount are automatically managed
 - **Automatic timestamps**: Includes createdAt and updatedAt
 
 ## 💬 Comment Model
