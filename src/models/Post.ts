@@ -8,6 +8,7 @@ export interface IPost extends Document {
   imageContentType?: string;
   author: mongoose.Types.ObjectId;
   commentsCount: number;
+  likesCount: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -50,6 +51,11 @@ const PostSchema: Schema = new Schema(
       type: Number,
       default: 0,
       min: [0, 'El contador de comentarios no puede ser negativo'],
+    },
+    likesCount: {
+      type: Number,
+      default: 0,
+      min: [0, 'El contador de likes no puede ser negativo'],
     },
   },
   {

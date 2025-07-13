@@ -102,6 +102,7 @@ const getAllPosts: RequestHandler = async (req, res, next) => {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit;
+    const userId = req.user?._id;
 
     // Build filters
     const filters: any = {};
@@ -118,12 +119,46 @@ const getAllPosts: RequestHandler = async (req, res, next) => {
       }
     }
 
-    // Get posts with pagination and filters
-    const posts = await Post.find(filters)
-      .populate('author')
-      .skip(skip)
-      .limit(limit)
-      .sort({ createdAt: -1 }); // Always ordered by creation date (newest first)
+    // Get posts with aggregation to include hasLiked field
+    const posts = await Post.aggregate([
+      { $match: filters },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'author',
+          foreignField: '_id',
+          as: 'author'
+        }
+      },
+      { $unwind: '$author' },
+      {
+        $lookup: {
+          from: 'likes',
+          let: { postId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$post', '$$postId'] },
+                    { $eq: ['$user', userId] }
+                  ]
+                }
+              }
+            }
+          ],
+          as: 'userLike'
+        }
+      },
+      {
+        $addFields: {
+          hasLiked: { $toBool: { $gt: [{ $size: '$userLike' }, 0] } }
+        }
+      },
+      { $sort: { createdAt: -1 } },
+      { $skip: skip },
+      { $limit: limit }
+    ]);
 
     // Get total for pagination
     const totalPosts = await Post.countDocuments(filters);
@@ -136,12 +171,13 @@ const getAllPosts: RequestHandler = async (req, res, next) => {
         description: post.description,
         image: post.image,
         commentsCount: post.commentsCount,
+        likesCount: post.likesCount,
+        hasLiked: post.hasLiked,
         author: {
-          id: (post.author as any)._id,
-          name: `${(post.author as any).firstName} ${
-            (post.author as any).lastName
-          }`,
-          email: (post.author as any).email,
+          id: post.author._id,
+          firstName: post.author.firstName,
+          lastName: post.author.lastName,
+          email: post.author.email,
         },
         createdAt: post.createdAt,
         updatedAt: post.updatedAt,

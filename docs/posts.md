@@ -65,6 +65,8 @@ Authorization: Bearer <token>
     "description": "Compartiendo un momento especial con mi mascota en el parque",
     "image": "/api/posts/507f1f77bcf86cd799439014/image",
     "commentsCount": 0,
+    "likesCount": 5,
+    "hasLiked": true,
     "author": {
       "id": "507f1f77bcf86cd799439015",
       "name": "John Doe",
@@ -144,6 +146,8 @@ Authorization: Bearer <token>
         "description": "Compartiendo un momento especial con mi mascota en el parque",
         "image": "/api/posts/507f1f77bcf86cd799439014/image",
         "commentsCount": 5,
+        "likesCount": 12,
+        "hasLiked": false,
         "author": {
           "id": "507f1f77bcf86cd799439015",
           "name": "John Doe",

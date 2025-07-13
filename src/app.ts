@@ -17,6 +17,7 @@ import reservationsRoutes from './routes/reservations';
 import reviewsRoutes from './routes/reviews';
 import postsRoutes from './routes/posts';
 import commentsRoutes from './routes/comments';
+import likesRoutes from './routes/likes';
 import { errorHandler } from './middleware/errorHandler';
 
 // Load environment variables
@@ -46,6 +47,7 @@ app.use('/api/reservations', reservationsRoutes);
 app.use('/api', reviewsRoutes);
 app.use('/api/posts', postsRoutes);
 app.use('/api/comments', commentsRoutes);
+app.use('/api/likes', likesRoutes);
 
 // Test route
 app.get('/', (req, res) => {

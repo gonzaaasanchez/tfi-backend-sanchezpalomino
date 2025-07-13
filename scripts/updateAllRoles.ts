@@ -53,6 +53,10 @@ const rolePermissions = {
       getAll: true,
       delete: true,
     },
+    likes: {
+      create: false,
+      delete: false,
+    },
   },
   // User: can only manage their own pets and view types/characteristics
   user: {
@@ -99,6 +103,10 @@ const rolePermissions = {
     comments: {
       create: true,
       getAll: true,
+      delete: true,
+    },
+    likes: {
+      create: true,
       delete: true,
     },
   },
@@ -159,6 +167,11 @@ async function updateAllRoles() {
           role.permissions.comments?.create || 'undefined'
         }`
       );
+      console.log(
+        `     Likes.create: ${
+          role.permissions.likes?.create || 'undefined'
+        }`
+      );
 
       // Determine which permissions to assign
       let newPermissions;
@@ -170,9 +183,9 @@ async function updateAllRoles() {
         newPermissions = rolePermissions.user;
         console.log('  👤 Assigning user permissions (own management)');
       } else {
-        // For custom roles, assign user permissions by default
-        newPermissions = rolePermissions.user;
-        console.log('  🎯 Assigning user permissions by default');
+        // For custom roles, assign superadmin permissions by default
+        newPermissions = rolePermissions.superadmin;
+        console.log('  🎯 Assigning superadmin permissions by default');
       }
 
       // Update role permissions
@@ -184,6 +197,7 @@ async function updateAllRoles() {
       role.permissions.reviews = newPermissions.reviews;
       role.permissions.posts = newPermissions.posts;
       role.permissions.comments = newPermissions.comments;
+      role.permissions.likes = newPermissions.likes;
 
       await role.save();
       updatedCount++;
@@ -270,6 +284,20 @@ async function updateAllRoles() {
         );
       } else {
         console.log(`   Comments: No access`);
+      }
+
+      if (role.permissions.likes?.create) {
+        console.log(
+          `   Likes: Create, delete ${
+            role.permissions.likes.delete ? '(full)' : '(create only)'
+          }`
+        );
+      } else if (role.permissions.likes?.delete) {
+        console.log(
+          `   Likes: Delete only`
+        );
+      } else {
+        console.log(`   Likes: No access`);
       }
     }
   } catch (error) {

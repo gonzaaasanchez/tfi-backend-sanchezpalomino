@@ -74,6 +74,10 @@ export interface IRole extends Document {
       getAll: boolean;
       delete: boolean;
     };
+    likes: {
+      create: boolean;
+      delete: boolean;
+    };
   };
   isSystem: boolean;
   createdAt: Date;
@@ -160,6 +164,10 @@ const RoleSchema = new Schema<IRole>(
       comments: {
         create: { type: Boolean, default: false },
         getAll: { type: Boolean, default: false },
+        delete: { type: Boolean, default: false },
+      },
+      likes: {
+        create: { type: Boolean, default: false },
         delete: { type: Boolean, default: false },
       },
     },

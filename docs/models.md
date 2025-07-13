@@ -697,6 +697,37 @@ This document describes all the data models used in the TFI Backend API.
 - **Multiple comments**: Users can comment multiple times on the same post
 - **Automatic timestamps**: Includes createdAt and updatedAt
 
+## Like Model
+
+### Schema
+
+```typescript
+{
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  post: { type: mongoose.Schema.Types.ObjectId, ref: 'Post', required: true }
+}
+```
+
+### Example Document
+
+```json
+{
+  "_id": "507f1f77bcf86cd799439060",
+  "user": "507f1f77bcf86cd799439011",
+  "post": "507f1f77bcf86cd799439040",
+  "createdAt": "2024-01-01T14:00:00.000Z",
+  "updatedAt": "2024-01-01T14:00:00.000Z"
+}
+```
+
+### Features
+
+- **Unique constraint**: One like per user per post (compound index)
+- **User relationship**: Each like belongs to one user
+- **Post relationship**: Each like belongs to one post
+- **Automatic timestamps**: Includes createdAt and updatedAt
+- **Automatic counter**: Increments/decrements post's likesCount
+
 ## 🔗 Relationships
 
 ### User ↔ Role
@@ -769,6 +800,16 @@ This document describes all the data models used in the TFI Backend API.
 - **User** can have many **Comments** (author relationship)
 - **Comment** belongs to one **User** (author)
 
+### User ↔ Like
+
+- **User** can have many **Likes** (user relationship)
+- **Like** belongs to one **User** (user)
+
+### Post ↔ Like
+
+- **Post** can have many **Likes**
+- **Like** belongs to one **Post**
+
 ## 📝 Notes
 
 - All models include automatic `createdAt` and `updatedAt` timestamps
@@ -778,3 +819,5 @@ This document describes all the data models used in the TFI Backend API.
 - ObjectId references are used for relationships between collections
 - Audit logs track all CRUD operations on main entities
 - Comments are consumed independently from posts (not included in post responses)
+- Likes are consumed independently from posts (not included in post responses)
+- Likes have unique constraint (one like per user per post)
