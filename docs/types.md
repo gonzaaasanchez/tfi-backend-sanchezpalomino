@@ -49,13 +49,9 @@ Constants for reservation status values to ensure consistency across the applica
 
 ```typescript
 export const RESERVATION_STATUS = {
-<<<<<<< Updated upstream
-  PENDING: 'pending',
-=======
   PAYMENT_PENDING: 'payment_pending',
   PAYMENT_REJECTED: 'payment_rejected',
   WAITING_ACCEPTANCE: 'waiting_acceptance',
->>>>>>> Stashed changes
   CONFIRMED: 'confirmed',
   STARTED: 'started',
   FINISHED: 'finished',

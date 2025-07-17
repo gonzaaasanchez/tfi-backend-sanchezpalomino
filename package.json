@@ -11,7 +11,8 @@
     "createUsers": "ts-node scripts/createUsers.ts",
     "createPets": "ts-node scripts/createPets.ts",
     "createPetCharacteristics": "ts-node scripts/createPetCharacteristics.ts",
-    "fillCareAddress": "ts-node scripts/fillCareAddress.ts"
+    "fillCareAddress": "ts-node scripts/fillCareAddress.ts",
+    "fixOperadorPassword": "ts-node scripts/fixOperadorPassword.ts"
   },
   "keywords": [],
   "author": "",
