@@ -12,7 +12,9 @@ const router = Router();
 const getRoles: RequestHandler = async (req, res, next) => {
   try {
     const roles = await Role.find().select('-__v');
-    ResponseHelper.success(res, 'Roles obtenidos exitosamente', 
+    ResponseHelper.success(
+      res,
+      'Roles obtenidos exitosamente',
       roles.map((role) => ({
         id: role._id,
         name: role.name,
@@ -70,13 +72,20 @@ const createRole: RequestHandler = async (req, res, next) => {
       !permissions.users ||
       !permissions.roles ||
       !permissions.admins ||
+      !permissions.logs ||
       !permissions.petTypes ||
       !permissions.petCharacteristics ||
-      !permissions.pets
+      !permissions.pets ||
+      !permissions.caregiverSearch ||
+      !permissions.reservations ||
+      !permissions.reviews ||
+      !permissions.posts ||
+      !permissions.comments ||
+      !permissions.likes
     ) {
       ResponseHelper.validationError(
         res,
-        'Se requieren todos los permisos: users, roles, admins, petTypes, petCharacteristics y pets'
+        'Se requieren todos los permisos: users, roles, admins, logs, petTypes, petCharacteristics, pets, caregiverSearch, reservations, reviews, posts, comments y likes'
       );
       return;
     }
@@ -116,15 +125,20 @@ const createRole: RequestHandler = async (req, res, next) => {
       { field: 'description', oldValue: null, newValue: description },
     ]);
 
-    ResponseHelper.success(res, 'Rol creado exitosamente', {
-      id: savedRole._id,
-      name: savedRole.name,
-      description: savedRole.description,
-      permissions: savedRole.permissions,
-      isSystem: savedRole.isSystem,
-      createdAt: savedRole.createdAt,
-      updatedAt: savedRole.updatedAt,
-    }, 201);
+    ResponseHelper.success(
+      res,
+      'Rol creado exitosamente',
+      {
+        id: savedRole._id,
+        name: savedRole.name,
+        description: savedRole.description,
+        permissions: savedRole.permissions,
+        isSystem: savedRole.isSystem,
+        createdAt: savedRole.createdAt,
+        updatedAt: savedRole.updatedAt,
+      },
+      201
+    );
   } catch (error) {
     next(error);
   }
@@ -147,6 +161,31 @@ const updateRole: RequestHandler = async (req, res, next) => {
       ResponseHelper.validationError(
         res,
         'No se puede modificar roles del sistema'
+      );
+      return;
+    }
+
+    // Validate that all permissions are sent (same as create)
+    const { permissions } = updateData;
+    if (
+      !permissions ||
+      !permissions.users ||
+      !permissions.roles ||
+      !permissions.admins ||
+      !permissions.logs ||
+      !permissions.petTypes ||
+      !permissions.petCharacteristics ||
+      !permissions.pets ||
+      !permissions.caregiverSearch ||
+      !permissions.reservations ||
+      !permissions.reviews ||
+      !permissions.posts ||
+      !permissions.comments ||
+      !permissions.likes
+    ) {
+      ResponseHelper.validationError(
+        res,
+        'Se requieren todos los permisos: users, roles, admins, logs, petTypes, petCharacteristics, pets, caregiverSearch, reservations, reviews, posts, comments y likes'
       );
       return;
     }
@@ -296,7 +335,11 @@ const getPermissionsTemplate: RequestHandler = async (req, res, next) => {
       },
     };
 
-    ResponseHelper.success(res, 'Plantilla de permisos obtenida exitosamente', permissionsTemplate);
+    ResponseHelper.success(
+      res,
+      'Plantilla de permisos obtenida exitosamente',
+      permissionsTemplate
+    );
   } catch (error) {
     next(error);
   }
