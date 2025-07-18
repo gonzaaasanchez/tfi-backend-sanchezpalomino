@@ -173,6 +173,7 @@ const RoleSchema = new Schema<IRole>(
         },
       },
       required: [true, 'Los permisos son requeridos'],
+      _id: false,
     },
     isSystem: {
       type: Boolean,

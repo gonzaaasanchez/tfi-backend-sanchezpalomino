@@ -9,9 +9,14 @@ import { ResponseHelper } from '../utils/response';
 const router = Router();
 
 // Helper function to validate permissions structure
-const validatePermissions = (permissions: any): { isValid: boolean; error?: string } => {
+const validatePermissions = (
+  permissions: any
+): { isValid: boolean; error?: string } => {
   if (!permissions || typeof permissions !== 'object') {
-    return { isValid: false, error: 'Los permisos son requeridos y deben ser un objeto' };
+    return {
+      isValid: false,
+      error: 'Los permisos son requeridos y deben ser un objeto',
+    };
   }
 
   const requiredPermissions = {
@@ -27,29 +32,29 @@ const validatePermissions = (permissions: any): { isValid: boolean; error?: stri
     reviews: ['create', 'read'],
     posts: ['create', 'read', 'delete', 'getAll'],
     comments: ['create', 'getAll', 'delete'],
-    likes: ['create', 'delete']
+    likes: ['create', 'delete'],
   };
 
   for (const [resource, requiredProps] of Object.entries(requiredPermissions)) {
     if (!permissions[resource] || typeof permissions[resource] !== 'object') {
-      return { 
-        isValid: false, 
-        error: `El recurso '${resource}' es requerido y debe ser un objeto` 
+      return {
+        isValid: false,
+        error: `El recurso '${resource}' es requerido y debe ser un objeto`,
       };
     }
 
     for (const prop of requiredProps) {
       if (!(prop in permissions[resource])) {
-        return { 
-          isValid: false, 
-          error: `La propiedad '${prop}' es requerida en '${resource}'` 
+        return {
+          isValid: false,
+          error: `La propiedad '${prop}' es requerida en '${resource}'`,
         };
       }
-      
+
       if (typeof permissions[resource][prop] !== 'boolean') {
-        return { 
-          isValid: false, 
-          error: `La propiedad '${prop}' en '${resource}' debe ser un booleano (true/false)` 
+        return {
+          isValid: false,
+          error: `La propiedad '${prop}' en '${resource}' debe ser un booleano (true/false)`,
         };
       }
     }
@@ -119,7 +124,10 @@ const createRole: RequestHandler = async (req, res, next) => {
     // Validate permissions structure
     const permissionsValidation = validatePermissions(permissions);
     if (!permissionsValidation.isValid) {
-      ResponseHelper.validationError(res, permissionsValidation.error || 'Error en la validación de permisos');
+      ResponseHelper.validationError(
+        res,
+        permissionsValidation.error || 'Error en la validación de permisos'
+      );
       return;
     }
 
@@ -202,7 +210,10 @@ const updateRole: RequestHandler = async (req, res, next) => {
     const { permissions } = updateData;
     const permissionsValidation = validatePermissions(permissions);
     if (!permissionsValidation.isValid) {
-      ResponseHelper.validationError(res, permissionsValidation.error || 'Error en la validación de permisos');
+      ResponseHelper.validationError(
+        res,
+        permissionsValidation.error || 'Error en la validación de permisos'
+      );
       return;
     }
 
