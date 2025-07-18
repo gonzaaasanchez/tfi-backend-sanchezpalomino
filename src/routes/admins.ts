@@ -50,6 +50,7 @@ const loginAdmin: RequestHandler = async (req, res, next) => {
         role: {
           id: (admin.role as any)._id,
           name: (admin.role as any).name,
+          isSystem: (admin.role as any).isSystem,
         },
         createdAt: admin.createdAt,
         updatedAt: admin.updatedAt,
@@ -142,6 +143,7 @@ const createAdmin: RequestHandler = async (req, res, next) => {
           role: {
             id: (admin.role as any)._id,
             name: (admin.role as any).name,
+            isSystem: (admin.role as any).isSystem,
           },
           createdAt: admin.createdAt,
           updatedAt: admin.updatedAt,
@@ -169,6 +171,7 @@ const getProfile: RequestHandler = async (req, res, next) => {
         role: {
           id: (req.user.role as any)._id,
           name: (req.user.role as any).name,
+          isSystem: (req.user.role as any).isSystem,
         },
         createdAt: req.user.createdAt,
         updatedAt: req.user.updatedAt,
@@ -192,6 +195,7 @@ const getAllAdmins: RequestHandler = async (req, res, next) => {
         role: {
           id: (admin.role as any)._id,
           name: (admin.role as any).name,
+          isSystem: (admin.role as any).isSystem,
         },
         createdAt: admin.createdAt,
         updatedAt: admin.updatedAt,
@@ -221,6 +225,7 @@ const getAdmin: RequestHandler = async (req, res, next) => {
       role: {
         id: (admin.role as any)._id,
         name: (admin.role as any).name,
+        isSystem: (admin.role as any).isSystem,
       },
       createdAt: admin.createdAt,
       updatedAt: admin.updatedAt,
@@ -290,6 +295,7 @@ const updateAdmin: RequestHandler = async (req, res, next) => {
         role: {
           id: (admin.role as any)._id,
           name: (admin.role as any).name,
+          isSystem: (admin.role as any).isSystem,
         },
         createdAt: admin.createdAt,
         updatedAt: admin.updatedAt,
