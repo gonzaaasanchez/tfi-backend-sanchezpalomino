@@ -216,6 +216,92 @@ const deleteRole: RequestHandler = async (req, res, next) => {
   }
 };
 
+// GET /roles/permissions/template - Get empty permissions template
+const getPermissionsTemplate: RequestHandler = async (req, res, next) => {
+  try {
+    const permissionsTemplate = {
+      users: {
+        create: false,
+        read: false,
+        update: false,
+        delete: false,
+        getAll: false,
+      },
+      roles: {
+        create: false,
+        read: false,
+        update: false,
+        delete: false,
+        getAll: false,
+      },
+      admins: {
+        create: false,
+        read: false,
+        update: false,
+        delete: false,
+        getAll: false,
+      },
+      logs: {
+        read: false,
+        getAll: false,
+      },
+      petTypes: {
+        create: false,
+        read: false,
+        update: false,
+        delete: false,
+        getAll: false,
+      },
+      petCharacteristics: {
+        create: false,
+        read: false,
+        update: false,
+        delete: false,
+        getAll: false,
+      },
+      pets: {
+        create: false,
+        read: false,
+        update: false,
+        delete: false,
+        getAll: false,
+      },
+      caregiverSearch: {
+        read: false,
+      },
+      reservations: {
+        create: false,
+        read: false,
+        update: false,
+        admin: false,
+      },
+      reviews: {
+        create: false,
+        read: false,
+      },
+      posts: {
+        create: false,
+        read: false,
+        delete: false,
+        getAll: false,
+      },
+      comments: {
+        create: false,
+        getAll: false,
+        delete: false,
+      },
+      likes: {
+        create: false,
+        delete: false,
+      },
+    };
+
+    ResponseHelper.success(res, 'Plantilla de permisos obtenida exitosamente', permissionsTemplate);
+  } catch (error) {
+    next(error);
+  }
+};
+
 // ========================================
 // ROUTES with authentication and permission middleware
 // ========================================
@@ -225,6 +311,13 @@ router.get(
   authMiddleware,
   permissionMiddleware('roles', 'getAll'),
   getRoles
+);
+// @ts-ignore - Express 5.1.0 type compatibility issue
+router.get(
+  '/permissions/template',
+  authMiddleware,
+  permissionMiddleware('roles', 'read'),
+  getPermissionsTemplate
 );
 // @ts-ignore - Express 5.1.0 type compatibility issue
 router.get(
