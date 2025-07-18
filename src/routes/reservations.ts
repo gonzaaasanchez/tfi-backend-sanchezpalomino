@@ -950,7 +950,7 @@ router.post(
 router.get(
   '/',
   authMiddleware,
-  permissionMiddleware('reservations', 'read'),
+  permissionMiddleware('reservations', 'getAll'),
   getUserReservations
 );
 router.get(
@@ -988,7 +988,7 @@ router.get(
 router.get(
   '/admin/:id',
   authMiddleware,
-  permissionMiddleware('reservations', 'getAll'),
+  permissionMiddleware('reservations', 'read'),
   getReservationAdmin
 );
 
