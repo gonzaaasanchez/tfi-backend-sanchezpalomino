@@ -166,7 +166,8 @@ Authorization: Bearer <token>
       }>;
       owner: {
         id: string;
-        name: string;
+        firstName: string;
+        lastName: string;
         email: string;
       };
       createdAt: string;
@@ -207,7 +208,8 @@ Authorization: Bearer <token>
         ],
         "owner": {
           "id": "507f1f77bcf86cd799439015",
-          "name": "John Doe",
+          "firstName": "John",
+          "lastName": "Doe",
           "email": "john@example.com"
         },
         "createdAt": "2024-01-01T00:00:00.000Z",
@@ -357,7 +359,8 @@ Authorization: Bearer <token>
       }>;
       owner: {
         id: string;
-        name: string;
+        firstName: string;
+        lastName: string;
         email: string;
       };
       createdAt: string;
@@ -401,7 +404,8 @@ Authorization: Bearer <token>
         "owner": {
           "id": "507f1f77bcf86cd799439015",
           "firstName": "John",
-          "lastName": "Doe"
+          "lastName": "Doe",
+          "email": "john@example.com"
         },
         "createdAt": "2024-01-01T00:00:00.000Z",
         "updatedAt": "2024-01-01T00:00:00.000Z"
@@ -497,7 +501,8 @@ Authorization: Bearer <token>
     "owner": {
       "id": "507f1f77bcf86cd799439015",
       "firstName": "John",
-      "lastName": "Doe"
+      "lastName": "Doe",
+      "email": "john@example.com"
     },
     "createdAt": "2024-01-01T00:00:00.000Z",
     "updatedAt": "2024-01-01T00:00:00.000Z"
@@ -616,7 +621,8 @@ Authorization: Bearer <token>
     "owner": {
       "id": "507f1f77bcf86cd799439015",
       "firstName": "John",
-      "lastName": "Doe"
+      "lastName": "Doe",
+      "email": "john@example.com"
     },
     "createdAt": "2024-01-01T00:00:00.000Z",
     "updatedAt": "2024-01-01T00:00:00.000Z"
@@ -744,6 +750,7 @@ Authorization: Bearer <token>
         id: string;
         firstName: string;
         lastName: string;
+        email: string;
       };
       createdAt: string;
       updatedAt: string;
@@ -786,7 +793,8 @@ Authorization: Bearer <token>
         "owner": {
           "id": "507f1f77bcf86cd799439015",
           "firstName": "John",
-          "lastName": "Doe"
+          "lastName": "Doe",
+          "email": "john@example.com"
         },
         "createdAt": "2024-01-01T00:00:00.000Z",
         "updatedAt": "2024-01-01T00:00:00.000Z"
