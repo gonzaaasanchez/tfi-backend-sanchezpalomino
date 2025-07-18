@@ -47,7 +47,10 @@ const loginAdmin: RequestHandler = async (req, res, next) => {
         firstName: admin.firstName,
         lastName: admin.lastName,
         email: admin.email,
-        role: admin.role,
+        role: {
+          id: (admin.role as any)._id,
+          name: (admin.role as any).name,
+        },
         createdAt: admin.createdAt,
         updatedAt: admin.updatedAt,
       },
@@ -136,7 +139,10 @@ const createAdmin: RequestHandler = async (req, res, next) => {
           firstName: admin.firstName,
           lastName: admin.lastName,
           email: admin.email,
-          role: admin.role,
+          role: {
+            id: (admin.role as any)._id,
+            name: (admin.role as any).name,
+          },
           createdAt: admin.createdAt,
           updatedAt: admin.updatedAt,
         },
@@ -160,7 +166,10 @@ const getProfile: RequestHandler = async (req, res, next) => {
         firstName: req.user.firstName,
         lastName: req.user.lastName,
         email: req.user.email,
-        role: req.user.role,
+        role: {
+          id: (req.user.role as any)._id,
+          name: (req.user.role as any).name,
+        },
         createdAt: req.user.createdAt,
         updatedAt: req.user.updatedAt,
       },
@@ -180,7 +189,10 @@ const getAllAdmins: RequestHandler = async (req, res, next) => {
         firstName: admin.firstName,
         lastName: admin.lastName,
         email: admin.email,
-        role: admin.role,
+        role: {
+          id: (admin.role as any)._id,
+          name: (admin.role as any).name,
+        },
         createdAt: admin.createdAt,
         updatedAt: admin.updatedAt,
       }))
@@ -206,7 +218,10 @@ const getAdmin: RequestHandler = async (req, res, next) => {
       firstName: admin.firstName,
       lastName: admin.lastName,
       email: admin.email,
-      role: admin.role,
+      role: {
+        id: (admin.role as any)._id,
+        name: (admin.role as any).name,
+      },
       createdAt: admin.createdAt,
       updatedAt: admin.updatedAt,
     });
@@ -272,7 +287,10 @@ const updateAdmin: RequestHandler = async (req, res, next) => {
         firstName: admin.firstName,
         lastName: admin.lastName,
         email: admin.email,
-        role: admin.role,
+        role: {
+          id: (admin.role as any)._id,
+          name: (admin.role as any).name,
+        },
         createdAt: admin.createdAt,
         updatedAt: admin.updatedAt,
       }
