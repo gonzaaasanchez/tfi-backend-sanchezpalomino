@@ -150,7 +150,7 @@ const RoleSchema = new Schema<IRole>(
           create: { type: Boolean, default: false },
           read: { type: Boolean, default: false },
           update: { type: Boolean, default: false },
-          admin: { type: Boolean, default: false },
+          getAll: { type: Boolean, default: false },
         },
         reviews: {
           create: { type: Boolean, default: false },
