@@ -470,7 +470,7 @@ const getReservation: RequestHandler = async (req, res, next) => {
       reservation.user._id.toString() === req.user?._id?.toString();
     const isCaregiver =
       reservation.caregiver._id.toString() === req.user?._id?.toString();
-    const isAdmin = req.user?.role?.name === 'admin';
+    const isAdmin = req.user?.role?.name === 'superadmin';
 
     if (!isOwner && !isCaregiver && !isAdmin) {
       ResponseHelper.forbidden(res, 'No tienes permisos para ver esta reserva');

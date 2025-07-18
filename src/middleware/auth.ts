@@ -35,9 +35,9 @@ export const authMiddleware = async (
     // Find the user or admin based on token type
     let user;
     if (decoded.type === 'admin') {
-      user = await Admin.findById(decoded.userId).select('-password');
+      user = await Admin.findById(decoded.userId).select('-password').populate('role');
     } else {
-      user = await User.findById(decoded.userId).select('-password');
+      user = await User.findById(decoded.userId).select('-password').populate('role');
     }
 
     if (!user) {
