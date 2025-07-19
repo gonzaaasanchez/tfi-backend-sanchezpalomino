@@ -28,7 +28,7 @@ const validatePermissions = (
     petCharacteristics: ['create', 'read', 'update', 'delete', 'getAll'],
     pets: ['create', 'read', 'update', 'delete', 'getAll'],
     caregiverSearch: ['read'],
-    reservations: ['create', 'read', 'update', 'admin'],
+    reservations: ['create', 'read', 'update', 'getAll'],
     reviews: ['create', 'read'],
     posts: ['create', 'read', 'delete', 'getAll'],
     comments: ['create', 'getAll', 'delete'],
