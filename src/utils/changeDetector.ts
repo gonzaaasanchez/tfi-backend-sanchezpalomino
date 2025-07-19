@@ -83,13 +83,27 @@ export function getChanges<T extends mongoose.Document>(
       Object.prototype.hasOwnProperty.call(oldDoc, key) &&
       newData[key] !== undefined
     ) {
-      // Convert to string for safe comparison, especially ObjectId
-      if (String(oldDoc[key]) !== String(newData[key])) {
-        changes.push({
-          field: key,
-          oldValue: oldDoc[key],
-          newValue: newData[key],
-        });
+      const oldValue = oldDoc[key];
+      const newValue = newData[key];
+
+      // For objects and arrays, use JSON.stringify for comparison
+      if (typeof oldValue === 'object' && typeof newValue === 'object') {
+        if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
+          changes.push({
+            field: key,
+            oldValue: oldValue,
+            newValue: newValue,
+          });
+        }
+      } else {
+        // For primitive values, use string comparison (handles ObjectId)
+        if (String(oldValue) !== String(newValue)) {
+          changes.push({
+            field: key,
+            oldValue: oldValue,
+            newValue: newValue,
+          });
+        }
       }
     }
   }
