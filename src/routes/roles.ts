@@ -339,7 +339,7 @@ const getPermissionsTemplate: RequestHandler = async (req, res, next) => {
         create: false,
         read: false,
         update: false,
-        admin: false,
+        getAll: false,
       },
       reviews: {
         create: false,
