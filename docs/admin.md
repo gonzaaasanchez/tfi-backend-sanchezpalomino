@@ -150,6 +150,50 @@ Authorization: Bearer <token>
 }
 ```
 
+### POST `/admins/logout`
+Logout for authenticated administrators.
+
+**Validations:**
+- Valid JWT token required
+- Token must be active (not blacklisted)
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```typescript
+{
+  success: boolean;
+  message: string;
+  data: null;
+}
+```
+
+**Success Response:**
+```json
+{
+  "success": true,
+  "message": "Logout exitoso",
+  "data": null
+}
+```
+
+**Error Response:**
+```json
+{
+  "success": false,
+  "message": "Token de acceso requerido",
+  "data": null
+}
+```
+
+**Notes:**
+- The token is added to a blacklist and cannot be used again
+- All subsequent requests with this token will be rejected
+- Tokens are automatically cleaned up when they expire
+
 ## Admin Management
 
 ### GET `/admins`

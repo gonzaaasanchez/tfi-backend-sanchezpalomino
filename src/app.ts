@@ -18,7 +18,9 @@ import reviewsRoutes from './routes/reviews';
 import postsRoutes from './routes/posts';
 import commentsRoutes from './routes/comments';
 import likesRoutes from './routes/likes';
+import auditRoutes from './routes/audit';
 import { errorHandler } from './middleware/errorHandler';
+import { scheduleTokenCleanup } from './utils/tokenCleanup';
 
 // Load environment variables
 dotenv.config();
@@ -48,6 +50,7 @@ app.use('/api', reviewsRoutes);
 app.use('/api/posts', postsRoutes);
 app.use('/api/comments', commentsRoutes);
 app.use('/api/likes', likesRoutes);
+app.use('/api/audit', auditRoutes);
 
 // Test route
 app.get('/', (req, res) => {
@@ -64,6 +67,9 @@ mongoose
     console.log('Conectado a MongoDB');
     app.listen(PORT, () => {
       console.log(`Servidor corriendo en http://localhost:${PORT}`);
+      
+      // Start token cleanup scheduler
+      scheduleTokenCleanup();
     });
   })
   .catch((err) => {

@@ -7,6 +7,8 @@ import { permissionMiddleware } from '../middleware/permissions';
 import { logChanges } from '../utils/auditLogger';
 import { getChanges } from '../utils/changeDetector';
 import { ResponseHelper } from '../utils/response';
+import { blacklistToken } from '../utils/tokenBlacklist';
+import { logSessionEvent } from '../utils/sessionAudit';
 
 const router = Router();
 
@@ -22,7 +24,19 @@ const loginAdmin: RequestHandler = async (req, res, next) => {
 
     // Find admin with role
     const admin = await Admin.findOne({ email }).populate('role');
+    const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
+    
     if (!admin) {
+      // Log failed login attempt
+      await logSessionEvent({
+        userId: 'unknown',
+        userType: 'admin',
+        action: 'login_failed',
+        ipAddress,
+        success: false,
+        failureReason: 'Admin no encontrado',
+      });
+      
       ResponseHelper.unauthorized(res, 'Credenciales inválidas');
       return;
     }
@@ -30,6 +44,16 @@ const loginAdmin: RequestHandler = async (req, res, next) => {
     // Verify password
     const isPasswordValid = await verifyPassword(password, admin.password);
     if (!isPasswordValid) {
+      // Log failed login attempt
+      await logSessionEvent({
+        userId: admin._id?.toString() || '',
+        userType: 'admin',
+        action: 'login_failed',
+        ipAddress,
+        success: false,
+        failureReason: 'Contraseña incorrecta',
+      });
+      
       ResponseHelper.unauthorized(res, 'Credenciales inválidas');
       return;
     }
@@ -39,6 +63,15 @@ const loginAdmin: RequestHandler = async (req, res, next) => {
       userId: admin._id?.toString() || '',
       email: admin.email,
       type: 'admin',
+    });
+
+    // Log successful login
+    await logSessionEvent({
+      userId: admin._id?.toString() || '',
+      userType: 'admin',
+      action: 'login',
+      ipAddress,
+      success: true,
     });
 
     ResponseHelper.success(res, 'Login exitoso', {
@@ -340,11 +373,60 @@ const deleteAdmin: RequestHandler = async (req, res, next) => {
   }
 };
 
+// POST /admins/logout - Admin logout
+const logoutAdmin: RequestHandler = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      ResponseHelper.unauthorized(res, 'Token de acceso requerido');
+      return;
+    }
+
+    const token = authHeader.substring(7);
+    
+    // Add token to blacklist
+    const blacklisted = await blacklistToken(token);
+    
+    if (!blacklisted) {
+      ResponseHelper.serverError(res, 'Error al invalidar el token');
+      return;
+    }
+
+    // Log the logout
+    const userName = req.user
+      ? `${req.user.firstName} ${req.user.lastName}`
+      : 'Admin';
+    const userId = req.user?._id?.toString() || 'unknown';
+    
+    await logChanges('Admin', userId, userId, userName, [
+      { field: 'logout', oldValue: null, newValue: true },
+      { field: 'tokenBlacklisted', oldValue: null, newValue: true },
+    ]);
+
+    // Log session event
+    const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
+    await logSessionEvent({
+      userId,
+      userType: 'admin',
+      action: 'logout',
+      ipAddress,
+      success: true,
+    });
+
+    ResponseHelper.success(res, 'Logout exitoso');
+  } catch (error) {
+    next(error);
+  }
+};
+
 // ========================================
 // ROUTES
 // ========================================
 // @ts-ignore - Express 5.1.0 type compatibility issue
 router.post('/login', loginAdmin);
+// @ts-ignore - Express 5.1.0 type compatibility issue
+router.post('/logout', authMiddleware, logoutAdmin);
 // @ts-ignore - Express 5.1.0 type compatibility issue
 router.get('/me', authMiddleware, getProfile);
 // @ts-ignore - Express 5.1.0 type compatibility issue

@@ -3,6 +3,7 @@ import { verifyToken, JWTPayload } from '../utils/auth';
 import User from '../models/User';
 import Admin from '../models/Admin';
 import { ResponseHelper } from '../utils/response';
+import { isTokenBlacklisted } from '../utils/tokenBlacklist';
 
 // Extend the Request interface to include the user
 declare global {
@@ -28,6 +29,12 @@ export const authMiddleware = async (
 
     // Extract the token (remove "Bearer ")
     const token = authHeader.substring(7);
+
+    // Check if token is blacklisted
+    const isBlacklisted = await isTokenBlacklisted(token);
+    if (isBlacklisted) {
+      return ResponseHelper.unauthorized(res, 'Token invalidado');
+    }
 
     // Verify the token
     const decoded = verifyToken(token) as JWTPayload;
