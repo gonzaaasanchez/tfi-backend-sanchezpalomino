@@ -50,7 +50,8 @@ export const permissionMiddleware = (
       if (
         !role.permissions ||
         !role.permissions[resource] ||
-        !role.permissions[resource][action]
+        !role.permissions[resource][action] ||
+        role.permissions[resource][action] !== true
       ) {
         return ResponseHelper.forbidden(
           res,
