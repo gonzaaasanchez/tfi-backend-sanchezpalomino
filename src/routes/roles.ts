@@ -24,6 +24,7 @@ const validatePermissions = (
     roles: ['create', 'read', 'update', 'delete', 'getAll'],
     admins: ['create', 'read', 'update', 'delete', 'getAll'],
     logs: ['read', 'getAll'],
+    audit: ['read'],
     petTypes: ['create', 'read', 'update', 'delete', 'getAll'],
     petCharacteristics: ['create', 'read', 'update', 'delete', 'getAll'],
     pets: ['create', 'read', 'update', 'delete', 'getAll'],
@@ -310,6 +311,9 @@ const getPermissionsTemplate: RequestHandler = async (req, res, next) => {
       logs: {
         read: false,
         getAll: false,
+      },
+      audit: {
+        read: false,
       },
       petTypes: {
         create: false,

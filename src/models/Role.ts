@@ -29,6 +29,9 @@ export interface IRole extends Document {
       read: boolean;
       getAll: boolean;
     };
+    audit: {
+      read: boolean;
+    };
     petTypes: {
       create: boolean;
       read: boolean;
@@ -121,6 +124,9 @@ const RoleSchema = new Schema<IRole>(
         logs: {
           read: { type: Boolean, default: false },
           getAll: { type: Boolean, default: false },
+        },
+        audit: {
+          read: { type: Boolean, default: false },
         },
         petTypes: {
           create: { type: Boolean, default: false },
