@@ -44,7 +44,12 @@ const getAllSessions: RequestHandler = async (req, res, next) => {
 
     const result = await getSessions(filters);
 
-    ResponseHelper.success(res, 'Sesiones obtenidas exitosamente', result);
+    res.status(200).json({
+      success: true,
+      message: 'Sesiones obtenidas exitosamente',
+      data: result.sessions,
+      pagination: result.pagination,
+    });
   } catch (error) {
     next(error);
   }
@@ -62,7 +67,13 @@ const getUserSessionHistory: RequestHandler = async (req, res, next) => {
       parseInt(limit as string)
     );
 
-    ResponseHelper.success(res, 'Historial de sesiones obtenido exitosamente', result);
+    res.status(200).json({
+      success: true,
+      message: 'Historial de sesiones obtenido exitosamente',
+      data: result.sessions,
+      pagination: result.pagination,
+      userId: result.userId,
+    });
   } catch (error) {
     next(error);
   }
@@ -80,7 +91,12 @@ const getFailedLoginAttempts: RequestHandler = async (req, res, next) => {
       endDate ? new Date(endDate as string) : undefined
     );
 
-    ResponseHelper.success(res, 'Intentos fallidos obtenidos exitosamente', result);
+    res.status(200).json({
+      success: true,
+      message: 'Intentos fallidos obtenidos exitosamente',
+      data: result.sessions,
+      pagination: result.pagination,
+    });
   } catch (error) {
     next(error);
   }

@@ -69,14 +69,12 @@ Gets all sessions with optional filters.
 {
   success: boolean;
   message: string;
-  data: {
-    sessions: Array<SessionAudit>;
-    pagination: {
-      page: number;
-      limit: number;
-      total: number;
-      pages: number;
-    };
+  data: Array<SessionAudit>;
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
   };
 }
 ```
@@ -105,16 +103,14 @@ Gets the complete session history for a specific user.
 {
   success: boolean;
   message: string;
-  data: {
-    userId: string;
-    sessions: Array<SessionAudit>;
-    pagination: {
-      page: number;
-      limit: number;
-      total: number;
-      pages: number;
-    };
+  data: Array<SessionAudit>;
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
   };
+  userId: string;
 }
 ```
 
@@ -136,14 +132,12 @@ Gets only failed login attempts.
 {
   success: boolean;
   message: string;
-  data: {
-    sessions: Array<SessionAudit>;  // Only login_failed
-    pagination: {
-      page: number;
-      limit: number;
-      total: number;
-      pages: number;
-    };
+  data: Array<SessionAudit>;  // Only login_failed
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
   };
 }
 ```

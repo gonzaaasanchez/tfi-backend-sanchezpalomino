@@ -95,7 +95,7 @@ export const getSessions = async (filters: SessionFilters = {}) => {
         page,
         limit,
         total,
-        pages: Math.ceil(total / limit),
+        totalPages: Math.ceil(total / limit),
       },
     };
   } catch (error) {
@@ -130,7 +130,7 @@ export const getUserSessions = async (
         page,
         limit,
         total,
-        pages: Math.ceil(total / limit),
+        totalPages: Math.ceil(total / limit),
       },
     };
   } catch (error) {
@@ -175,7 +175,7 @@ export const getFailedLogins = async (
         page,
         limit,
         total,
-        pages: Math.ceil(total / limit),
+        totalPages: Math.ceil(total / limit),
       },
     };
   } catch (error) {
