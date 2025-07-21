@@ -44,10 +44,8 @@ const getAllSessions: RequestHandler = async (req, res, next) => {
 
     const result = await getSessions(filters);
 
-    res.status(200).json({
-      success: true,
-      message: 'Sesiones obtenidas exitosamente',
-      data: result.sessions,
+    ResponseHelper.success(res, 'Sesiones obtenidas exitosamente', {
+      items: result.sessions,
       pagination: result.pagination,
     });
   } catch (error) {
@@ -67,10 +65,8 @@ const getUserSessionHistory: RequestHandler = async (req, res, next) => {
       parseInt(limit as string)
     );
 
-    res.status(200).json({
-      success: true,
-      message: 'Historial de sesiones obtenido exitosamente',
-      data: result.sessions,
+    ResponseHelper.success(res, 'Historial de sesiones obtenido exitosamente', {
+      items: result.sessions,
       pagination: result.pagination,
       userId: result.userId,
     });
@@ -91,10 +87,8 @@ const getFailedLoginAttempts: RequestHandler = async (req, res, next) => {
       endDate ? new Date(endDate as string) : undefined
     );
 
-    res.status(200).json({
-      success: true,
-      message: 'Intentos fallidos obtenidos exitosamente',
-      data: result.sessions,
+    ResponseHelper.success(res, 'Intentos fallidos obtenidos exitosamente', {
+      items: result.sessions,
       pagination: result.pagination,
     });
   } catch (error) {
