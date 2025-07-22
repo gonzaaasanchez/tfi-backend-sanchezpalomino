@@ -36,7 +36,6 @@ const blacklistedTokenSchema = new Schema<IBlacklistedToken>(
 );
 
 // Index for faster queries and automatic cleanup
-blacklistedTokenSchema.index({ token: 1 });
 blacklistedTokenSchema.index({ userId: 1, userType: 1 });
 blacklistedTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
