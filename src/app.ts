@@ -20,7 +20,7 @@ import commentsRoutes from './routes/comments';
 import likesRoutes from './routes/likes';
 import auditRoutes from './routes/audit';
 import { errorHandler } from './middleware/errorHandler';
-import { scheduleTokenCleanup } from './utils/tokenCleanup';
+import { initializeCronJobs, stopCronJobs } from './utils/cronJobs';
 
 // Load environment variables
 dotenv.config();
@@ -65,12 +65,34 @@ mongoose
   .connect(MONGODB_URI)
   .then(() => {
     console.log('Conectado a MongoDB');
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       console.log(`Servidor corriendo en http://localhost:${PORT}`);
-      
-      // Start token cleanup scheduler
-      scheduleTokenCleanup();
+
+      initializeCronJobs();
     });
+
+    // Graceful shutdown handling
+    const gracefulShutdown = (signal: string) => {
+      console.log(`\n🛑 Recibida señal ${signal}. Cerrando servidor...`);
+
+      // Stop cron jobs first
+      stopCronJobs();
+
+      // Close server
+      server.close(() => {
+        console.log('✅ Servidor HTTP cerrado');
+
+        // Close MongoDB connection
+        mongoose.connection.close().then(() => {
+          console.log('✅ Conexión a MongoDB cerrada');
+          process.exit(0);
+        });
+      });
+    };
+
+    // Handle different shutdown signals
+    process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+    process.on('SIGINT', () => gracefulShutdown('SIGINT'));
   })
   .catch((err) => {
     console.error('Error conectando a MongoDB:', err);
