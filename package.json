@@ -11,6 +11,7 @@
     "createUsers": "ts-node scripts/createUsers.ts",
     "createPets": "ts-node scripts/createPets.ts",
     "createPetCharacteristics": "ts-node scripts/createPetCharacteristics.ts",
+    "createReservations": "ts-node scripts/createReservations.ts",
     "fillCareAddress": "ts-node scripts/fillCareAddress.ts",
     "fixOperadorPassword": "ts-node scripts/fixOperadorPassword.ts"
   },
