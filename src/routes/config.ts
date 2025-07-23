@@ -164,11 +164,16 @@ const updateOneConfig: RequestHandler = async (req, res, next) => {
     await existingConfig.save();
 
     if (changes.length > 0) {
+      const userName = req.user
+        ? `${req.user.firstName} ${req.user.lastName}`
+        : 'Sistema';
+      const userId = req.user?._id?.toString() || 'system';
+      
       await logChanges(
         'Config',
         String(existingConfig._id),
-        req.user?.id || req.user?._id || 'unknown',
-        req.user?.name || req.user?.username || 'unknown',
+        userId,
+        userName,
         changes
       );
     }
