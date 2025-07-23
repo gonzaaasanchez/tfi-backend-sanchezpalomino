@@ -150,6 +150,12 @@ const updateOneConfig: RequestHandler = async (req, res, next) => {
       description: existingConfig.description,
     };
 
+    const changes = getChanges(existingConfig, {
+      value: configData.value,
+      type: configData.type,
+      description: configData.description,
+    });
+
     // Update the configuration
     existingConfig.value = configData.value;
     existingConfig.type = configData.type;
@@ -157,19 +163,12 @@ const updateOneConfig: RequestHandler = async (req, res, next) => {
 
     await existingConfig.save();
 
-    // Log changes for audit
-    const changes = getChanges(existingConfig, {
-      value: configData.value,
-      type: configData.type,
-      description: configData.description,
-    });
-
     if (changes.length > 0) {
       await logChanges(
         'Config',
         String(existingConfig._id),
-        req.user?.id || 'unknown',
-        req.user?.name || 'unknown',
+        req.user?.id || req.user?._id || 'unknown',
+        req.user?.name || req.user?.username || 'unknown',
         changes
       );
     }
