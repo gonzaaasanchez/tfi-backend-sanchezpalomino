@@ -57,6 +57,10 @@ const rolePermissions = {
       create: false,
       delete: false,
     },
+    config: {
+      read: true,
+      update: true,
+    },
     audit: {
       read: true,
     },
@@ -111,6 +115,10 @@ const rolePermissions = {
     likes: {
       create: true,
       delete: true,
+    },
+    config: {
+      read: false,
+      update: false,
     },
     audit: {
       read: false,

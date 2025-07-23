@@ -34,6 +34,7 @@ const validatePermissions = (
     posts: ['create', 'read', 'delete', 'getAll'],
     comments: ['create', 'getAll', 'delete'],
     likes: ['create', 'delete'],
+    config: ['read', 'update'],
   };
 
   for (const [resource, requiredProps] of Object.entries(requiredPermissions)) {
@@ -363,6 +364,10 @@ const getPermissionsTemplate: RequestHandler = async (req, res, next) => {
       likes: {
         create: false,
         delete: false,
+      },
+      config: {
+        read: false,
+        update: false,
       },
     };
 

@@ -81,6 +81,10 @@ export interface IRole extends Document {
       create: boolean;
       delete: boolean;
     };
+    config: {
+      read: boolean;
+      update: boolean;
+    };
   };
   isSystem: boolean;
   createdAt: Date;
@@ -176,6 +180,10 @@ const RoleSchema = new Schema<IRole>(
         likes: {
           create: { type: Boolean, default: false },
           delete: { type: Boolean, default: false },
+        },
+        config: {
+          read: { type: Boolean, default: false },
+          update: { type: Boolean, default: false },
         },
       },
       required: [true, 'Los permisos son requeridos'],
