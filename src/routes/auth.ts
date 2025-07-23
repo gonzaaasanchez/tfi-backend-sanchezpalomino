@@ -218,7 +218,7 @@ const forgotPassword: RequestHandler = async (req, res, next) => {
     );
 
     // Send email
-    const emailHtml = generatePasswordResetEmail(resetCode, user.firstName);
+    const emailHtml = generatePasswordResetEmail(resetCode, `${user.firstName} ${user.lastName}`);
     const emailSent = await sendEmail({
       to: user.email,
       subject: 'PawPals - 🔐 Código de Recuperación de Contraseña',
