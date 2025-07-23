@@ -30,7 +30,10 @@ export const sendEmail = async (options: EmailOptions): Promise<boolean> => {
   }
 };
 
-export const generatePasswordResetEmail = (code: string, userName: string): string => {
+export const generatePasswordResetEmail = (
+  code: string,
+  userName: string
+): string => {
   return `
 <!DOCTYPE html>
 <html>
@@ -143,7 +146,7 @@ export const generatePasswordResetEmail = (code: string, userName: string): stri
 <body>
   <div class="container">
     <div class="header">
-      <img src="${process.env.BASE_URL}/public/images/icon-pawpals.png" alt="PawPals Logo" class="logo">
+      <img src="${process.env.BASE_URL || 'https://tfi-backend-sanchezpalomino.onrender.com'}/public/images/icon-pawpals.png" alt="PawPals Logo" class="logo">
       <h1>🔐 Recuperar Contraseña</h1>
     </div>
     <div class="content">
@@ -179,4 +182,4 @@ export const generatePasswordResetEmail = (code: string, userName: string): stri
 </body>
 </html>
   `;
-}; 
+};
