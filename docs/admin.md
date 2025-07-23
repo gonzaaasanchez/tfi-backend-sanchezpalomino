@@ -83,6 +83,114 @@ Login for administrators.
 }
 ```
 
+### POST `/admins/forgot-password`
+Request password reset code via email for administrators.
+
+**Validations:**
+- Email is required
+- Email must be valid format
+
+**Request Body:**
+```typescript
+{
+  email: string;
+}
+```
+
+**Response:**
+```typescript
+{
+  success: boolean;
+  message: string;
+  data: null;
+}
+```
+
+**Example Request:**
+```json
+{
+  "email": "admin@example.com"
+}
+```
+
+**Success Response:**
+```json
+{
+  "success": true,
+  "message": "Si el email existe, recibirás un código de recuperación",
+  "data": null
+}
+```
+
+**Notes:**
+- Always returns success message for security (doesn't reveal if email exists)
+- Sends a 6-digit code to the admin's email
+- Code expires in 15 minutes
+- Previous unused codes for the same admin are invalidated
+
+### POST `/admins/reset-password`
+Reset password using the code received via email for administrators.
+
+**Validations:**
+- Email, code, and newPassword are required
+- Code must be valid and not expired
+- New password must meet strength requirements
+- New password must be different from current password
+
+**Request Body:**
+```typescript
+{
+  email: string;
+  code: string;
+  newPassword: string;
+}
+```
+
+**Response:**
+```typescript
+{
+  success: boolean;
+  message: string;
+  data: null;
+}
+```
+
+**Example Request:**
+```json
+{
+  "email": "admin@example.com",
+  "code": "123456",
+  "newPassword": "newpassword123"
+}
+```
+
+**Success Response:**
+```json
+{
+  "success": true,
+  "message": "Contraseña actualizada exitosamente",
+  "data": null
+}
+```
+
+**Error Response:**
+```json
+{
+  "success": false,
+  "message": "Código inválido o expirado",
+  "data": null
+}
+```
+
+**Password Requirements:**
+- Minimum 6 characters
+- Must be different from current password
+
+**Notes:**
+- Code must be valid and not expired
+- Only works for admin accounts
+- Uses separate reset codes from user accounts
+
 ### GET `/admins/me`
 Get authenticated admin profile.
 

@@ -35,6 +35,9 @@ app.use(cors());
 app.use(helmet());
 app.use(morgan('dev'));
 
+// Serve static files
+app.use('/public', express.static('public'));
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/roles', rolesRoutes);

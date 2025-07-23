@@ -207,7 +207,7 @@ const forgotPassword: RequestHandler = async (req, res, next) => {
 
     // Save or update reset code
     await PasswordReset.findOneAndUpdate(
-      { userId: user._id, used: false },
+      { userId: user._id, userType: 'user', used: false },
       {
         code: resetCode,
         expiresAt,
@@ -220,7 +220,7 @@ const forgotPassword: RequestHandler = async (req, res, next) => {
     const emailHtml = generatePasswordResetEmail(resetCode, user.firstName);
     const emailSent = await sendEmail({
       to: user.email,
-      subject: '🔐 Código de Recuperación de Contraseña',
+      subject: 'PawPals - 🔐 Código de Recuperación de Contraseña',
       html: emailHtml,
     });
 
@@ -283,6 +283,7 @@ const resetPassword: RequestHandler = async (req, res, next) => {
     // Find valid reset code
     const resetRecord = await PasswordReset.findOne({
       userId: user._id,
+      userType: 'user',
       code,
       used: false,
       expiresAt: { $gt: new Date() },

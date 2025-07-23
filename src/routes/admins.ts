@@ -1,12 +1,15 @@
 import { Router, RequestHandler } from 'express';
 import Admin from '../models/Admin';
 import Role from '../models/Role';
+import PasswordReset from '../models/PasswordReset';
 import { hashPassword, verifyPassword, generateToken } from '../utils/auth';
 import { authMiddleware } from '../middleware/auth';
 import { permissionMiddleware } from '../middleware/permissions';
 import { logChanges } from '../utils/auditLogger';
 import { getChanges } from '../utils/changeDetector';
 import { ResponseHelper } from '../utils/response';
+import { sendEmail, generatePasswordResetEmail } from '../utils/email';
+import { generateResetCode, validatePassword } from '../utils/passwordReset';
 import { blacklistToken } from '../utils/tokenBlacklist';
 import { logSessionEvent } from '../utils/sessionAudit';
 
@@ -420,11 +423,167 @@ const logoutAdmin: RequestHandler = async (req, res, next) => {
   }
 };
 
+// POST /admins/forgot-password - Request password reset for admin
+const forgotPasswordAdmin: RequestHandler = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      ResponseHelper.validationError(res, 'El email es requerido');
+      return;
+    }
+
+    // Find admin by email
+    const admin = await Admin.findOne({ email });
+    if (!admin) {
+      // Don't reveal if admin exists or not for security
+      ResponseHelper.success(
+        res,
+        'Si el email existe, recibirás un código de recuperación'
+      );
+      return;
+    }
+
+    // Generate reset code
+    const resetCode = generateResetCode();
+
+    // Set expiration (15 minutes from now)
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() + 15);
+
+    // Save or update reset code
+    await PasswordReset.findOneAndUpdate(
+      { userId: admin._id, userType: 'admin', used: false },
+      {
+        code: resetCode,
+        expiresAt,
+        used: false,
+      },
+      { upsert: true, new: true }
+    );
+
+    // Send email
+    const emailHtml = generatePasswordResetEmail(resetCode, admin.firstName);
+    const emailSent = await sendEmail({
+      to: admin.email,
+      subject: 'PawPals - 🔐 Código de Recuperación de Contraseña - Admin',
+      html: emailHtml,
+    });
+
+    if (!emailSent) {
+      ResponseHelper.serverError(
+        res,
+        'Error al enviar el email de recuperación'
+      );
+      return;
+    }
+
+    // Log the request
+    await logChanges(
+      'PasswordReset',
+      admin._id?.toString() || '',
+      'system',
+      'Sistema',
+      [
+        { field: 'resetRequested', oldValue: null, newValue: true },
+        { field: 'email', oldValue: null, newValue: admin.email },
+        { field: 'userType', oldValue: null, newValue: 'admin' },
+      ]
+    );
+
+    ResponseHelper.success(
+      res,
+      'Si el email existe, recibirás un código de recuperación'
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+// POST /admins/reset-password - Reset password with code for admin
+const resetPasswordAdmin: RequestHandler = async (req, res, next) => {
+  try {
+    const { email, code, newPassword } = req.body;
+
+    if (!email || !code || !newPassword) {
+      ResponseHelper.validationError(
+        res,
+        'Email, código y nueva contraseña son requeridos'
+      );
+      return;
+    }
+
+    // Validate password strength
+    const passwordValidation = validatePassword(newPassword);
+    if (!passwordValidation.isValid) {
+      ResponseHelper.validationError(res, passwordValidation.errors.join(', '));
+      return;
+    }
+
+    // Find admin
+    const admin = await Admin.findOne({ email });
+    if (!admin) {
+      ResponseHelper.validationError(res, 'Admin no encontrado');
+      return;
+    }
+
+    // Find valid reset code
+    const resetRecord = await PasswordReset.findOne({
+      userId: admin._id,
+      userType: 'admin',
+      code,
+      used: false,
+      expiresAt: { $gt: new Date() },
+    });
+
+    if (!resetRecord) {
+      ResponseHelper.validationError(res, 'Código inválido o expirado');
+      return;
+    }
+
+    // Check if new password is different from current
+    const isSamePassword = await verifyPassword(newPassword, admin.password);
+    if (isSamePassword) {
+      ResponseHelper.validationError(
+        res,
+        'La nueva contraseña debe ser diferente a la actual'
+      );
+      return;
+    }
+
+    // Hash new password
+    const hashedNewPassword = await hashPassword(newPassword);
+
+    // Update admin password
+    const oldPassword = admin.password;
+    admin.password = hashedNewPassword;
+    await admin.save();
+
+    // Mark reset code as used
+    resetRecord.used = true;
+    await resetRecord.save();
+
+    // Log the password change
+    await logChanges('Admin', admin._id?.toString() || '', 'system', 'Sistema', [
+      { field: 'password', oldValue: '***', newValue: '***' },
+      { field: 'resetCode', oldValue: code, newValue: 'USED' },
+    ]);
+
+    ResponseHelper.success(res, 'Contraseña actualizada exitosamente');
+  } catch (error) {
+    next(error);
+  }
+};
+
 // ========================================
 // ROUTES
 // ========================================
 // @ts-ignore - Express 5.1.0 type compatibility issue
 router.post('/login', loginAdmin);
+// @ts-ignore - Express 5.1.0 type compatibility issue
+router.post('/forgot-password', forgotPasswordAdmin);
+// @ts-ignore - Express 5.1.0 type compatibility issue
+router.post('/reset-password', resetPasswordAdmin);
 // @ts-ignore - Express 5.1.0 type compatibility issue
 router.post('/logout', authMiddleware, logoutAdmin);
 // @ts-ignore - Express 5.1.0 type compatibility issue
