@@ -50,23 +50,51 @@ Obtiene todas las configuraciones del sistema.
 }
 ```
 
-### PUT /api/config
+### GET /api/config/:key
 
-Actualiza todas las configuraciones del sistema a la vez.
+Obtiene una configuración específica por su clave.
+
+**Permisos requeridos:** `config.read`
+
+**Parámetros:**
+- `key` (string): Clave única de la configuración
+
+**Respuesta:**
+```json
+{
+  "success": true,
+  "message": "Configuración obtenida exitosamente",
+  "data": {
+    "id": "config_id",
+    "key": "system_commission",
+    "value": 6,
+    "type": "number",
+    "description": "Comisión del sistema en porcentaje (ej: 6 = 6%)",
+    "isSystem": true,
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  }
+}
+```
+
+**Errores:**
+- `404`: La configuración no existe
+
+### PUT /api/config/:key
+
+Actualiza una configuración específica por su clave.
 
 **Permisos requeridos:** `config.update`
+
+**Parámetros:**
+- `key` (string): Clave única de la configuración
 
 **Body:**
 ```json
 {
-  "configs": [
-    {
-      "key": "system_commission",
-      "value": 8,
-      "type": "number",
-      "description": "Comisión del sistema en porcentaje (ej: 8 = 8%)"
-    }
-  ]
+  "value": 8,
+  "type": "number",
+  "description": "Comisión del sistema en porcentaje (ej: 8 = 8%)"
 }
 ```
 
@@ -74,43 +102,23 @@ Actualiza todas las configuraciones del sistema a la vez.
 ```json
 {
   "success": true,
-  "message": "Configuraciones actualizadas exitosamente",
-  "data": [
-    {
-      "id": "config_id",
-      "key": "system_commission",
-      "value": 8,
-      "type": "number",
-      "description": "Comisión del sistema en porcentaje (ej: 8 = 8%)",
-      "isSystem": true,
-      "createdAt": "2024-01-01T00:00:00.000Z",
-      "updatedAt": "2024-01-01T00:00:00.000Z"
-    }
-  ]
+  "message": "Configuración actualizada exitosamente",
+  "data": {
+    "id": "config_id",
+    "key": "system_commission",
+    "value": 8,
+    "type": "number",
+    "description": "Comisión del sistema en porcentaje (ej: 8 = 8%)",
+    "isSystem": true,
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  }
 }
 ```
 
-### GET /api/config/template
-
-Obtiene un template de todas las configuraciones con valores nulos para facilitar la edición.
-
-**Permisos requeridos:** `config.read`
-
-**Respuesta:**
-```json
-{
-  "success": true,
-  "message": "Template de configuraciones obtenido exitosamente",
-  "data": [
-    {
-      "key": "system_commission",
-      "value": null,
-      "type": "number",
-      "description": "Comisión del sistema en porcentaje (ej: 6 = 6%)"
-    }
-  ]
-}
-```
+**Errores:**
+- `404`: La configuración no existe
+- `400`: Error de validación (tipo incorrecto, valor requerido, etc.)
 
 ## Configuraciones del Sistema
 
@@ -179,25 +187,29 @@ El sistema valida que el tipo declarado coincida con el valor proporcionado:
 ### Obtener la comisión del sistema
 
 ```javascript
+// Obtener todas las configuraciones
 const response = await fetch('/api/config');
 const configs = response.data;
 const commission = configs.find(c => c.key === 'system_commission').value;
+
+// O obtener una configuración específica
+const response = await fetch('/api/config/system_commission');
+const config = response.data;
+const commission = config.value;
 ```
 
 ### Actualizar la comisión del sistema
 
 ```javascript
-const response = await fetch('/api/config/template');
-const template = response.data;
-
-// Modificar el valor deseado
-template.find(c => c.key === 'system_commission').value = 8;
-
-// Enviar actualización
-await fetch('/api/config', {
+// Actualizar una configuración específica
+await fetch('/api/config/system_commission', {
   method: 'PUT',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ configs: template })
+  body: JSON.stringify({
+    value: 8,
+    type: 'number',
+    description: 'Comisión del sistema en porcentaje (ej: 8 = 8%)'
+  })
 });
 ```
 
