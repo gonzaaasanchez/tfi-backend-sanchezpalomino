@@ -436,6 +436,7 @@ const forgotPasswordAdmin: RequestHandler = async (req, res, next) => {
     // Find admin by email
     const admin = await Admin.findOne({ email });
     if (!admin) {
+      console.log('🔍 Admin not found, returning success message');
       // Don't reveal if admin exists or not for security
       ResponseHelper.success(
         res,

@@ -190,6 +190,7 @@ const forgotPassword: RequestHandler = async (req, res, next) => {
     // Find user by email
     const user = await User.findOne({ email });
     if (!user) {
+      console.log('🔍 User not found, returning success message');
       // Don't reveal if user exists or not for security
       ResponseHelper.success(
         res,
