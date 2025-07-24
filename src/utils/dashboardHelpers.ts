@@ -326,14 +326,12 @@ async function getNewUsersByMonth(
 
   // Generate all months in the period
   const months = [];
-  const currentDate = new Date(
-    startDate.getFullYear(),
-    startDate.getMonth(),
-    1
-  );
-
-  // Ensure we start from the correct month
-  if (currentDate < startDate) {
+  
+  // Start from the first day of the first month in the period
+  const currentDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+  
+  // If the start date is not at the beginning of a month, move to the next month
+  if (startDate.getDate() > 1) {
     currentDate.setMonth(currentDate.getMonth() + 1);
   }
 
@@ -394,14 +392,12 @@ async function getReservationsByMonth(
 
   // Generate all months in the period
   const months = [];
-  const currentDate = new Date(
-    startDate.getFullYear(),
-    startDate.getMonth(),
-    1
-  );
-
-  // Ensure we start from the correct month
-  if (currentDate < startDate) {
+  
+  // Start from the first day of the first month in the period
+  const currentDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+  
+  // If the start date is not at the beginning of a month, move to the next month
+  if (startDate.getDate() > 1) {
     currentDate.setMonth(currentDate.getMonth() + 1);
   }
 
