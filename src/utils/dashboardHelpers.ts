@@ -172,13 +172,19 @@ async function getUsersGrowth(startDate: Date, endDate: Date): Promise<number> {
     }),
   ]);
 
+  // Handle edge cases for growth calculation
   if (previousPeriodUsers === 0) {
-    return currentPeriodUsers > 0 ? 100 : 0;
+    // If there were no users in previous period
+    if (currentPeriodUsers === 0) {
+      return 0; // No change
+    } else {
+      return 100; // From 0 to some users = 100% growth
+    }
   }
 
-  return Math.round(
-    ((currentPeriodUsers - previousPeriodUsers) / previousPeriodUsers) * 100
-  );
+  // Calculate percentage change
+  const growthPercentage = ((currentPeriodUsers - previousPeriodUsers) / previousPeriodUsers) * 100;
+  return Math.round(growthPercentage);
 }
 
 // Function to calculate reservations growth
@@ -218,15 +224,19 @@ async function getReservationsGrowth(
       }),
     ]);
 
+  // Handle edge cases for growth calculation
   if (previousPeriodReservations === 0) {
-    return currentPeriodReservations > 0 ? 100 : 0;
+    // If there were no reservations in previous period
+    if (currentPeriodReservations === 0) {
+      return 0; // No change
+    } else {
+      return 100; // From 0 to some reservations = 100% growth
+    }
   }
 
-  return Math.round(
-    ((currentPeriodReservations - previousPeriodReservations) /
-      previousPeriodReservations) *
-      100
-  );
+  // Calculate percentage change
+  const growthPercentage = ((currentPeriodReservations - previousPeriodReservations) / previousPeriodReservations) * 100;
+  return Math.round(growthPercentage);
 }
 
 // Function to calculate pets growth
@@ -249,13 +259,19 @@ async function getPetsGrowth(startDate: Date, endDate: Date): Promise<number> {
     }),
   ]);
 
+  // Handle edge cases for growth calculation
   if (previousPeriodPets === 0) {
-    return currentPeriodPets > 0 ? 100 : 0;
+    // If there were no pets in previous period
+    if (currentPeriodPets === 0) {
+      return 0; // No change
+    } else {
+      return 100; // From 0 to some pets = 100% growth
+    }
   }
 
-  return Math.round(
-    ((currentPeriodPets - previousPeriodPets) / previousPeriodPets) * 100
-  );
+  // Calculate percentage change
+  const growthPercentage = ((currentPeriodPets - previousPeriodPets) / previousPeriodPets) * 100;
+  return Math.round(growthPercentage);
 }
 
 // Function to get pet types distribution
