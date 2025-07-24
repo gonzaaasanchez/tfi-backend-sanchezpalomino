@@ -64,6 +64,9 @@ const rolePermissions = {
     audit: {
       read: true,
     },
+    dashboard: {
+      read: true,
+    },
   },
   // User: can only manage their own pets and view types/characteristics
   user: {
@@ -121,6 +124,9 @@ const rolePermissions = {
       update: false,
     },
     audit: {
+      read: false,
+    },
+    dashboard: {
       read: false,
     },
   },
@@ -213,6 +219,7 @@ async function updateAllRoles() {
       role.permissions.comments = newPermissions.comments;
       role.permissions.likes = newPermissions.likes;
       role.permissions.audit = newPermissions.audit;
+      role.permissions.dashboard = newPermissions.dashboard;
 
       await role.save();
       updatedCount++;
@@ -319,6 +326,12 @@ async function updateAllRoles() {
         console.log(`   Audit: Read access`);
       } else {
         console.log(`   Audit: No access`);
+      }
+
+      if (role.permissions.dashboard?.read) {
+        console.log(`   Dashboard: Read access`);
+      } else {
+        console.log(`   Dashboard: No access`);
       }
     }
   } catch (error) {

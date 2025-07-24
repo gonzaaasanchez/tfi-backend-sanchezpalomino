@@ -20,6 +20,7 @@ import commentsRoutes from './routes/comments';
 import likesRoutes from './routes/likes';
 import auditRoutes from './routes/audit';
 import configRoutes from './routes/config';
+import dashboardRoutes from './routes/dashboard';
 import { errorHandler } from './middleware/errorHandler';
 import { initializeCronJobs, stopCronJobs } from './utils/cronJobs';
 
@@ -56,6 +57,7 @@ app.use('/api/comments', commentsRoutes);
 app.use('/api/likes', likesRoutes);
 app.use('/api/audit', auditRoutes);
 app.use('/api/config', configRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Test route
 app.get('/', (req, res) => {

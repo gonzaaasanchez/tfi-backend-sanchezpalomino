@@ -85,6 +85,9 @@ export interface IRole extends Document {
       read: boolean;
       update: boolean;
     };
+    dashboard: {
+      read: boolean;
+    };
   };
   isSystem: boolean;
   createdAt: Date;
@@ -184,6 +187,9 @@ const RoleSchema = new Schema<IRole>(
         config: {
           read: { type: Boolean, default: false },
           update: { type: Boolean, default: false },
+        },
+        dashboard: {
+          read: { type: Boolean, default: false },
         },
       },
       required: [true, 'Los permisos son requeridos'],
