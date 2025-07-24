@@ -45,9 +45,6 @@ const ConfigSchema = new Schema<IConfig>(
   }
 );
 
-// Index for faster queries
-ConfigSchema.index({ key: 1 });
-
 // Pre-save middleware to validate value type
 ConfigSchema.pre('save', function (next) {
   const config = this as IConfig;
