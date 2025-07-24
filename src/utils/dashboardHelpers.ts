@@ -153,29 +153,46 @@ async function getTotalPets(): Promise<number> {
 
 // Function to calculate user growth
 async function getUsersGrowth(startDate: Date, endDate: Date): Promise<number> {
-  const currentPeriodStart = new Date(startDate);
-  const currentPeriodEnd = new Date(endDate);
+  // Get current date
+  const now = new Date();
 
-  // Calculate previous period
-  const periodDuration =
-    currentPeriodEnd.getTime() - currentPeriodStart.getTime();
-  const previousPeriodStart = new Date(
-    currentPeriodStart.getTime() - periodDuration
+  // Calculate current month (this month)
+  const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const currentMonthEnd = new Date(
+    now.getFullYear(),
+    now.getMonth() + 1,
+    0,
+    23,
+    59,
+    59,
+    999
   );
 
-  const [currentPeriodUsers, previousPeriodUsers] = await Promise.all([
+  // Calculate previous month (last month)
+  const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const previousMonthEnd = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    0,
+    23,
+    59,
+    59,
+    999
+  );
+
+  const [currentMonthUsers, previousMonthUsers] = await Promise.all([
     User.countDocuments({
-      createdAt: { $gte: currentPeriodStart, $lte: currentPeriodEnd },
+      createdAt: { $gte: currentMonthStart, $lte: currentMonthEnd },
     }),
     User.countDocuments({
-      createdAt: { $gte: previousPeriodStart, $lt: currentPeriodStart },
+      createdAt: { $gte: previousMonthStart, $lte: previousMonthEnd },
     }),
   ]);
 
   // Handle edge cases for growth calculation
-  if (previousPeriodUsers === 0) {
-    // If there were no users in previous period
-    if (currentPeriodUsers === 0) {
+  if (previousMonthUsers === 0) {
+    // If there were no users in previous month
+    if (currentMonthUsers === 0) {
       return 0; // No change
     } else {
       return 100; // From 0 to some users = 100% growth
@@ -183,7 +200,8 @@ async function getUsersGrowth(startDate: Date, endDate: Date): Promise<number> {
   }
 
   // Calculate percentage change
-  const growthPercentage = ((currentPeriodUsers - previousPeriodUsers) / previousPeriodUsers) * 100;
+  const growthPercentage =
+    ((currentMonthUsers - previousMonthUsers) / previousMonthUsers) * 100;
   return Math.round(growthPercentage);
 }
 
@@ -192,20 +210,37 @@ async function getReservationsGrowth(
   startDate: Date,
   endDate: Date
 ): Promise<number> {
-  const currentPeriodStart = new Date(startDate);
-  const currentPeriodEnd = new Date(endDate);
+  // Get current date
+  const now = new Date();
 
-  const periodDuration =
-    currentPeriodEnd.getTime() - currentPeriodStart.getTime();
-  const previousPeriodEnd = new Date(currentPeriodStart.getTime());
-  const previousPeriodStart = new Date(
-    currentPeriodStart.getTime() - periodDuration
+  // Calculate current month (this month)
+  const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const currentMonthEnd = new Date(
+    now.getFullYear(),
+    now.getMonth() + 1,
+    0,
+    23,
+    59,
+    59,
+    999
   );
 
-  const [currentPeriodReservations, previousPeriodReservations] =
+  // Calculate previous month (last month)
+  const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const previousMonthEnd = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    0,
+    23,
+    59,
+    59,
+    999
+  );
+
+  const [currentMonthReservations, previousMonthReservations] =
     await Promise.all([
       Reservation.countDocuments({
-        createdAt: { $gte: currentPeriodStart, $lte: currentPeriodEnd },
+        createdAt: { $gte: currentMonthStart, $lte: currentMonthEnd },
         status: {
           $nin: [
             RESERVATION_STATUS.CANCELLED_OWNER,
@@ -214,7 +249,7 @@ async function getReservationsGrowth(
         },
       }),
       Reservation.countDocuments({
-        createdAt: { $gte: previousPeriodStart, $lt: currentPeriodStart },
+        createdAt: { $gte: previousMonthStart, $lte: previousMonthEnd },
         status: {
           $nin: [
             RESERVATION_STATUS.CANCELLED_OWNER,
@@ -225,9 +260,9 @@ async function getReservationsGrowth(
     ]);
 
   // Handle edge cases for growth calculation
-  if (previousPeriodReservations === 0) {
-    // If there were no reservations in previous period
-    if (currentPeriodReservations === 0) {
+  if (previousMonthReservations === 0) {
+    // If there were no reservations in previous month
+    if (currentMonthReservations === 0) {
       return 0; // No change
     } else {
       return 100; // From 0 to some reservations = 100% growth
@@ -235,34 +270,39 @@ async function getReservationsGrowth(
   }
 
   // Calculate percentage change
-  const growthPercentage = ((currentPeriodReservations - previousPeriodReservations) / previousPeriodReservations) * 100;
+  const growthPercentage =
+    ((currentMonthReservations - previousMonthReservations) /
+      previousMonthReservations) *
+    100;
   return Math.round(growthPercentage);
 }
 
 // Function to calculate pets growth
 async function getPetsGrowth(startDate: Date, endDate: Date): Promise<number> {
-  const currentPeriodStart = new Date(startDate);
-  const currentPeriodEnd = new Date(endDate);
+  // Get current date
+  const now = new Date();
+  
+  // Calculate current month (this month)
+  const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
 
-  const periodDuration =
-    currentPeriodEnd.getTime() - currentPeriodStart.getTime();
-  const previousPeriodStart = new Date(
-    currentPeriodStart.getTime() - periodDuration
-  );
+  // Calculate previous month (last month)
+  const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const previousMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
 
-  const [currentPeriodPets, previousPeriodPets] = await Promise.all([
+  const [currentMonthPets, previousMonthPets] = await Promise.all([
     Pet.countDocuments({
-      createdAt: { $gte: currentPeriodStart, $lte: currentPeriodEnd },
+      createdAt: { $gte: currentMonthStart, $lte: currentMonthEnd },
     }),
     Pet.countDocuments({
-      createdAt: { $gte: previousPeriodStart, $lt: currentPeriodStart },
+      createdAt: { $gte: previousMonthStart, $lte: previousMonthEnd },
     }),
   ]);
 
   // Handle edge cases for growth calculation
-  if (previousPeriodPets === 0) {
-    // If there were no pets in previous period
-    if (currentPeriodPets === 0) {
+  if (previousMonthPets === 0) {
+    // If there were no pets in previous month
+    if (currentMonthPets === 0) {
       return 0; // No change
     } else {
       return 100; // From 0 to some pets = 100% growth
@@ -270,7 +310,8 @@ async function getPetsGrowth(startDate: Date, endDate: Date): Promise<number> {
   }
 
   // Calculate percentage change
-  const growthPercentage = ((currentPeriodPets - previousPeriodPets) / previousPeriodPets) * 100;
+  const growthPercentage =
+    ((currentMonthPets - previousMonthPets) / previousMonthPets) * 100;
   return Math.round(growthPercentage);
 }
 
@@ -342,10 +383,14 @@ async function getNewUsersByMonth(
 
   // Generate all months in the period
   const months = [];
-  
+
   // Start from the first day of the first month in the period
-  const currentDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
-  
+  const currentDate = new Date(
+    startDate.getFullYear(),
+    startDate.getMonth(),
+    1
+  );
+
   // If the start date is not at the beginning of a month, move to the next month
   if (startDate.getDate() > 1) {
     currentDate.setMonth(currentDate.getMonth() + 1);
@@ -408,10 +453,14 @@ async function getReservationsByMonth(
 
   // Generate all months in the period
   const months = [];
-  
+
   // Start from the first day of the first month in the period
-  const currentDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
-  
+  const currentDate = new Date(
+    startDate.getFullYear(),
+    startDate.getMonth(),
+    1
+  );
+
   // If the start date is not at the beginning of a month, move to the next month
   if (startDate.getDate() > 1) {
     currentDate.setMonth(currentDate.getMonth() + 1);
