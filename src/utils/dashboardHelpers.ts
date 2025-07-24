@@ -47,7 +47,7 @@ const COLOR_PALETTE = [
   '#F56565', // Light Red
   '#ED8936', // Light Orange
   '#4FD1C7', // Light Teal
-  '#ECC94B',   // Light Yellow
+  '#ECC94B', // Light Yellow
   '#FC8181', // Pink
   '#68D391', // Mint
   '#B794F4', // Lavender
@@ -61,13 +61,13 @@ function getConsistentColor(id: string): string {
   let hash = 0;
   for (let i = 0; i < id.length; i++) {
     const char = id.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32bit integer
   }
-  
+
   // Add additional entropy using the length and position
   hash = hash + id.length + (id.charCodeAt(0) || 0);
-  
+
   // Use absolute value and modulo to get a positive index
   const index = Math.abs(hash) % COLOR_PALETTE.length;
   return COLOR_PALETTE[index];
@@ -326,7 +326,16 @@ async function getNewUsersByMonth(
 
   // Generate all months in the period
   const months = [];
-  const currentDate = new Date(startDate);
+  const currentDate = new Date(
+    startDate.getFullYear(),
+    startDate.getMonth(),
+    1
+  );
+
+  // Ensure we start from the correct month
+  if (currentDate < startDate) {
+    currentDate.setMonth(currentDate.getMonth() + 1);
+  }
 
   while (currentDate <= endDate) {
     const year = currentDate.getFullYear();
@@ -385,7 +394,16 @@ async function getReservationsByMonth(
 
   // Generate all months in the period
   const months = [];
-  const currentDate = new Date(startDate);
+  const currentDate = new Date(
+    startDate.getFullYear(),
+    startDate.getMonth(),
+    1
+  );
+
+  // Ensure we start from the correct month
+  if (currentDate < startDate) {
+    currentDate.setMonth(currentDate.getMonth() + 1);
+  }
 
   while (currentDate <= endDate) {
     const year = currentDate.getFullYear();
@@ -452,20 +470,20 @@ function getPeriodInMonths(period: string): number {
 
 function getMonthAbbreviation(month: number): string {
   const months = [
-    'Jan',
+    'Ene',
     'Feb',
     'Mar',
-    'Apr',
+    'Abr',
     'May',
     'Jun',
     'Jul',
-    'Aug',
+    'Ago',
     'Sep',
     'Oct',
     'Nov',
-    'Dec',
+    'Dic',
   ];
-  return months[month - 1] || 'Dec';
+  return months[month - 1] || 'Dic';
 }
 
 function getCategoryName(careLocation: string): string {
