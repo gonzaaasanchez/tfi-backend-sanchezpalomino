@@ -36,7 +36,7 @@ const rolePermissions = {
       create: true,
       read: true,
       update: true,
-      admin: true,
+      getAll: true,
     },
     reviews: {
       create: true,
@@ -98,7 +98,7 @@ const rolePermissions = {
       create: true,
       read: true,
       update: true,
-      admin: false,
+      getAll: true,
     },
     reviews: {
       create: true,
@@ -257,7 +257,7 @@ async function updateAllRoles() {
           role.permissions.reservations?.create
             ? 'Create/Read/Update'
             : 'No access'
-        } ${role.permissions.reservations?.admin ? '(Admin)' : ''}`
+        } ${role.permissions.reservations?.getAll ? '(All)' : ''}`
       );
 
       if (role.permissions.posts?.create) {

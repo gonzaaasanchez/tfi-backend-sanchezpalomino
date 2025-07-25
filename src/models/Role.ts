@@ -60,7 +60,7 @@ export interface IRole extends Document {
       create: boolean;
       read: boolean;
       update: boolean;
-      admin: boolean;
+      getAll: boolean;
     };
     reviews: {
       create: boolean;
