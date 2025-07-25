@@ -90,7 +90,7 @@ Authorization: Bearer <token>
   success: boolean;
   message: string;
   data: {
-    petTypes: Array<{
+    items: Array<{
       id: string;
       name: string;
       createdAt: string;

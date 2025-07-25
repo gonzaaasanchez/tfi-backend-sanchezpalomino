@@ -16,7 +16,14 @@ import caregiverSearchRoutes from './routes/caregiverSearch';
 import reservationsRoutes from './routes/reservations';
 import paymentsRoutes from './routes/payments';
 import reviewsRoutes from './routes/reviews';
+import postsRoutes from './routes/posts';
+import commentsRoutes from './routes/comments';
+import likesRoutes from './routes/likes';
+import auditRoutes from './routes/audit';
+import configRoutes from './routes/config';
+import dashboardRoutes from './routes/dashboard';
 import { errorHandler } from './middleware/errorHandler';
+import { initializeCronJobs, stopCronJobs } from './utils/cronJobs';
 
 // Load environment variables
 dotenv.config();
@@ -31,6 +38,9 @@ app.use(cors());
 app.use(helmet());
 app.use(morgan('dev'));
 
+// Serve static files
+app.use('/public', express.static('public'));
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/roles', rolesRoutes);
@@ -44,6 +54,12 @@ app.use('/api/caregiver-search', caregiverSearchRoutes);
 app.use('/api/reservations', reservationsRoutes);
 app.use('/api/payments', paymentsRoutes);
 app.use('/api', reviewsRoutes);
+app.use('/api/posts', postsRoutes);
+app.use('/api/comments', commentsRoutes);
+app.use('/api/likes', likesRoutes);
+app.use('/api/audit', auditRoutes);
+app.use('/api/config', configRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Test route
 app.get('/', (req, res) => {
@@ -58,9 +74,34 @@ mongoose
   .connect(MONGODB_URI)
   .then(() => {
     console.log('Conectado a MongoDB');
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       console.log(`Servidor corriendo en http://localhost:${PORT}`);
+
+      initializeCronJobs();
     });
+
+    // Graceful shutdown handling
+    const gracefulShutdown = (signal: string) => {
+      console.log(`\n🛑 Recibida señal ${signal}. Cerrando servidor...`);
+
+      // Stop cron jobs first
+      stopCronJobs();
+
+      // Close server
+      server.close(() => {
+        console.log('✅ Servidor HTTP cerrado');
+
+        // Close MongoDB connection
+        mongoose.connection.close().then(() => {
+          console.log('✅ Conexión a MongoDB cerrada');
+          process.exit(0);
+        });
+      });
+    };
+
+    // Handle different shutdown signals
+    process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+    process.on('SIGINT', () => gracefulShutdown('SIGINT'));
   })
   .catch((err) => {
     console.error('Error conectando a MongoDB:', err);

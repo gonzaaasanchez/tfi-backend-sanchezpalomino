@@ -61,6 +61,59 @@ This directory contains the complete API documentation organized by service modu
 - Audit logs
 - System administration
 
+### 📊 [Dashboard Statistics](./dashboard.md)
+- System statistics and KPIs
+- Pet types distribution charts
+- User growth trends
+- Reservation analytics
+- Revenue by service category
+- Configurable time periods
+
+### 🔧 [Configuration](./config.md)
+- System configuration management
+- Environment settings
+- Admin configuration services
+
+### 📧 [Email Services](./emails.md)
+- Email notification system
+- Template management
+- Email delivery services
+
+### 📝 [Posts](./posts.md)
+- Social media posts
+- Post creation and management
+- Feed and timeline services
+
+### 💬 [Comments](./comments.md)
+- Post comments management
+- Comment moderation
+- User interaction services
+
+### 👍 [Likes](./likes.md)
+- Post and comment likes
+- Like management
+- User engagement tracking
+
+### 🔍 [Audit Logs](./audit.md)
+- System audit trail
+- Change tracking
+- Security monitoring
+
+### 📋 [System Logs](./logs.md)
+- Application logs
+- Error tracking
+- System monitoring
+
+### 🎭 [Roles & Permissions](./roles.md)
+- Role-based access control
+- Permission management
+- Security configuration
+
+### 📋 [Data Types](./types.md)
+- API data types
+- Type definitions
+- Schema documentation
+
 ## 🔐 Authentication
 
 For protected endpoints, include the header:

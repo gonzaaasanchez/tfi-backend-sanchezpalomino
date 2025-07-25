@@ -21,6 +21,8 @@ Backend API developed with Node.js, TypeScript, Express and MongoDB.
 - **Email System**: Professional email templates with HTML formatting
 - **Caregiver Search**: Advanced search functionality for pet caregivers
 - **Reservation System**: Complete booking and reservation management
+- **Session Audit System**: Complete session monitoring and security dashboard
+- **Token Blacklist**: Secure logout with token invalidation
 - **Payment System**: Stripe integration for secure payment processing
 
 ## 📋 Prerequisites
@@ -133,6 +135,7 @@ The complete API documentation is organized by service modules in the [`docs/`](
 - **[💳 Payments](./docs/payments.md)** - Payment processing with Stripe
 - **[📧 Email System](./docs/emails.md)** - Email functionality and configuration
 - **[👨‍💼 Admin Services](./docs/admin.md)** - Administrative functions
+- **[🛡️ Audit System](./docs/audit.md)** - Session monitoring and security dashboard
 
 ## 🛡️ Security
 
@@ -144,6 +147,8 @@ The complete API documentation is organized by service modules in the [`docs/`](
 - **File upload**: Multer with file type and size validation
 - **Password Reset**: Secure token-based recovery with expiration
 - **Email Security**: Domain verification and rate limiting
+- **Session Audit**: Complete logging of all authentication events
+- **Token Blacklist**: Secure logout with automatic token invalidation
 
 ## 📝 Available Scripts
 

@@ -139,7 +139,7 @@ const getReservationReviews: RequestHandler = async (req, res, next) => {
     const isOwner = reservation.user.toString() === req.user?._id?.toString();
     const isCaregiver =
       reservation.caregiver.toString() === req.user?._id?.toString();
-    const isAdmin = req.user?.role?.name === 'admin';
+    const isAdmin = req.user?.role?.name === 'superadmin';
 
     if (!isOwner && !isCaregiver && !isAdmin) {
       ResponseHelper.forbidden(
@@ -234,7 +234,7 @@ const getUserReviews: RequestHandler = async (req, res, next) => {
 
     // Validate current user has permission to view these reviews
     const isOwnProfile = userId === req.user?._id?.toString();
-    const isAdmin = req.user?.role?.name === 'admin';
+    const isAdmin = req.user?.role?.name === 'superadmin';
 
     if (!isOwnProfile && !isAdmin) {
       ResponseHelper.forbidden(

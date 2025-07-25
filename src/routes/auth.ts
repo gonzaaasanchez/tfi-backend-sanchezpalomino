@@ -9,6 +9,8 @@ import { ResponseHelper } from '../utils/response';
 import { addCareAddressData } from '../utils/userHelpers';
 import { sendEmail, generatePasswordResetEmail } from '../utils/email';
 import { generateResetCode, validatePassword } from '../utils/passwordReset';
+import { blacklistToken } from '../utils/tokenBlacklist';
+import { logSessionEvent } from '../utils/sessionAudit';
 
 const router = Router();
 
@@ -99,13 +101,35 @@ const login: RequestHandler = async (req, res, next) => {
     }
 
     const user = await User.findOne({ email }).populate('role');
+    const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
+    
     if (!user) {
+      // Log failed login attempt
+      await logSessionEvent({
+        userId: 'unknown',
+        userType: 'user',
+        action: 'login_failed',
+        ipAddress,
+        success: false,
+        failureReason: 'Usuario no encontrado',
+      });
+      
       ResponseHelper.unauthorized(res, 'Credenciales inválidas');
       return;
     }
 
     const isPasswordValid = await verifyPassword(password, user.password);
     if (!isPasswordValid) {
+      // Log failed login attempt
+      await logSessionEvent({
+        userId: user._id?.toString() || '',
+        userType: 'user',
+        action: 'login_failed',
+        ipAddress,
+        success: false,
+        failureReason: 'Contraseña incorrecta',
+      });
+      
       ResponseHelper.unauthorized(res, 'Credenciales inválidas');
       return;
     }
@@ -117,6 +141,15 @@ const login: RequestHandler = async (req, res, next) => {
 
     const userResponse = user.toJSON();
     addCareAddressData(userResponse);
+
+    // Log successful login
+    await logSessionEvent({
+      userId: user._id?.toString() || '',
+      userType: 'user',
+      action: 'login',
+      ipAddress,
+      success: true,
+    });
 
     ResponseHelper.success(res, 'Login exitoso', {
       user: userResponse,
@@ -157,6 +190,7 @@ const forgotPassword: RequestHandler = async (req, res, next) => {
     // Find user by email
     const user = await User.findOne({ email });
     if (!user) {
+      console.log('🔍 User not found, returning success message');
       // Don't reveal if user exists or not for security
       ResponseHelper.success(
         res,
@@ -174,7 +208,7 @@ const forgotPassword: RequestHandler = async (req, res, next) => {
 
     // Save or update reset code
     await PasswordReset.findOneAndUpdate(
-      { userId: user._id, used: false },
+      { userId: user._id, userType: 'user', used: false },
       {
         code: resetCode,
         expiresAt,
@@ -184,10 +218,10 @@ const forgotPassword: RequestHandler = async (req, res, next) => {
     );
 
     // Send email
-    const emailHtml = generatePasswordResetEmail(resetCode, user.firstName);
+    const emailHtml = generatePasswordResetEmail(resetCode, `${user.firstName} ${user.lastName}`);
     const emailSent = await sendEmail({
       to: user.email,
-      subject: '🔐 Código de Recuperación de Contraseña',
+      subject: 'PawPals - 🔐 Código de Recuperación de Contraseña',
       html: emailHtml,
     });
 
@@ -250,6 +284,7 @@ const resetPassword: RequestHandler = async (req, res, next) => {
     // Find valid reset code
     const resetRecord = await PasswordReset.findOne({
       userId: user._id,
+      userType: 'user',
       code,
       used: false,
       expiresAt: { $gt: new Date() },
@@ -294,6 +329,53 @@ const resetPassword: RequestHandler = async (req, res, next) => {
   }
 };
 
+// POST /auth/logout - User logout
+const logout: RequestHandler = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      ResponseHelper.unauthorized(res, 'Token de acceso requerido');
+      return;
+    }
+
+    const token = authHeader.substring(7);
+    
+    // Add token to blacklist
+    const blacklisted = await blacklistToken(token);
+    
+    if (!blacklisted) {
+      ResponseHelper.serverError(res, 'Error al invalidar el token');
+      return;
+    }
+
+    // Log the logout
+    const userName = req.user
+      ? `${req.user.firstName} ${req.user.lastName}`
+      : 'Usuario';
+    const userId = req.user?._id?.toString() || 'unknown';
+    
+    await logChanges('User', userId, userId, userName, [
+      { field: 'logout', oldValue: null, newValue: true },
+      { field: 'tokenBlacklisted', oldValue: null, newValue: true },
+    ]);
+
+    // Log session event
+    const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
+    await logSessionEvent({
+      userId,
+      userType: 'user',
+      action: 'logout',
+      ipAddress,
+      success: true,
+    });
+
+    ResponseHelper.success(res, 'Logout exitoso');
+  } catch (error) {
+    next(error);
+  }
+};
+
 // ========================================
 // ROUTES
 // ========================================
@@ -301,6 +383,8 @@ const resetPassword: RequestHandler = async (req, res, next) => {
 router.post('/register', register);
 // @ts-ignore - Express 5.1.0 type compatibility issue
 router.post('/login', login);
+// @ts-ignore - Express 5.1.0 type compatibility issue
+router.post('/logout', authMiddleware, logout);
 // @ts-ignore - Express 5.1.0 type compatibility issue
 router.get('/me', authMiddleware, getProfile);
 // @ts-ignore - Express 5.1.0 type compatibility issue

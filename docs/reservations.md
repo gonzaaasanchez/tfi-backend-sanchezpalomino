@@ -3,9 +3,11 @@
 ## Reservation Management
 
 ### POST `/reservations`
+
 Create a new reservation.
 
 **Validations:**
+
 - Valid JWT token required
 - All fields are required
 - Start date must be in the future
@@ -18,11 +20,13 @@ Create a new reservation.
 - Reservation dates must not conflict with existing reservations
 
 **Headers:**
+
 ```
 Authorization: Bearer <token>
 ```
 
 **Request Body:**
+
 ```typescript
 {
   startDate: string;
@@ -38,6 +42,7 @@ Authorization: Bearer <token>
 ```
 
 **Response:**
+
 ```typescript
 {
   success: boolean;
@@ -101,6 +106,7 @@ Authorization: Bearer <token>
 ```
 
 **Example Request:**
+
 ```json
 {
   "startDate": "2024-02-01T10:00:00.000Z",
@@ -116,6 +122,7 @@ Authorization: Bearer <token>
 ```
 
 **Success Response:**
+
 ```json
 {
   "success": true,
@@ -183,6 +190,7 @@ Authorization: Bearer <token>
 ```
 
 **Error Response:**
+
 ```json
 {
   "success": false,
@@ -190,28 +198,30 @@ Authorization: Bearer <token>
   "data": null
 }
 ```
-```
 
 ### GET `/reservations`
+
 Get the authenticated user's reservations. **Paginated**
 
 **Validations:**
+
 - Valid JWT token required
 
 **Headers:**
+
 ```
 Authorization: Bearer <token>
 ```
 
 **Query Parameters:**
+
 - `page`: Page number (default: 1)
 - `limit`: Items per page (default: 10)
 - `status`: Filter by status
-- `careLocation`: Filter by care location
-- `startDate`: Filter by start date
-- `endDate`: Filter by end date
+- `role`: Filter by role: `owner`, `caregiver`, or `all`
 
 **Response:**
+
 ```typescript
 {
   success: boolean;
@@ -245,8 +255,17 @@ Authorization: Bearer <token>
       };
       startDate: string;
       endDate: string;
-      serviceType: "homeCare" | "petHomeCare";
-      status: "payment_pending" | "payment_rejected" | "waiting_acceptance" | "confirmed" | "started" | "finished" | "cancelledOwner" | "cancelledCaregiver" | "rejected";
+      serviceType: 'homeCare' | 'petHomeCare';
+      status:
+        | 'payment_pending'
+        | 'payment_rejected'
+        | 'waiting_acceptance'
+        | 'confirmed'
+        | 'started'
+        | 'finished'
+        | 'cancelledOwner'
+        | 'cancelledCaregiver'
+        | 'rejected';
       totalPrice: number;
       notes?: string;
       careAddress: {
@@ -266,12 +285,13 @@ Authorization: Bearer <token>
       limit: number;
       total: number;
       totalPages: number;
-    };
-  };
+    }
+  }
 }
 ```
 
 **Success Response:**
+
 ```json
 {
   "success": true,
@@ -334,6 +354,7 @@ Authorization: Bearer <token>
 ```
 
 **Error Response:**
+
 ```json
 {
   "success": false,
@@ -342,22 +363,24 @@ Authorization: Bearer <token>
 }
 ```
 
-
-
 ### GET `/reservations/:id`
+
 Get a specific reservation.
 
 **Validations:**
+
 - Valid JWT token required
 - Reservation ID must exist
 - User must be the owner or caregiver of the reservation
 
 **Headers:**
+
 ```
 Authorization: Bearer <token>
 ```
 
 **Response:**
+
 ```typescript
 {
   success: boolean;
@@ -410,6 +433,7 @@ Authorization: Bearer <token>
 ```
 
 **Success Response:**
+
 ```json
 {
   "success": true,
@@ -462,6 +486,7 @@ Authorization: Bearer <token>
 ```
 
 **Error Response:**
+
 ```json
 {
   "success": false,
@@ -471,20 +496,24 @@ Authorization: Bearer <token>
 ```
 
 ### PUT `/reservations/:id/accept`
+
 Accept a reservation (caregiver only).
 
 **Validations:**
+
 - Valid JWT token required
 - Reservation ID must exist
 - User must be the caregiver of the reservation
-- Reservation status must be "waiting_acceptance"
+- Reservation status must be "pending"
 
 **Headers:**
+
 ```
 Authorization: Bearer <token>
 ```
 
 **Response:**
+
 ```typescript
 {
   success: boolean;
@@ -494,12 +523,13 @@ Authorization: Bearer <token>
       id: string;
       status: string;
       updatedAt: string;
-    };
-  };
+    }
+  }
 }
 ```
 
 **Success Response:**
+
 ```json
 {
   "success": true,
@@ -515,6 +545,7 @@ Authorization: Bearer <token>
 ```
 
 **Error Response:**
+
 ```json
 {
   "success": false,
@@ -524,20 +555,24 @@ Authorization: Bearer <token>
 ```
 
 ### PUT `/reservations/:id/reject`
+
 Reject a reservation (caregiver only).
 
 **Validations:**
+
 - Valid JWT token required
 - Reservation ID must exist
 - User must be the caregiver of the reservation
-- Reservation status must be "waiting_acceptance"
+- Reservation status must be "pending"
 
 **Headers:**
+
 ```
 Authorization: Bearer <token>
 ```
 
 **Request Body:**
+
 ```typescript
 {
   reason?: string;
@@ -545,6 +580,7 @@ Authorization: Bearer <token>
 ```
 
 **Response:**
+
 ```typescript
 {
   success: boolean;
@@ -554,12 +590,13 @@ Authorization: Bearer <token>
       id: string;
       status: string;
       updatedAt: string;
-    };
-  };
+    }
+  }
 }
 ```
 
 **Example Request:**
+
 ```json
 {
   "reason": "No puedo atender en esas fechas"
@@ -567,6 +604,7 @@ Authorization: Bearer <token>
 ```
 
 **Success Response:**
+
 ```json
 {
   "success": true,
@@ -582,6 +620,7 @@ Authorization: Bearer <token>
 ```
 
 **Error Response:**
+
 ```json
 {
   "success": false,
@@ -591,20 +630,24 @@ Authorization: Bearer <token>
 ```
 
 ### PUT `/reservations/:id/cancel`
+
 Cancel a reservation (owner or caregiver).
 
 **Validations:**
+
 - Valid JWT token required
 - Reservation ID must exist
 - User must be the owner or caregiver of the reservation
 - Cannot cancel if reservation is already finished or cancelled
 
 **Headers:**
+
 ```
 Authorization: Bearer <token>
 ```
 
 **Request Body:**
+
 ```typescript
 {
   reason?: string;
@@ -612,6 +655,7 @@ Authorization: Bearer <token>
 ```
 
 **Response:**
+
 ```typescript
 {
   success: boolean;
@@ -621,12 +665,13 @@ Authorization: Bearer <token>
       id: string;
       status: string;
       updatedAt: string;
-    };
-  };
+    }
+  }
 }
 ```
 
 **Example Request:**
+
 ```json
 {
   "reason": "Cambio de planes"
@@ -634,6 +679,7 @@ Authorization: Bearer <token>
 ```
 
 **Success Response:**
+
 ```json
 {
   "success": true,
@@ -649,6 +695,7 @@ Authorization: Bearer <token>
 ```
 
 **Error Response:**
+
 ```json
 {
   "success": false,
@@ -657,23 +704,25 @@ Authorization: Bearer <token>
 }
 ```
 
-
-
 ## Admin Reservation Management
 
 ### GET `/reservations/admin/all`
+
 Get all reservations with advanced filters (admin only). **Paginated**
 
 **Validations:**
+
 - Valid JWT token required
 - Admin permissions required
 
 **Headers:**
+
 ```
 Authorization: Bearer <token>
 ```
 
 **Query Parameters:**
+
 - `page`: Page number (default: 1)
 - `limit`: Items per page (default: 10)
 - `status`: Filter by status
@@ -681,6 +730,7 @@ Authorization: Bearer <token>
 - `caregiverId`: Filter by caregiver ID
 
 **Response:**
+
 ```typescript
 {
   success: boolean;
@@ -738,7 +788,16 @@ Authorization: Bearer <token>
       totalOwner: string;
       totalCaregiver: string;
       distance?: number;
-      status: "payment_pending" | "payment_rejected" | "waiting_acceptance" | "confirmed" | "started" | "finished" | "cancelledOwner" | "cancelledCaregiver" | "rejected";
+      status:
+        | 'payment_pending'
+        | 'payment_rejected'
+        | 'waiting_acceptance'
+        | 'confirmed'
+        | 'started'
+        | 'finished'
+        | 'cancelledOwner'
+        | 'cancelledCaregiver'
+        | 'rejected';
       createdAt: string;
       updatedAt: string;
     }>;
@@ -749,12 +808,13 @@ Authorization: Bearer <token>
       totalPages: number;
       hasNextPage: boolean;
       hasPrevPage: boolean;
-    };
-  };
+    }
+  }
 }
 ```
 
 **Success Response:**
+
 ```json
 {
   "success": true,
@@ -773,7 +833,7 @@ Authorization: Bearer <token>
           "apartment": "A",
           "coords": {
             "lat": 40.7128,
-            "lon": -74.0060
+            "lon": -74.006
           }
         },
         "user": {
@@ -835,6 +895,7 @@ Authorization: Bearer <token>
 ```
 
 **Error Response:**
+
 ```json
 {
   "success": false,
@@ -844,19 +905,23 @@ Authorization: Bearer <token>
 ```
 
 ### GET `/reservations/admin/:id`
+
 Get a specific reservation (admin only).
 
 **Validations:**
+
 - Valid JWT token required
 - Admin permissions required
 - Reservation ID must exist
 
 **Headers:**
+
 ```
 Authorization: Bearer <token>
 ```
 
 **Response:**
+
 ```typescript
 {
   success: boolean;
@@ -921,6 +986,7 @@ Authorization: Bearer <token>
 ```
 
 **Success Response:**
+
 ```json
 {
   "success": true,
@@ -974,21 +1040,22 @@ Authorization: Bearer <token>
           "avatar": "/api/pets/507f1f77bcf86cd799439011/avatar"
         }
       ],
-      "visitsCount": 3,
-      "totalPrice": "$150.00",
-      "commission": "$15.00",
-      "totalOwner": "$135.00",
-      "totalCaregiver": "$135.00",
-      "distance": 2.5,
+      "visitsCount": 10,
+      "totalPrice": "$1,200.00",
+      "commission": "$72.00",
+      "totalOwner": "$1,272.00",
+      "totalCaregiver": "$1,128.00",
+      "distance": 5.2,
       "status": "waiting_acceptance",
-      "createdAt": "2024-01-01T00:00:00.000Z",
-      "updatedAt": "2024-01-01T00:00:00.000Z"
+      "createdAt": "2024-01-10T10:30:00.000Z",
+      "updatedAt": "2024-01-10T10:30:00.000Z"
     }
   }
 }
 ```
 
 **Error Response:**
+
 ```json
 {
   "success": false,

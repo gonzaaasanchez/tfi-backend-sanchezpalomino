@@ -8,6 +8,8 @@ export interface JWTPayload {
   userId: string;
   email: string;
   type?: 'admin' | 'user';
+  exp?: number;
+  iat?: number;
 }
 
 // Generate JWT token

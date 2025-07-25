@@ -8,11 +8,71 @@ import { ResponseHelper } from '../utils/response';
 
 const router = Router();
 
+// Helper function to validate permissions structure
+const validatePermissions = (
+  permissions: any
+): { isValid: boolean; error?: string } => {
+  if (!permissions || typeof permissions !== 'object') {
+    return {
+      isValid: false,
+      error: 'Los permisos son requeridos y deben ser un objeto',
+    };
+  }
+
+  const requiredPermissions = {
+    users: ['create', 'read', 'update', 'delete', 'getAll'],
+    roles: ['create', 'read', 'update', 'delete', 'getAll'],
+    admins: ['create', 'read', 'update', 'delete', 'getAll'],
+    logs: ['read', 'getAll'],
+    audit: ['read'],
+    petTypes: ['create', 'read', 'update', 'delete', 'getAll'],
+    petCharacteristics: ['create', 'read', 'update', 'delete', 'getAll'],
+    pets: ['create', 'read', 'update', 'delete', 'getAll'],
+    caregiverSearch: ['read'],
+    reservations: ['create', 'read', 'update', 'getAll'],
+    reviews: ['create', 'read'],
+    posts: ['create', 'read', 'delete', 'getAll'],
+    comments: ['create', 'getAll', 'delete'],
+    likes: ['create', 'delete'],
+    config: ['read', 'update'],
+    dashboard: ['read'],
+  };
+
+  for (const [resource, requiredProps] of Object.entries(requiredPermissions)) {
+    if (!permissions[resource] || typeof permissions[resource] !== 'object') {
+      return {
+        isValid: false,
+        error: `El recurso '${resource}' es requerido y debe ser un objeto`,
+      };
+    }
+
+    for (const prop of requiredProps) {
+      if (!(prop in permissions[resource])) {
+        return {
+          isValid: false,
+          error: `La propiedad '${prop}' es requerida en '${resource}'`,
+        };
+      }
+
+      if (typeof permissions[resource][prop] !== 'boolean') {
+        return {
+          isValid: false,
+          error: `La propiedad '${prop}' en '${resource}' debe ser un booleano (true/false)`,
+        };
+      }
+    }
+  }
+
+  return { isValid: true };
+};
+
 // GET /roles - Get all roles
 const getRoles: RequestHandler = async (req, res, next) => {
   try {
     const roles = await Role.find().select('-__v');
-    ResponseHelper.success(res, 'Roles obtenidos exitosamente', 
+    ResponseHelper.success(
+      res,
+      'Roles obtenidos exitosamente',
       roles.map((role) => ({
         id: role._id,
         name: role.name,
@@ -64,19 +124,12 @@ const createRole: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Validate that all permissions are sent
-    if (
-      !permissions ||
-      !permissions.users ||
-      !permissions.roles ||
-      !permissions.admins ||
-      !permissions.petTypes ||
-      !permissions.petCharacteristics ||
-      !permissions.pets
-    ) {
+    // Validate permissions structure
+    const permissionsValidation = validatePermissions(permissions);
+    if (!permissionsValidation.isValid) {
       ResponseHelper.validationError(
         res,
-        'Se requieren todos los permisos: users, roles, admins, petTypes, petCharacteristics y pets'
+        permissionsValidation.error || 'Error en la validación de permisos'
       );
       return;
     }
@@ -116,15 +169,20 @@ const createRole: RequestHandler = async (req, res, next) => {
       { field: 'description', oldValue: null, newValue: description },
     ]);
 
-    ResponseHelper.success(res, 'Rol creado exitosamente', {
-      id: savedRole._id,
-      name: savedRole.name,
-      description: savedRole.description,
-      permissions: savedRole.permissions,
-      isSystem: savedRole.isSystem,
-      createdAt: savedRole.createdAt,
-      updatedAt: savedRole.updatedAt,
-    }, 201);
+    ResponseHelper.success(
+      res,
+      'Rol creado exitosamente',
+      {
+        id: savedRole._id,
+        name: savedRole.name,
+        description: savedRole.description,
+        permissions: savedRole.permissions,
+        isSystem: savedRole.isSystem,
+        createdAt: savedRole.createdAt,
+        updatedAt: savedRole.updatedAt,
+      },
+      201
+    );
   } catch (error) {
     next(error);
   }
@@ -147,6 +205,17 @@ const updateRole: RequestHandler = async (req, res, next) => {
       ResponseHelper.validationError(
         res,
         'No se puede modificar roles del sistema'
+      );
+      return;
+    }
+
+    // Validate permissions structure (same as create)
+    const { permissions } = updateData;
+    const permissionsValidation = validatePermissions(permissions);
+    if (!permissionsValidation.isValid) {
+      ResponseHelper.validationError(
+        res,
+        permissionsValidation.error || 'Error en la validación de permisos'
       );
       return;
     }
@@ -216,6 +285,106 @@ const deleteRole: RequestHandler = async (req, res, next) => {
   }
 };
 
+// GET /roles/permissions/template - Get empty permissions template
+const getPermissionsTemplate: RequestHandler = async (req, res, next) => {
+  try {
+    const permissionsTemplate = {
+      users: {
+        create: false,
+        read: false,
+        update: false,
+        delete: false,
+        getAll: false,
+      },
+      roles: {
+        create: false,
+        read: false,
+        update: false,
+        delete: false,
+        getAll: false,
+      },
+      admins: {
+        create: false,
+        read: false,
+        update: false,
+        delete: false,
+        getAll: false,
+      },
+      logs: {
+        read: false,
+        getAll: false,
+      },
+      audit: {
+        read: false,
+      },
+      petTypes: {
+        create: false,
+        read: false,
+        update: false,
+        delete: false,
+        getAll: false,
+      },
+      petCharacteristics: {
+        create: false,
+        read: false,
+        update: false,
+        delete: false,
+        getAll: false,
+      },
+      pets: {
+        create: false,
+        read: false,
+        update: false,
+        delete: false,
+        getAll: false,
+      },
+      caregiverSearch: {
+        read: false,
+      },
+      reservations: {
+        create: false,
+        read: false,
+        update: false,
+        getAll: false,
+      },
+      reviews: {
+        create: false,
+        read: false,
+      },
+      posts: {
+        create: false,
+        read: false,
+        delete: false,
+        getAll: false,
+      },
+      comments: {
+        create: false,
+        getAll: false,
+        delete: false,
+      },
+      likes: {
+        create: false,
+        delete: false,
+      },
+      config: {
+        read: false,
+        update: false,
+      },
+      dashboard: {
+        read: false,
+      },
+    };
+
+    ResponseHelper.success(
+      res,
+      'Plantilla de permisos obtenida exitosamente',
+      permissionsTemplate
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
 // ========================================
 // ROUTES with authentication and permission middleware
 // ========================================
@@ -225,6 +394,13 @@ router.get(
   authMiddleware,
   permissionMiddleware('roles', 'getAll'),
   getRoles
+);
+// @ts-ignore - Express 5.1.0 type compatibility issue
+router.get(
+  '/permissions/template',
+  authMiddleware,
+  permissionMiddleware('roles', 'read'),
+  getPermissionsTemplate
 );
 // @ts-ignore - Express 5.1.0 type compatibility issue
 router.get(

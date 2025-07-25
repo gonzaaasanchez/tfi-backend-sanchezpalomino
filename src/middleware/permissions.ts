@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import User from '../models/User';
 import Admin from '../models/Admin';
-import Role from '../models/Role';
 import { ResponseHelper } from '../utils/response';
 
 // Extend the Request interface to include user with role
@@ -51,7 +50,8 @@ export const permissionMiddleware = (
       if (
         !role.permissions ||
         !role.permissions[resource] ||
-        !role.permissions[resource][action]
+        !role.permissions[resource][action] ||
+        role.permissions[resource][action] !== true
       ) {
         return ResponseHelper.forbidden(
           res,

@@ -6,7 +6,6 @@ import { authMiddleware } from '../middleware/auth';
 import { permissionMiddleware } from '../middleware/permissions';
 import { ResponseHelper } from '../utils/response';
 import { logChanges } from '../utils/auditLogger';
-import { getChanges } from '../utils/changeDetector';
 import { formatCurrency, calculateDaysDifference } from '../utils/common';
 import { addAverageReviewsToUser } from '../utils/userHelpers';
 import {
@@ -470,7 +469,7 @@ const getReservation: RequestHandler = async (req, res, next) => {
       reservation.user._id.toString() === req.user?._id?.toString();
     const isCaregiver =
       reservation.caregiver._id.toString() === req.user?._id?.toString();
-    const isAdmin = req.user?.role?.name === 'admin';
+    const isAdmin = req.user?.role?.name === 'superadmin';
 
     if (!isOwner && !isCaregiver && !isAdmin) {
       ResponseHelper.forbidden(res, 'No tienes permisos para ver esta reserva');
@@ -950,7 +949,7 @@ router.post(
 router.get(
   '/',
   authMiddleware,
-  permissionMiddleware('reservations', 'read'),
+  permissionMiddleware('reservations', 'getAll'),
   getUserReservations
 );
 router.get(
@@ -988,7 +987,7 @@ router.get(
 router.get(
   '/admin/:id',
   authMiddleware,
-  permissionMiddleware('reservations', 'getAll'),
+  permissionMiddleware('reservations', 'read'),
   getReservationAdmin
 );
 

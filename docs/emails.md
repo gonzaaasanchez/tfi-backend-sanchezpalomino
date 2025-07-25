@@ -58,7 +58,7 @@ FROM_EMAIL=soporte@yourdomain.com
 Located in `src/utils/email.ts`, the password reset template includes:
 
 - **Professional HTML design** with CSS styling
-- **Branded header** with PawPals branding
+- **Branded header** with PawPals branding and logo
 - **Security code** prominently displayed
 - **Expiration warning** (15 minutes)
 - **Security instructions**
@@ -66,10 +66,29 @@ Located in `src/utils/email.ts`, the password reset template includes:
 
 ### Template Features
 - ✅ **Mobile-friendly** responsive design
-- ✅ **Professional styling** with green theme
+- ✅ **Professional styling** with purple gradient theme
 - ✅ **Clear call-to-action** with the reset code
 - ✅ **Security warnings** and instructions
 - ✅ **Brand consistency** with PawPals
+- ✅ **Logo integration** with configurable URL
+
+### Image Configuration
+The email template includes a logo that can be configured:
+
+1. **Place your logo** in `public/images/logo-pawpals.png`
+2. **Configure BASE_URL** in your `.env` file:
+   ```env
+   BASE_URL=http://localhost:3000
+   ```
+3. **In production**, update BASE_URL to your domain:
+   ```env
+   BASE_URL=https://yourdomain.com
+   ```
+
+**Logo Requirements:**
+- **Size**: 200x200px recommended
+- **Format**: PNG with transparency
+- **Access**: Available at `/public/images/logo-pawpals.png`
 
 ## 🔒 Security Features
 

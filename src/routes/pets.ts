@@ -132,9 +132,8 @@ const createPet: RequestHandler = async (req, res, next) => {
         })),
         owner: {
           id: (pet.owner as any)._id,
-          name: `${(pet.owner as any).firstName} ${
-            (pet.owner as any).lastName
-          }`,
+          firstName: (pet.owner as any).firstName,
+          lastName: (pet.owner as any).lastName,
           email: (pet.owner as any).email,
         },
         createdAt: pet.createdAt,
@@ -200,9 +199,8 @@ const getMyPets: RequestHandler = async (req, res, next) => {
         })),
         owner: {
           id: (pet.owner as any)._id,
-          name: `${(pet.owner as any).firstName} ${
-            (pet.owner as any).lastName
-          }`,
+          firstName: (pet.owner as any).firstName,
+          lastName: (pet.owner as any).lastName,
           email: (pet.owner as any).email,
         },
         createdAt: pet.createdAt,
@@ -242,7 +240,30 @@ const getPet: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    ResponseHelper.success(res, 'Mascota obtenida exitosamente', pet);
+    ResponseHelper.success(res, 'Mascota obtenida exitosamente', {
+      id: pet._id,
+      name: pet.name,
+      comment: pet.comment,
+      avatar: pet.avatar,
+      petType: {
+        id: (pet.petType as any)._id,
+        name: (pet.petType as any).name,
+      },
+      characteristics: pet.characteristics.map((char) => ({
+        characteristic: {
+          id: (char.characteristic as any)._id,
+          name: (char.characteristic as any).name,
+        },
+        value: char.value,
+      })),
+      owner: {
+        id: (pet.owner as any)._id,
+        firstName: (pet.owner as any).firstName,
+        lastName: (pet.owner as any).lastName,
+      },
+      createdAt: pet.createdAt,
+      updatedAt: pet.updatedAt,
+    });
   } catch (error) {
     next(error);
   }
@@ -352,34 +373,29 @@ const updatePet: RequestHandler = async (req, res, next) => {
       logChanges('Pet', petId, userId.toString(), userName, changes);
     }
 
-    ResponseHelper.success(
-      res,
-      'Mascota actualizada exitosamente',
-      {
-        id: updatedPet._id,
-        name: updatedPet.name,
-        comment: updatedPet.comment,
-        avatar: updatedPet.avatar,
-        petType: {
-          id: (updatedPet.petType as any)._id,
-          name: (updatedPet.petType as any).name,
-        },
-        characteristics: updatedPet.characteristics.map((char) => ({
-          id: (char.characteristic as any)._id,
-          name: (char.characteristic as any).name,
-          value: char.value,
-        })),
-        owner: {
-          id: (updatedPet.owner as any)._id,
-          name: `${(updatedPet.owner as any).firstName} ${
-            (updatedPet.owner as any).lastName
-          }`,
-          email: (updatedPet.owner as any).email,
-        },
-        createdAt: updatedPet.createdAt,
-        updatedAt: updatedPet.updatedAt,
-      }
-    );
+    ResponseHelper.success(res, 'Mascota actualizada exitosamente', {
+      id: updatedPet._id,
+      name: updatedPet.name,
+      comment: updatedPet.comment,
+      avatar: updatedPet.avatar,
+      petType: {
+        id: (updatedPet.petType as any)._id,
+        name: (updatedPet.petType as any).name,
+      },
+      characteristics: updatedPet.characteristics.map((char) => ({
+        id: (char.characteristic as any)._id,
+        name: (char.characteristic as any).name,
+        value: char.value,
+      })),
+      owner: {
+        id: (updatedPet.owner as any)._id,
+        firstName: (updatedPet.owner as any).firstName,
+        lastName: (updatedPet.owner as any).lastName,
+        email: (updatedPet.owner as any).email,
+      },
+      createdAt: updatedPet.createdAt,
+      updatedAt: updatedPet.updatedAt,
+    });
   } catch (error) {
     next(error);
   }
@@ -480,9 +496,8 @@ const getAllPets: RequestHandler = async (req, res, next) => {
         })),
         owner: {
           id: (pet.owner as any)._id,
-          name: `${(pet.owner as any).firstName} ${
-            (pet.owner as any).lastName
-          }`,
+          firstName: (pet.owner as any).firstName,
+          lastName: (pet.owner as any).lastName,
           email: (pet.owner as any).email,
         },
         createdAt: pet.createdAt,
@@ -515,7 +530,29 @@ const getPetAsAdmin: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    ResponseHelper.success(res, 'Mascota obtenida exitosamente', pet);
+    ResponseHelper.success(res, 'Mascota obtenida exitosamente', {
+      id: pet._id,
+      name: pet.name,
+      comment: pet.comment,
+      avatar: pet.avatar,
+      petType: {
+        id: (pet.petType as any)._id,
+        name: (pet.petType as any).name,
+      },
+      characteristics: pet.characteristics.map((char) => ({
+        id: (char.characteristic as any)._id,
+        name: (char.characteristic as any).name,
+        value: char.value,
+      })),
+      owner: {
+        id: (pet.owner as any)._id,
+        firstName: (pet.owner as any).firstName,
+        lastName: (pet.owner as any).lastName,
+        email: (pet.owner as any).email,
+      },
+      createdAt: pet.createdAt,
+      updatedAt: pet.updatedAt,
+    });
   } catch (error) {
     next(error);
   }

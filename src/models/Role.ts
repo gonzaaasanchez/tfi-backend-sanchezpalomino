@@ -29,6 +29,9 @@ export interface IRole extends Document {
       read: boolean;
       getAll: boolean;
     };
+    audit: {
+      read: boolean;
+    };
     petTypes: {
       create: boolean;
       read: boolean;
@@ -57,10 +60,32 @@ export interface IRole extends Document {
       create: boolean;
       read: boolean;
       update: boolean;
-      admin: boolean;
+      getAll: boolean;
     };
     reviews: {
       create: boolean;
+      read: boolean;
+    };
+    posts: {
+      create: boolean;
+      read: boolean;
+      delete: boolean;
+      getAll: boolean;
+    };
+    comments: {
+      create: boolean;
+      getAll: boolean;
+      delete: boolean;
+    };
+    likes: {
+      create: boolean;
+      delete: boolean;
+    };
+    config: {
+      read: boolean;
+      update: boolean;
+    };
+    dashboard: {
       read: boolean;
     };
   };
@@ -81,65 +106,94 @@ const RoleSchema = new Schema<IRole>(
       required: [true, 'La descripción del rol es requerida'],
     },
     permissions: {
-      users: {
-        create: { type: Boolean, default: false },
-        read: { type: Boolean, default: false },
-        update: { type: Boolean, default: false },
-        delete: { type: Boolean, default: false },
-        getAll: { type: Boolean, default: false },
+      type: {
+        users: {
+          create: { type: Boolean, default: false },
+          read: { type: Boolean, default: false },
+          update: { type: Boolean, default: false },
+          delete: { type: Boolean, default: false },
+          getAll: { type: Boolean, default: false },
+        },
+        roles: {
+          create: { type: Boolean, default: false },
+          read: { type: Boolean, default: false },
+          update: { type: Boolean, default: false },
+          delete: { type: Boolean, default: false },
+          getAll: { type: Boolean, default: false },
+        },
+        admins: {
+          create: { type: Boolean, default: false },
+          read: { type: Boolean, default: false },
+          update: { type: Boolean, default: false },
+          delete: { type: Boolean, default: false },
+          getAll: { type: Boolean, default: false },
+        },
+        logs: {
+          read: { type: Boolean, default: false },
+          getAll: { type: Boolean, default: false },
+        },
+        audit: {
+          read: { type: Boolean, default: false },
+        },
+        petTypes: {
+          create: { type: Boolean, default: false },
+          read: { type: Boolean, default: false },
+          update: { type: Boolean, default: false },
+          delete: { type: Boolean, default: false },
+          getAll: { type: Boolean, default: false },
+        },
+        petCharacteristics: {
+          create: { type: Boolean, default: false },
+          read: { type: Boolean, default: false },
+          update: { type: Boolean, default: false },
+          delete: { type: Boolean, default: false },
+          getAll: { type: Boolean, default: false },
+        },
+        pets: {
+          create: { type: Boolean, default: false },
+          read: { type: Boolean, default: false },
+          update: { type: Boolean, default: false },
+          delete: { type: Boolean, default: false },
+          getAll: { type: Boolean, default: false },
+        },
+        caregiverSearch: {
+          read: { type: Boolean, default: false },
+        },
+        reservations: {
+          create: { type: Boolean, default: false },
+          read: { type: Boolean, default: false },
+          update: { type: Boolean, default: false },
+          getAll: { type: Boolean, default: false },
+        },
+        reviews: {
+          create: { type: Boolean, default: false },
+          read: { type: Boolean, default: false },
+        },
+        posts: {
+          create: { type: Boolean, default: false },
+          read: { type: Boolean, default: false },
+          delete: { type: Boolean, default: false },
+          getAll: { type: Boolean, default: false },
+        },
+        comments: {
+          create: { type: Boolean, default: false },
+          getAll: { type: Boolean, default: false },
+          delete: { type: Boolean, default: false },
+        },
+        likes: {
+          create: { type: Boolean, default: false },
+          delete: { type: Boolean, default: false },
+        },
+        config: {
+          read: { type: Boolean, default: false },
+          update: { type: Boolean, default: false },
+        },
+        dashboard: {
+          read: { type: Boolean, default: false },
+        },
       },
-      roles: {
-        create: { type: Boolean, default: false },
-        read: { type: Boolean, default: false },
-        update: { type: Boolean, default: false },
-        delete: { type: Boolean, default: false },
-        getAll: { type: Boolean, default: false },
-      },
-      admins: {
-        create: { type: Boolean, default: false },
-        read: { type: Boolean, default: false },
-        update: { type: Boolean, default: false },
-        delete: { type: Boolean, default: false },
-        getAll: { type: Boolean, default: false },
-      },
-      logs: {
-        read: { type: Boolean, default: false },
-        getAll: { type: Boolean, default: false },
-      },
-      petTypes: {
-        create: { type: Boolean, default: false },
-        read: { type: Boolean, default: false },
-        update: { type: Boolean, default: false },
-        delete: { type: Boolean, default: false },
-        getAll: { type: Boolean, default: false },
-      },
-      petCharacteristics: {
-        create: { type: Boolean, default: false },
-        read: { type: Boolean, default: false },
-        update: { type: Boolean, default: false },
-        delete: { type: Boolean, default: false },
-        getAll: { type: Boolean, default: false },
-      },
-      pets: {
-        create: { type: Boolean, default: false },
-        read: { type: Boolean, default: false },
-        update: { type: Boolean, default: false },
-        delete: { type: Boolean, default: false },
-        getAll: { type: Boolean, default: false },
-      },
-      caregiverSearch: {
-        read: { type: Boolean, default: false },
-      },
-      reservations: {
-        create: { type: Boolean, default: false },
-        read: { type: Boolean, default: false },
-        update: { type: Boolean, default: false },
-        admin: { type: Boolean, default: false },
-      },
-      reviews: {
-        create: { type: Boolean, default: false },
-        read: { type: Boolean, default: false },
-      },
+      required: [true, 'Los permisos son requeridos'],
+      _id: false,
     },
     isSystem: {
       type: Boolean,

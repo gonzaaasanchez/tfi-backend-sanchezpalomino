@@ -36,10 +36,35 @@ const rolePermissions = {
       create: true,
       read: true,
       update: true,
-      admin: true,
+      getAll: true,
     },
     reviews: {
       create: true,
+      read: true,
+    },
+    posts: {
+      create: true,
+      read: true,
+      delete: true,
+      getAll: true,
+    },
+    comments: {
+      create: true,
+      getAll: true,
+      delete: true,
+    },
+    likes: {
+      create: false,
+      delete: false,
+    },
+    config: {
+      read: true,
+      update: true,
+    },
+    audit: {
+      read: true,
+    },
+    dashboard: {
       read: true,
     },
   },
@@ -73,11 +98,36 @@ const rolePermissions = {
       create: true,
       read: true,
       update: true,
-      admin: false,
+      getAll: true,
     },
     reviews: {
       create: true,
       read: true,
+    },
+    posts: {
+      create: true,
+      read: true,
+      delete: true,
+      getAll: true,
+    },
+    comments: {
+      create: true,
+      getAll: true,
+      delete: true,
+    },
+    likes: {
+      create: true,
+      delete: true,
+    },
+    config: {
+      read: false,
+      update: false,
+    },
+    audit: {
+      read: false,
+    },
+    dashboard: {
+      read: false,
     },
   },
 };
@@ -127,6 +177,21 @@ async function updateAllRoles() {
           role.permissions.reservations?.create || 'undefined'
         }`
       );
+      console.log(
+        `     Posts.create: ${
+          role.permissions.posts?.create || 'undefined'
+        }`
+      );
+      console.log(
+        `     Comments.create: ${
+          role.permissions.comments?.create || 'undefined'
+        }`
+      );
+      console.log(
+        `     Likes.create: ${
+          role.permissions.likes?.create || 'undefined'
+        }`
+      );
 
       // Determine which permissions to assign
       let newPermissions;
@@ -138,9 +203,9 @@ async function updateAllRoles() {
         newPermissions = rolePermissions.user;
         console.log('  👤 Assigning user permissions (own management)');
       } else {
-        // For custom roles, assign user permissions by default
-        newPermissions = rolePermissions.user;
-        console.log('  🎯 Assigning user permissions by default');
+        // For custom roles, assign superadmin permissions by default
+        newPermissions = rolePermissions.superadmin;
+        console.log('  🎯 Assigning superadmin permissions by default');
       }
 
       // Update role permissions
@@ -150,6 +215,11 @@ async function updateAllRoles() {
       role.permissions.caregiverSearch = newPermissions.caregiverSearch;
       role.permissions.reservations = newPermissions.reservations;
       role.permissions.reviews = newPermissions.reviews;
+      role.permissions.posts = newPermissions.posts;
+      role.permissions.comments = newPermissions.comments;
+      role.permissions.likes = newPermissions.likes;
+      role.permissions.audit = newPermissions.audit;
+      role.permissions.dashboard = newPermissions.dashboard;
 
       await role.save();
       updatedCount++;
@@ -187,8 +257,24 @@ async function updateAllRoles() {
           role.permissions.reservations?.create
             ? 'Create/Read/Update'
             : 'No access'
-        } ${role.permissions.reservations?.admin ? '(Admin)' : ''}`
+        } ${role.permissions.reservations?.getAll ? '(All)' : ''}`
       );
+
+      if (role.permissions.posts?.create) {
+        console.log(
+          `   Posts: Create, read, delete ${
+            role.permissions.posts.getAll ? '(all)' : '(feed only)'
+          }`
+        );
+      } else if (role.permissions.posts?.read) {
+        console.log(
+          `   Posts: Read only ${
+            role.permissions.posts.getAll ? '(all)' : '(feed only)'
+          }`
+        );
+      } else {
+        console.log(`   Posts: No access`);
+      }
 
       if (role.permissions.pets.create) {
         console.log(
@@ -204,6 +290,48 @@ async function updateAllRoles() {
         );
       } else {
         console.log(`   Pets: No access`);
+      }
+
+      if (role.permissions.comments?.create) {
+        console.log(
+          `   Comments: Create, read, delete ${
+            role.permissions.comments.getAll ? '(all)' : '(feed only)'
+          }`
+        );
+      } else if (role.permissions.comments?.getAll) {
+        console.log(
+          `   Comments: Read only ${
+            role.permissions.comments.getAll ? '(all)' : '(feed only)'
+          }`
+        );
+      } else {
+        console.log(`   Comments: No access`);
+      }
+
+      if (role.permissions.likes?.create) {
+        console.log(
+          `   Likes: Create, delete ${
+            role.permissions.likes.delete ? '(full)' : '(create only)'
+          }`
+        );
+      } else if (role.permissions.likes?.delete) {
+        console.log(
+          `   Likes: Delete only`
+        );
+      } else {
+        console.log(`   Likes: No access`);
+      }
+
+      if (role.permissions.audit?.read) {
+        console.log(`   Audit: Read access`);
+      } else {
+        console.log(`   Audit: No access`);
+      }
+
+      if (role.permissions.dashboard?.read) {
+        console.log(`   Dashboard: Read access`);
+      } else {
+        console.log(`   Dashboard: No access`);
       }
     }
   } catch (error) {
