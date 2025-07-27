@@ -44,9 +44,8 @@ const getPostComments: RequestHandler = async (req, res, next) => {
         comment: comment.comment,
         author: {
           id: (comment.author as any)._id,
-          name: `${(comment.author as any).firstName} ${
-            (comment.author as any).lastName
-          }`,
+          firstName: (comment.author as any).firstName,
+          lastName: (comment.author as any).lastName,
           email: (comment.author as any).email,
         },
         createdAt: comment.createdAt,
@@ -126,9 +125,8 @@ const createComment: RequestHandler = async (req, res, next) => {
         comment: newComment.comment,
         author: {
           id: (newComment.author as any)._id,
-          name: `${(newComment.author as any).firstName} ${
-            (newComment.author as any).lastName
-          }`,
+          firstName: (newComment.author as any).firstName,
+          lastName: (newComment.author as any).lastName,
           email: (newComment.author as any).email,
         },
         createdAt: newComment.createdAt,
