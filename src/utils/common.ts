@@ -70,4 +70,47 @@ export function calculateDistance(
 export async function getPetTypesFromPets(petIds: string[]): Promise<string[]> {
   const pets = await Pet.find({ _id: { $in: petIds } }).populate('petType');
   return pets.map((pet) => pet.petType._id.toString());
-} 
+}
+
+/**
+ * Calculate commission based on system configuration
+ * @param totalPrice - The base price to calculate commission from
+ * @returns Object with commission amount and calculated totals
+ */
+export const calculateCommission = async (totalPrice: number) => {
+  try {
+    // Import Config model dynamically to avoid circular dependencies
+    const Config = (await import('../models/Config')).default;
+    
+    // Get system commission configuration
+    const commissionConfig = await Config.findOne({ key: 'system_commission' });
+    
+    if (!commissionConfig) {
+      console.warn('⚠️ system_commission configuration not found, using default 6%');
+      const commission = totalPrice * 0.06;
+      return {
+        commission,
+        totalOwner: totalPrice + commission,
+        totalCaregiver: totalPrice - commission,
+      };
+    }
+    
+    const commissionPercentage = commissionConfig.value as number;
+    const commission = totalPrice * (commissionPercentage / 100);
+    
+    return {
+      commission,
+      totalOwner: totalPrice + commission,
+      totalCaregiver: totalPrice - commission,
+    };
+  } catch (error) {
+    console.error('❌ Error calculating commission:', error);
+    // Fallback to default 6%
+    const commission = totalPrice * 0.06;
+    return {
+      commission,
+      totalOwner: totalPrice + commission,
+      totalCaregiver: totalPrice - commission,
+    };
+  }
+}; 

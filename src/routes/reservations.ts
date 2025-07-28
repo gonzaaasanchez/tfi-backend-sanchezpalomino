@@ -6,7 +6,7 @@ import { authMiddleware } from '../middleware/auth';
 import { permissionMiddleware } from '../middleware/permissions';
 import { ResponseHelper } from '../utils/response';
 import { logChanges } from '../utils/auditLogger';
-import { formatCurrency, calculateDaysDifference } from '../utils/common';
+import { formatCurrency, calculateDaysDifference, calculateCommission } from '../utils/common';
 import { addAverageReviewsToUser } from '../utils/userHelpers';
 import {
   AddressWithId,
@@ -233,9 +233,7 @@ const createReservation: RequestHandler = async (req, res, next) => {
       totalPrice = pricePerDay * daysCount;
     }
 
-    const commission = totalPrice * 0.06;
-    const totalOwner = totalPrice + commission;
-    const totalCaregiver = totalPrice - commission;
+    const { commission, totalOwner, totalCaregiver } = await calculateCommission(totalPrice);
 
     // Create reservation
     const reservation = new Reservation({
