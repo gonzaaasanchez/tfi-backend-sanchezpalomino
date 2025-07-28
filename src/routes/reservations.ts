@@ -6,8 +6,16 @@ import { authMiddleware } from '../middleware/auth';
 import { permissionMiddleware } from '../middleware/permissions';
 import { ResponseHelper } from '../utils/response';
 import { logChanges } from '../utils/auditLogger';
-import { formatCurrency, calculateDaysDifference } from '../utils/common';
+import {
+  formatCurrency,
+  calculateDaysDifference,
+  calculateCommission,
+} from '../utils/common';
 import { addAverageReviewsToUser } from '../utils/userHelpers';
+import {
+  sendReservationEmailsToBoth,
+  ReservationEmailEvent,
+} from '../utils/reservationEmails';
 import {
   AddressWithId,
   CareLocation,
@@ -233,9 +241,8 @@ const createReservation: RequestHandler = async (req, res, next) => {
       totalPrice = pricePerDay * daysCount;
     }
 
-    const commission = totalPrice * 0.06;
-    const totalOwner = totalPrice + commission;
-    const totalCaregiver = totalPrice - commission;
+    const { commission, totalOwner, totalCaregiver } =
+      await calculateCommission(totalPrice);
 
     // Create reservation with payment pending status
     const reservation = new Reservation({
@@ -256,6 +263,26 @@ const createReservation: RequestHandler = async (req, res, next) => {
     });
 
     await reservation.save();
+
+    // Populate reservation data for emails
+    const populatedReservation = await Reservation.findById(reservation._id)
+      .populate('user', 'firstName lastName email avatar phoneNumber')
+      .populate('caregiver', 'firstName lastName email avatar phoneNumber')
+      .populate('pets', 'name petType characteristics comment avatar');
+
+    if (!populatedReservation) {
+      console.error('❌ Error populando reserva para emails');
+    } else {
+      // Send emails to both users
+      try {
+        await sendReservationEmailsToBoth(
+          populatedReservation,
+          ReservationEmailEvent.CREATED
+        );
+      } catch (error) {
+        console.error('❌ Error enviando emails de creación:', error);
+      }
+    }
 
     // Log the creation
     await logChanges(
@@ -582,6 +609,26 @@ const acceptReservation: RequestHandler = async (req, res, next) => {
     reservation.status = RESERVATION_STATUS.CONFIRMED;
     await reservation.save();
 
+    // Populate reservation data for emails
+    const populatedReservation = await Reservation.findById(reservation._id)
+      .populate('user', 'firstName lastName email avatar phoneNumber')
+      .populate('caregiver', 'firstName lastName email avatar phoneNumber')
+      .populate('pets', 'name petType characteristics comment avatar');
+
+    if (!populatedReservation) {
+      console.error('❌ Error populando reserva para emails');
+    } else {
+      // Send emails to both users
+      try {
+        await sendReservationEmailsToBoth(
+          populatedReservation,
+          ReservationEmailEvent.ACCEPTED
+        );
+      } catch (error) {
+        console.error('❌ Error enviando emails de aceptación:', error);
+      }
+    }
+
     // Log the change
     await logChanges(
       'Reservation',
@@ -643,6 +690,27 @@ const rejectReservation: RequestHandler = async (req, res, next) => {
     const previousStatus = reservation.status;
     reservation.status = RESERVATION_STATUS.REJECTED;
     await reservation.save();
+
+    // Populate reservation data for emails
+    const populatedReservation = await Reservation.findById(reservation._id)
+      .populate('user', 'firstName lastName email avatar phoneNumber')
+      .populate('caregiver', 'firstName lastName email avatar phoneNumber')
+      .populate('pets', 'name petType characteristics comment avatar');
+
+    if (!populatedReservation) {
+      console.error('❌ Error populando reserva para emails');
+    } else {
+      // Send emails to both users
+      try {
+        await sendReservationEmailsToBoth(
+          populatedReservation,
+          ReservationEmailEvent.REJECTED,
+          reason
+        );
+      } catch (error) {
+        console.error('❌ Error enviando emails de rechazo:', error);
+      }
+    }
 
     // Log the change
     await logChanges(
@@ -725,6 +793,27 @@ const cancelReservation: RequestHandler = async (req, res, next) => {
     const previousStatus = reservation.status;
     reservation.status = newStatus;
     await reservation.save();
+
+    // Populate reservation data for emails
+    const populatedReservation = await Reservation.findById(reservation._id)
+      .populate('user', 'firstName lastName email avatar phoneNumber')
+      .populate('caregiver', 'firstName lastName email avatar phoneNumber')
+      .populate('pets', 'name petType characteristics comment avatar');
+
+    if (!populatedReservation) {
+      console.error('❌ Error populando reserva para emails');
+    } else {
+      // Send emails to both users
+      try {
+        await sendReservationEmailsToBoth(
+          populatedReservation,
+          ReservationEmailEvent.CANCELLED,
+          reason
+        );
+      } catch (error) {
+        console.error('❌ Error enviando emails de cancelación:', error);
+      }
+    }
 
     // Log the change
     await logChanges(

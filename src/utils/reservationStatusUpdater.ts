@@ -1,6 +1,7 @@
 import Reservation from '../models/Reservation';
 import { RESERVATION_STATUS } from '../types';
 import { logChanges } from './auditLogger';
+import { sendReservationEmailsToBoth, ReservationEmailEvent } from './reservationEmails';
 
 /**
  * Updates reservation statuses based on business rules
@@ -53,7 +54,9 @@ export const updateReservationStatuses = async (): Promise<void> => {
         $gte: today,
         $lt: tomorrow
       }
-    });
+    }).populate('user', 'firstName lastName email')
+      .populate('caregiver', 'firstName lastName email')
+      .populate('pets', 'name');
     
     if (confirmedToStart.length > 0) {
       const result = await Reservation.updateMany(
@@ -64,8 +67,15 @@ export const updateReservationStatuses = async (): Promise<void> => {
       console.log(`🚀 ${result.modifiedCount} reservas CONFIRMED → STARTED (iniciando hoy)`);
       totalUpdated += result.modifiedCount;
       
-      // Log changes for audit
+      // Send emails and log changes for audit
       for (const reservation of confirmedToStart) {
+        try {
+          await sendReservationEmailsToBoth(reservation, ReservationEmailEvent.STARTED);
+          console.log(`✅ Email de inicio enviado para reserva ${reservation._id}`);
+        } catch (error) {
+          console.error(`❌ Error enviando email de inicio para reserva ${reservation._id}:`, error);
+        }
+        
         await logChanges('Reservation', (reservation._id as any).toString(), 'SYSTEM', 'Cron Job', [{
           field: 'status',
           oldValue: RESERVATION_STATUS.CONFIRMED,
@@ -81,7 +91,9 @@ export const updateReservationStatuses = async (): Promise<void> => {
         $gte: today,
         $lt: tomorrow
       }
-    });
+    }).populate('user', 'firstName lastName email')
+      .populate('caregiver', 'firstName lastName email')
+      .populate('pets', 'name');
     
     if (startedToFinish.length > 0) {
       const result = await Reservation.updateMany(
@@ -92,8 +104,15 @@ export const updateReservationStatuses = async (): Promise<void> => {
       console.log(`✅ ${result.modifiedCount} reservas STARTED → FINISHED (finalizando hoy)`);
       totalUpdated += result.modifiedCount;
       
-      // Log changes for audit
+      // Send emails and log changes for audit
       for (const reservation of startedToFinish) {
+        try {
+          await sendReservationEmailsToBoth(reservation, ReservationEmailEvent.FINISHED);
+          console.log(`✅ Email de finalización enviado para reserva ${reservation._id}`);
+        } catch (error) {
+          console.error(`❌ Error enviando email de finalización para reserva ${reservation._id}:`, error);
+        }
+        
         await logChanges('Reservation', (reservation._id as any).toString(), 'SYSTEM', 'Cron Job', [{
           field: 'status',
           oldValue: RESERVATION_STATUS.STARTED,

@@ -7,6 +7,7 @@ import Reservation, { IReservation } from '../src/models/Reservation';
 import Review from '../src/models/Review';
 import { RESERVATION_STATUS, CARE_LOCATION } from '../src/types';
 import { logChanges } from '../src/utils/auditLogger';
+import { calculateCommission } from '../src/utils/common';
 
 dotenv.config();
 
@@ -151,7 +152,7 @@ const generateReservationDates = () => {
 };
 
 // Calcular precio de la reserva
-const calculateReservationPrice = (caregiver: CaregiverData, careLocation: string, startDate: Date, endDate: Date, visitsPerDay?: number) => {
+const calculateReservationPrice = async (caregiver: CaregiverData, careLocation: string, startDate: Date, endDate: Date, visitsPerDay?: number) => {
   const daysCount = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
   
   let totalPrice = 0;
@@ -175,9 +176,8 @@ const calculateReservationPrice = (caregiver: CaregiverData, careLocation: strin
     throw new Error(`Precio inválido calculado: ${totalPrice} para caregiver ${caregiver.firstName}`);
   }
 
-  const commission = totalPrice * 0.06;
-  const totalOwner = totalPrice + commission;
-  const totalCaregiver = totalPrice - commission;
+  // Calculate commission using system configuration
+  const { commission, totalOwner, totalCaregiver } = await calculateCommission(totalPrice);
 
   return {
     totalPrice,
@@ -300,7 +300,7 @@ async function createReservations() {
       const visitsPerDay = careLocation === CARE_LOCATION.PET_HOME ? Math.floor(Math.random() * 3) + 1 : undefined;
       let priceData;
       try {
-        priceData = calculateReservationPrice(caregiver, careLocation, startDate, endDate, visitsPerDay);
+        priceData = await calculateReservationPrice(caregiver, careLocation, startDate, endDate, visitsPerDay);
       } catch (error: any) {
         console.log(`❌ Error calculando precio: ${error.message}, saltando reserva...`);
         continue;

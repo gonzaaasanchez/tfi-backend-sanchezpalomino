@@ -9,6 +9,7 @@ import {
   calculateDaysDifference,
   calculateDistance,
   getPetTypesFromPets,
+  calculateCommission,
 } from '../utils/common';
 import { CareLocation, CARE_LOCATION } from '../types';
 
@@ -235,9 +236,8 @@ const searchCaregivers: RequestHandler = async (req, res, next) => {
         }
       }
 
-      // Calculate commission (6%)
-      const commission = totalPrice * 0.06;
-      const totalOwner = totalPrice + commission;
+      // Calculate commission using system configuration
+      const { commission, totalOwner } = await calculateCommission(totalPrice);
 
       // Prepare caregiver data for reviews
       const caregiverData = {
