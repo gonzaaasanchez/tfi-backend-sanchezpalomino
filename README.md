@@ -19,6 +19,8 @@ Backend API developed with Node.js, TypeScript, Express and MongoDB.
 - **Pagination & Filtering**: Advanced search and pagination for all entities
 - **Image Management**: Pet avatars with proper content type handling
 - **Email System**: Professional email templates with HTML formatting
+- **Reservation Email Notifications**: Automatic emails for all reservation status changes
+- **Commission System**: Centralized commission calculation with dynamic configuration
 - **Caregiver Search**: Advanced search functionality for pet caregivers
 - **Reservation System**: Complete booking and reservation management
 - **Session Audit System**: Complete session monitoring and security dashboard
@@ -106,7 +108,9 @@ src/
     ├── auditLogger.ts   # Audit logger
     ├── changeDetector.ts # Change detection
     ├── response.ts      # Response helper
-    ├── email.ts         # Email functionality with Resend
+    ├── emailService.ts      # Generic email service with Resend
+    ├── passwordResetEmail.ts # Password reset email templates
+    ├── reservationEmails.ts  # Reservation email templates
     ├── passwordReset.ts # Password reset utilities
     └── userHelpers.ts   # User data helpers
 ```
@@ -124,7 +128,8 @@ The complete API documentation is organized by service modules in the [`docs/`](
 - **[🐾 Pets](./docs/pets.md)** - Pet management and services
 - **[🔍 Caregiver Search](./docs/caregiver-search.md)** - Advanced search functionality
 - **[📅 Reservations](./docs/reservations.md)** - Booking and reservation system
-- **[📧 Email System](./docs/emails.md)** - Email functionality and configuration
+- **[📧 Email System](./docs/emails.md)** - Email functionality, templates, and automatic notifications
+- **[⚙️ Configuration](./docs/config.md)** - System configuration management
 - **[👨‍💼 Admin Services](./docs/admin.md)** - Administrative functions
 - **[🛡️ Audit System](./docs/audit.md)** - Session monitoring and security dashboard
 
@@ -138,6 +143,8 @@ The complete API documentation is organized by service modules in the [`docs/`](
 - **File upload**: Multer with file type and size validation
 - **Password Reset**: Secure token-based recovery with expiration
 - **Email Security**: Domain verification and rate limiting
+- **Automatic Notifications**: Cron jobs for reservation status updates
+- **Commission Management**: Dynamic commission rates via system configuration
 - **Session Audit**: Complete logging of all authentication events
 - **Token Blacklist**: Secure logout with automatic token invalidation
 
@@ -156,6 +163,8 @@ The complete API documentation is organized by service modules in the [`docs/`](
 
 - [x] Implement password recovery system
 - [x] Add email functionality with Resend
+- [x] Implement automatic reservation email notifications
+- [x] Add centralized commission system with dynamic configuration
 - [x] Implement caregiver search
 - [x] Add reservation system
 - [ ] Implement complete permission system
