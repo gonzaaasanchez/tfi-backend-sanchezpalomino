@@ -356,15 +356,27 @@ export const sendReservationEmail = async (
   try {
     const { reservation, eventType, recipientRole } = data;
 
-    // Get recipient email
-    const recipient =
-      recipientRole === 'owner'
-        ? (reservation.user as any).email
-        : (reservation.caregiver as any).email;
-
-    if (!recipient) {
-      console.error('❌ No se encontró email del destinatario');
-      return false;
+    // Get recipient email with better error handling
+    let recipient: string | undefined;
+    
+    if (recipientRole === 'owner') {
+      recipient = (reservation.user as any)?.email;
+      if (!recipient) {
+        console.error('❌ No se encontró email del propietario:', {
+          userId: (reservation.user as any)?._id,
+          userData: reservation.user
+        });
+        return false;
+      }
+    } else {
+      recipient = (reservation.caregiver as any)?.email;
+      if (!recipient) {
+        console.error('❌ No se encontró email del cuidador:', {
+          caregiverId: (reservation.caregiver as any)?._id,
+          caregiverData: reservation.caregiver
+        });
+        return false;
+      }
     }
 
     // Generate email content
