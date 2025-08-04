@@ -848,6 +848,8 @@ const getAllReservations: RequestHandler = async (req, res, next) => {
     const status = req.query.status as string;
     const userId = req.query.userId as string;
     const caregiverId = req.query.caregiverId as string;
+    const dateFrom = req.query.dateFrom as string;
+    const dateTo = req.query.dateTo as string;
 
     const filters: any = {};
 
@@ -861,6 +863,27 @@ const getAllReservations: RequestHandler = async (req, res, next) => {
 
     if (caregiverId) {
       filters.caregiver = caregiverId;
+    }
+
+    // Date range filter - finds reservations that overlap with the given date range
+    if (dateFrom || dateTo) {
+      const dateFilters: any = {};
+      
+      if (dateFrom) {
+        // Reservation ends after or on the start of the range
+        dateFilters.endDate = { $gte: new Date(dateFrom) };
+      }
+      
+      if (dateTo) {
+        // Reservation starts before or on the end of the range
+        dateFilters.startDate = { $lte: new Date(dateTo) };
+      }
+      
+      // Combine date filters with AND logic
+      if (Object.keys(dateFilters).length > 0) {
+        filters.$and = filters.$and || [];
+        filters.$and.push(dateFilters);
+      }
     }
 
     const reservations = await Reservation.find(filters)
