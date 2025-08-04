@@ -1,5 +1,6 @@
 import { Router, RequestHandler } from 'express';
 import Post from '../models/Post';
+import Like from '../models/Like';
 import { authMiddleware } from '../middleware/auth';
 import { permissionMiddleware } from '../middleware/permissions';
 import { logChanges } from '../utils/auditLogger';
@@ -266,6 +267,7 @@ const getPostImage: RequestHandler = async (req, res, next) => {
 const getPostAsAdmin: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const userId = req.user?._id;
 
     const post = await Post.findById(id).populate('author');
 
@@ -274,11 +276,17 @@ const getPostAsAdmin: RequestHandler = async (req, res, next) => {
       return;
     }
 
+    // Check if user has liked this post
+    const hasLiked = await Like.exists({ post: id, user: userId });
+
     ResponseHelper.success(res, 'Post obtenido exitosamente', {
       id: post._id,
       title: post.title,
       description: post.description,
       image: post.image,
+      commentsCount: post.commentsCount,
+      likesCount: post.likesCount,
+      hasLiked: !!hasLiked,
       author: {
         id: (post.author as any)._id,
         name: `${(post.author as any).firstName} ${
