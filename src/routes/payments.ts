@@ -14,23 +14,6 @@ import { logChanges } from '../utils/auditLogger';
 
 const router = Router();
 
-// Middleware to preserve raw body for webhook signature validation
-const webhookMiddleware: RequestHandler = (req, res, next) => {
-  if (req.path === '/webhook' || req.path === '/payment/webhook') {
-    let data = '';
-    req.setEncoding('utf8');
-    req.on('data', (chunk) => {
-      data += chunk;
-    });
-    req.on('end', () => {
-      req.body = data;
-      next();
-    });
-  } else {
-    next();
-  }
-};
-
 // POST /payments/create-payment-intent - Create payment intent for a reservation
 const createPaymentIntentHandler: RequestHandler = async (req, res, next) => {
   try {
@@ -124,8 +107,8 @@ const stripeWebhookHandler: RequestHandler = async (req, res, next) => {
     console.log('🔍 Webhook Debug Info:');
     console.log('- Signature present:', !!signature);
     console.log('- Endpoint secret present:', !!endpointSecret);
-    console.log('- Request body length:', req.body ? Object.keys(req.body).length : 'No body');
-    console.log('- Event type:', req.body?.type || 'No type');
+    console.log('- Request body type:', typeof req.body);
+    console.log('- Request body length:', req.body ? req.body.length : 'No body');
 
     if (!signature || !endpointSecret) {
       console.error('Missing stripe signature or webhook secret');
@@ -133,10 +116,13 @@ const stripeWebhookHandler: RequestHandler = async (req, res, next) => {
       return;
     }
 
+    // Convert raw body to string for signature validation
+    const rawBody = req.body instanceof Buffer ? req.body.toString('utf8') : req.body;
+
     // Validate webhook signature
     let event;
     try {
-      event = validateWebhookSignature(req.body, signature, endpointSecret);
+      event = validateWebhookSignature(rawBody, signature, endpointSecret);
       console.log('✅ Webhook signature validation successful');
     } catch (error) {
       console.error('❌ Webhook signature validation failed:', error);
@@ -306,7 +292,7 @@ router.post(
   authMiddleware,
   createPaymentIntentHandler
 );
-router.post('/webhook', webhookMiddleware, stripeWebhookHandler);
+router.post('/webhook', stripeWebhookHandler);
 router.get('/status/:reservationId', authMiddleware, getPaymentStatus);
 
 export default router;

@@ -32,6 +32,10 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.MONGODB_URI || '';
 
+// Middleware to preserve raw body for webhooks
+app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
+app.use('/api/payment/webhook', express.raw({ type: 'application/json' }));
+
 // Middlewares
 app.use(express.json());
 app.use(cors());
