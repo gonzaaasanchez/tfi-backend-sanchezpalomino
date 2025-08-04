@@ -25,6 +25,7 @@ Backend API developed with Node.js, TypeScript, Express and MongoDB.
 - **Reservation System**: Complete booking and reservation management
 - **Session Audit System**: Complete session monitoring and security dashboard
 - **Token Blacklist**: Secure logout with token invalidation
+- **Payment System**: Stripe integration for secure payment processing
 
 ## 📋 Prerequisites
 
@@ -32,6 +33,7 @@ Backend API developed with Node.js, TypeScript, Express and MongoDB.
 - MongoDB (local or Atlas)
 - npm or yarn
 - Resend account (for email functionality)
+- Stripe account (for payment processing)
 
 ## 🛠️ Installation
 
@@ -62,6 +64,10 @@ NODE_ENV=development
 # Email Configuration (Resend)
 RESEND_API_KEY=your-resend-api-key
 FROM_EMAIL=onboarding@resend.dev
+
+# Stripe Configuration
+STRIPE_SECRET_KEY=sk_test_your-stripe-secret-key
+STRIPE_WEBHOOK_SECRET=whsec_your-webhook-secret
 
 # Optional: Custom domain (must be verified in Resend)
 # FROM_EMAIL=soporte@yourdomain.com
@@ -96,7 +102,8 @@ src/
 │   ├── petCharacteristics.ts # Pet characteristics routes
 │   ├── pets.ts          # Pet routes (user and admin services)
 │   ├── caregiverSearch.ts # Caregiver search routes
-│   └── reservations.ts  # Reservation routes
+│   ├── reservations.ts  # Reservation routes
+│   └── payments.ts      # Payment routes
 ├── middleware/          # Middlewares
 │   ├── auth.ts          # JWT authentication
 │   ├── permissions.ts   # Permission control
@@ -112,6 +119,7 @@ src/
     ├── passwordResetEmail.ts # Password reset email templates
     ├── reservationEmails.ts  # Reservation email templates
     ├── passwordReset.ts # Password reset utilities
+    ├── stripe.ts        # Stripe payment utilities
     └── userHelpers.ts   # User data helpers
 ```
 
@@ -128,6 +136,7 @@ The complete API documentation is organized by service modules in the [`docs/`](
 - **[🐾 Pets](./docs/pets.md)** - Pet management and services
 - **[🔍 Caregiver Search](./docs/caregiver-search.md)** - Advanced search functionality
 - **[📅 Reservations](./docs/reservations.md)** - Booking and reservation system
+- **[💳 Payments](./docs/payments.md)** - Payment processing with Stripe
 - **[📧 Email System](./docs/emails.md)** - Email functionality, templates, and automatic notifications
 - **[⚙️ Configuration](./docs/config.md)** - System configuration management
 - **[👨‍💼 Admin Services](./docs/admin.md)** - Administrative functions

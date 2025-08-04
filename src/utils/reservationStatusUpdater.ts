@@ -21,7 +21,7 @@ export const updateReservationStatuses = async (): Promise<void> => {
     
     // 1. PENDING → REJECTED: Reservas que deberían empezar hoy pero no fueron confirmadas
     const pendingToReject = await Reservation.find({
-      status: RESERVATION_STATUS.PENDING,
+      status: RESERVATION_STATUS.WAITING_ACCEPTANCE,
       startDate: {
         $gte: today,
         $lt: tomorrow
@@ -41,7 +41,7 @@ export const updateReservationStatuses = async (): Promise<void> => {
       for (const reservation of pendingToReject) {
         await logChanges('Reservation', (reservation._id as any).toString(), 'SYSTEM', 'Cron Job', [{
           field: 'status',
-          oldValue: RESERVATION_STATUS.PENDING,
+          oldValue: RESERVATION_STATUS.WAITING_ACCEPTANCE,
           newValue: RESERVATION_STATUS.REJECTED
         }]);
       }

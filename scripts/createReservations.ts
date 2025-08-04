@@ -307,7 +307,7 @@ async function createReservations() {
       }
 
       // Determinar estado basado en fechas
-      let status: string = RESERVATION_STATUS.PENDING;
+      let status: string = RESERVATION_STATUS.WAITING_ACCEPTANCE;
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
@@ -323,7 +323,7 @@ async function createReservations() {
         status = Math.random() > 0.3 ? RESERVATION_STATUS.STARTED : RESERVATION_STATUS.CONFIRMED;
       } else if (startDate < new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)) {
         // Reserva próxima (próxima semana)
-        status = Math.random() > 0.2 ? RESERVATION_STATUS.CONFIRMED : RESERVATION_STATUS.PENDING;
+        status = Math.random() > 0.2 ? RESERVATION_STATUS.CONFIRMED : RESERVATION_STATUS.WAITING_ACCEPTANCE;
       }
 
       // Crear reserva

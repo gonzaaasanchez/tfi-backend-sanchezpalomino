@@ -76,6 +76,7 @@ This document describes all the data models used in the TFI Backend API.
 ```
 
 **Optional fields in API responses (not stored in database):**
+
 - `reviews`: Object containing review statistics (only present in certain contexts)
   - `averageRatingAsUser`: Average rating as user (1-5, rounded to 1 decimal)
   - `totalReviewsAsUser`: Total number of reviews received as user
@@ -465,8 +466,8 @@ This document describes all the data models used in the TFI Backend API.
   status: {
     type: String,
     required: true,
-    enum: ['pending', 'confirmed', 'started', 'finished', 'rejected', 'cancelled_owner', 'cancelled_caregiver'],
-    default: 'pending'
+    enum: ['payment_pending', 'payment_rejected', 'waiting_acceptance', 'confirmed', 'started', 'finished', 'rejected', 'cancelled_owner', 'cancelled_caregiver'],
+    default: 'waiting_acceptance'
   }
 }
 ```
@@ -498,7 +499,7 @@ This document describes all the data models used in the TFI Backend API.
   "totalOwner": 1272,
   "totalCaregiver": 1128,
   "distance": 5.2,
-  "status": "pending",
+  "status": "waiting_acceptance",
   "createdAt": "2024-01-10T10:30:00.000Z",
   "updatedAt": "2024-01-10T10:30:00.000Z"
 }
@@ -518,7 +519,9 @@ This document describes all the data models used in the TFI Backend API.
 
 ### Status Values
 
-- **pending**: Awaiting caregiver confirmation
+- **payment_pending**: Reservation created, pending payment
+- **payment_rejected**: Payment failed, reservation rejected
+- **waiting_acceptance**: Awaiting caregiver confirmation
 - **confirmed**: Caregiver has accepted the reservation
 - **started**: Care period has begun
 - **finished**: Care period has ended

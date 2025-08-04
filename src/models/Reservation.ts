@@ -114,7 +114,7 @@ const reservationSchema = new Schema<IReservation>(
     status: {
       type: String,
       enum: Object.values(RESERVATION_STATUS),
-      default: RESERVATION_STATUS.PENDING,
+      default: RESERVATION_STATUS.WAITING_ACCEPTANCE,
     },
   },
   {
