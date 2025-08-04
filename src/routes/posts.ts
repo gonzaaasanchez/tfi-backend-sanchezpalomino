@@ -82,9 +82,8 @@ const createPost: RequestHandler = async (req, res, next) => {
         commentsCount: post.commentsCount,
         author: {
           id: (post.author as any)._id,
-          name: `${(post.author as any).firstName} ${
-            (post.author as any).lastName
-          }`,
+          firstName: (post.author as any).firstName,
+          lastName: (post.author as any).lastName,
           email: (post.author as any).email,
         },
         createdAt: post.createdAt,
@@ -289,9 +288,8 @@ const getPostAsAdmin: RequestHandler = async (req, res, next) => {
       hasLiked: !!hasLiked,
       author: {
         id: (post.author as any)._id,
-        name: `${(post.author as any).firstName} ${
-          (post.author as any).lastName
-        }`,
+        firstName: (post.author as any).firstName,
+        lastName: (post.author as any).lastName,
         email: (post.author as any).email,
       },
       createdAt: post.createdAt,
